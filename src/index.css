@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Stiluri globale opționale */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
