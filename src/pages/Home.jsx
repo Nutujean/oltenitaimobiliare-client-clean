@@ -22,22 +22,36 @@ export default function Home() {
     fetchListings();
   }, []);
 
-  if (loading) return <p className="text-center mt-6">Se încarcă...</p>;
-  if (error) return <p className="text-center text-red-500 mt-6">{error}</p>;
-
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Anunțuri disponibile</h2>
-      {listings.length === 0 ? (
-        <p className="text-center">Nu există anunțuri disponibile.</p>
-      ) : (
+    <div>
+      {/* ✅ Hero cu fundal */}
+      <div
+        className="h-64 bg-cover bg-center flex items-center justify-center text-white"
+        style={{
+          backgroundImage: "url('https://source.unsplash.com/1600x400/?house,real-estate')",
+        }}
+      >
+        <h1 className="text-3xl md:text-5xl font-bold bg-black bg-opacity-50 p-4 rounded">
+          Găsește-ți locuința ideală în Oltenița
+        </h1>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-6">Anunțuri disponibile</h2>
+
+        {loading && <p className="text-center mt-6">Se încarcă...</p>}
+        {error && <p className="text-center text-red-500 mt-6">{error}</p>}
+
+        {!loading && !error && listings.length === 0 && (
+          <p className="text-center">Nu există anunțuri disponibile.</p>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => (
             <div
               key={listing._id}
               className="relative border rounded shadow hover:shadow-lg bg-white"
             >
-              {/* ✅ Badge Rezervat peste poză */}
               {listing.rezervat && (
                 <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                   Rezervat
@@ -71,7 +85,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

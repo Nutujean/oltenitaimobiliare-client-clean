@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/navigation";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -31,10 +33,14 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-      {/* ✅ Slider cu banner Rezervat */}
       <div className="relative">
         {listing.images?.length > 0 ? (
-          <Swiper spaceBetween={10} slidesPerView={1}>
+          <Swiper
+            spaceBetween={10}
+            slidesPerView={1}
+            navigation
+            modules={[Navigation]}
+          >
             {listing.images.map((img, index) => (
               <SwiperSlide key={index}>
                 <img
@@ -51,7 +57,6 @@ export default function DetaliuAnunt() {
           </div>
         )}
 
-        {/* ✅ Banner mare peste poze dacă e rezervat */}
         {listing.rezervat && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
             <span className="text-white text-3xl font-bold">REZERVAT</span>
@@ -67,14 +72,6 @@ export default function DetaliuAnunt() {
           {listing.category}
         </p>
         <p className="mt-4">{listing.description}</p>
-        <p className="mt-4">
-          Status:{" "}
-          {listing.rezervat ? (
-            <span className="text-red-600 font-bold">Rezervat</span>
-          ) : (
-            <span className="text-green-600 font-bold">Disponibil</span>
-          )}
-        </p>
       </div>
     </div>
   );
