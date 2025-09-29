@@ -26,7 +26,7 @@ export default function DetaliuAnunt() {
         await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
           method: "DELETE",
         });
-        navigate("/"); // după ștergere mergem înapoi la homepage
+        navigate("/"); // după ștergere mergem la homepage
       } catch (error) {
         console.error("Eroare la ștergere:", error);
       }
@@ -59,8 +59,10 @@ export default function DetaliuAnunt() {
         ← Înapoi
       </button>
 
+      {/* Titlu */}
       <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
+      {/* Imagine principală */}
       <img
         src={
           listing.imageUrl ||
@@ -71,6 +73,7 @@ export default function DetaliuAnunt() {
         className="w-full h-80 object-cover rounded-lg mb-6"
       />
 
+      {/* Detalii */}
       <p className="text-gray-700 mb-4">{listing.description}</p>
       <p className="text-xl font-semibold mb-2">{listing.price} €</p>
       {listing.status && (
