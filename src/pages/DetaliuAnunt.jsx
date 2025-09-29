@@ -1,56 +1,68 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { API_URL } from "../config";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await axios.get(`${API_URL}/listings/${id}`);
-        setListing(res.data);
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/listings/${id}`
+        );
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
+
+        const data = await res.json();
+        setListing(data);
       } catch (err) {
-        setError("Eroare la încărcarea anunțului.");
+        console.error("❌ Eroare fetch detaliu anunț:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchListing();
   }, [id]);
 
-  if (loading) return <p className="p-6">Se încarcă anunțul...</p>;
-  if (error) return <p className="p-6 text-red-500">{error}</p>;
-  if (!listing) return <p className="p-6">Anunțul nu a fost găsit.</p>;
+  if (loading) return <p className="text-center mt-4">Se încarcă...</p>;
+  if (!listing) return <p className="text-center mt-4">Anunțul nu există.</p>;
 
   return (
-    <div className="p-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-      >
-        ⬅ Înapoi
-      </button>
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+      <h2 className="text-2xl font-bold mb-4">{listing.title}</h2>
 
-      <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
-      <p className="mb-2"><strong>Preț:</strong> {listing.price} €</p>
-      <p className="mb-2"><strong>Locație:</strong> {listing.location}</p>
-      <p className="mb-2"><strong>Descriere:</strong> {listing.description}</p>
-
-      {listing.images && listing.images.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {listing.images.map((img, i) => (
-            <img key={i} src={img} alt={`Poza ${i + 1}`} className="rounded-lg shadow" />
+      {/* ✅ Slider cu poze */}
+      {listing.images?.length > 0 && (
+        <Swiper
+          modules={[Navigation, Pagination]}
+          navigation
+          pagination={{ clickable: true }}
+          className="mb-4 rounded"
+        >
+          {listing.images.map((img, index) => (
+            <SwiperSlide key={index}>
+              <img
+                src={img}
+                alt={`${listing.title} - poza ${index + 1}`}
+                className="w-full h-96 object-cover rounded"
+              />
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
       )}
+
+      <p className="text-lg">{listing.description}</p>
+      <p className="text-xl font-bold mt-2">{listing.price} EUR</p>
+      <p className="text-gray-600">
+        {listing.category} | {listing.location}
+      </p>
     </div>
   );
 }
