@@ -8,6 +8,7 @@ export default function AdaugaAnunt() {
   const [location, setLocation] = useState("");
   const [images, setImages] = useState([]);
 
+  // ✅ Upload multiplu de poze (max 15)
   const handleImageUpload = async (files) => {
     const uploadedImages = [];
 
@@ -24,8 +25,12 @@ export default function AdaugaAnunt() {
           `https://api.cloudinary.com/v1_1/${
             import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
           }/image/upload`,
-          { method: "POST", body: formData }
+          {
+            method: "POST",
+            body: formData,
+          }
         );
+
         const data = await res.json();
         if (data.secure_url) {
           uploadedImages.push(data.secure_url);
@@ -38,12 +43,11 @@ export default function AdaugaAnunt() {
     return uploadedImages;
   };
 
+  // ✅ Trimitem anunțul la backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("email"); // email-ul logat
-
-    console.log("📧 Email trimis la backend:", userEmail);
+    const userEmail = localStorage.getItem("email");
 
     try {
       const uploadedImages = await handleImageUpload(images);
@@ -54,8 +58,8 @@ export default function AdaugaAnunt() {
         price,
         category,
         location,
-        images: uploadedImages,
-        userEmail, // 👈 îl trimitem explicit
+        images: uploadedImages, // array complet cu poze
+        userEmail,
       };
 
       console.log("📤 Body trimis la backend:", bodyToSend);
@@ -127,7 +131,7 @@ export default function AdaugaAnunt() {
           required
         />
 
-        {/* Input imagini cu limită max 15 */}
+        {/* ✅ Input poze cu limită de 15 */}
         <input
           type="file"
           multiple
@@ -142,6 +146,20 @@ export default function AdaugaAnunt() {
           }}
           className="w-full border p-2 rounded"
         />
+
+        {/* ✅ Preview poze */}
+        {images.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {Array.from(images).map((img, idx) => (
+              <img
+                key={idx}
+                src={URL.createObjectURL(img)}
+                alt={`preview-${idx}`}
+                className="h-24 object-cover rounded"
+              />
+            ))}
+          </div>
+        )}
 
         <button
           type="submit"
