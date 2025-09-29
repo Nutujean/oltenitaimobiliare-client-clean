@@ -8,13 +8,14 @@ export default function AdaugaAnunt() {
     description: "",
     price: "",
     imageUrl: "",
+    category: "",
   });
 
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/login"); // dacă nu e logat, redirecționează la login
+      navigate("/login"); // dacă nu e logat, redirect la login
     }
   }, [isLoggedIn, navigate]);
 
@@ -52,6 +53,7 @@ export default function AdaugaAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <textarea
           name="description"
           placeholder="Descriere"
@@ -60,6 +62,7 @@ export default function AdaugaAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <input
           type="number"
           name="price"
@@ -69,6 +72,7 @@ export default function AdaugaAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <input
           type="text"
           name="imageUrl"
@@ -77,6 +81,24 @@ export default function AdaugaAnunt() {
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
+        {/* Select pentru categorie */}
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Alege categoria</option>
+          <option value="apartamente">Apartamente</option>
+          <option value="case">Case</option>
+          <option value="terenuri">Terenuri</option>
+          <option value="garsoniere">Garsoniere</option>
+          <option value="garaje">Garaje</option>
+          <option value="spatii-comerciale">Spații comerciale</option>
+        </select>
+
         <button
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
