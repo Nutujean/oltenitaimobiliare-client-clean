@@ -4,9 +4,6 @@ import { Link } from "react-router-dom";
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchCategory, setSearchCategory] = useState("");
-  const [searchLocation, setSearchLocation] = useState("");
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -23,64 +20,88 @@ export default function Home() {
     fetchListings();
   }, []);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-
-    const params = new URLSearchParams();
-    if (searchText) params.append("title", searchText);
-    if (searchCategory) params.append("category", searchCategory);
-    if (searchLocation) params.append("location", searchLocation);
-
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/listings/search?${params.toString()}`
-      );
-      if (!res.ok) throw new Error("Eroare la căutare");
-      const data = await res.json();
-      setFiltered(data);
-    } catch (err) {
-      console.error("❌ Eroare search:", err);
-    }
+  // filtrează după categorie când dai click pe card
+  const filterByCategory = (category) => {
+    const filteredData = listings.filter((l) => l.category === category);
+    setFiltered(filteredData);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Formular căutare */}
-      <form onSubmit={handleSearch} className="grid grid-cols-4 gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Caută după titlu..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <select
-          value={searchCategory}
-          onChange={(e) => setSearchCategory(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Toate categoriile</option>
-          <option value="Apartament">Apartament</option>
-          <option value="Casă">Casă</option>
-          <option value="Garsoniera">Casă</option>
-          <option value="Teren">Teren</option>
-          <option value="Garaj">Garaj</option>
-          <option value="Spațiu comercial">Spațiu comercial</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Localitate..."
-          value={searchLocation}
-          onChange={(e) => setSearchLocation(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <button type="submit" className="bg-blue-600 text-white rounded px-4">
-          Caută
-        </button>
-      </form>
+    <div>
+      {/* ✅ Hero cu imagine fundal */}
+      <div
+        className="h-96 bg-cover bg-center flex items-center justify-center text-white"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80')",
+        }}
+      >
+        <h1 className="text-4xl md:text-6xl font-bold bg-black bg-opacity-50 px-6 py-3 rounded">
+          Oltenița Imobiliare
+        </h1>
+      </div>
 
-      {/* Listă anunțuri */}
-      <div className="grid grid-cols-3 gap-6">
+      {/* ✅ Carduri categorii */}
+      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 p-6">
+        <div
+          onClick={() => filterByCategory("Apartament")}
+          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+        >
+          <img
+            src="https://via.placeholder.com/150?text=Apartament"
+            alt="Apartamente"
+            className="mx-auto mb-2 rounded"
+          />
+          <h3 className="font-semibold">Apartamente</h3>
+        </div>
+        <div
+          onClick={() => filterByCategory("Casă")}
+          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+        >
+          <img
+            src="https://via.placeholder.com/150?text=Casa"
+            alt="Case"
+            className="mx-auto mb-2 rounded"
+          />
+          <h3 className="font-semibold">Case</h3>
+        </div>
+        <div
+          onClick={() => filterByCategory("Teren")}
+          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+        >
+          <img
+            src="https://via.placeholder.com/150?text=Teren"
+            alt="Terenuri"
+            className="mx-auto mb-2 rounded"
+          />
+          <h3 className="font-semibold">Terenuri</h3>
+        </div>
+        <div
+          onClick={() => filterByCategory("Garaj")}
+          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+        >
+          <img
+            src="https://via.placeholder.com/150?text=Garaj"
+            alt="Garaje"
+            className="mx-auto mb-2 rounded"
+          />
+          <h3 className="font-semibold">Garaje</h3>
+        </div>
+        <div
+          onClick={() => filterByCategory("Spațiu comercial")}
+          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+        >
+          <img
+            src="https://via.placeholder.com/150?text=Spatiu"
+            alt="Spații comerciale"
+            className="mx-auto mb-2 rounded"
+          />
+          <h3 className="font-semibold">Spații comerciale</h3>
+        </div>
+      </div>
+
+      {/* ✅ Lista anunțuri */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {filtered.map((listing) => (
           <div key={listing._id} className="border rounded shadow relative">
             {listing.rezervat && (
@@ -89,7 +110,10 @@ export default function Home() {
               </span>
             )}
             <img
-              src={listing.images?.[0] || "https://via.placeholder.com/400x250?text=Fără+imagine"}
+              src={
+                listing.images?.[0] ||
+                "https://via.placeholder.com/400x250?text=Fără+imagine"
+              }
               alt={listing.title}
               className="w-full h-48 object-cover rounded-t"
             />
