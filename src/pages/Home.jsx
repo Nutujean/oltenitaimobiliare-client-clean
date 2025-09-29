@@ -83,40 +83,52 @@ export default function Home() {
         </div>
       </div>
 
-      {/* LISTĂ ANUNȚURI */}
+      {/* ULTIMELE ANUNȚURI */}
       <div className="max-w-6xl mx-auto py-12 px-4">
         <h2 className="text-2xl font-bold mb-8 text-center">Ultimele anunțuri</h2>
         {listings.length === 0 ? (
           <p className="text-center text-gray-500">Nu există anunțuri încă.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {listings.map((listing) => (
-              <div
-                key={listing._id}
-                className="border rounded-lg shadow hover:shadow-lg transition bg-white"
-              >
-                <img
-                  src={
-                    listing.imageUrl ||
-                    (listing.images && listing.images[0]) ||
-                    "https://via.placeholder.com/400x250?text=Fără+imagine"
-                  }
-                  alt={listing.title}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
-                  <p className="text-gray-600 mb-2">{listing.price} €</p>
-                  <Link
-                    to={`/anunt/${listing._id}`}
-                    className="inline-block mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                  >
-                    Vezi detalii
-                  </Link>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {listings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className="border rounded-lg shadow hover:shadow-lg transition bg-white"
+                >
+                  <img
+                    src={
+                      listing.imageUrl ||
+                      (listing.images && listing.images[0]) ||
+                      "https://via.placeholder.com/400x250?text=Fără+imagine"
+                    }
+                    alt={listing.title}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
+                    <p className="text-gray-600 mb-2">{listing.price} €</p>
+                    <Link
+                      to={`/anunt/${listing._id}`}
+                      className="inline-block mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    >
+                      Vezi detalii
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Buton pentru toate anunțurile */}
+            <div className="text-center mt-8">
+              <Link
+                to="/anunturi"
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              >
+                Vezi toate anunțurile →
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </div>
