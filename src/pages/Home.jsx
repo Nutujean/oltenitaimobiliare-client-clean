@@ -65,8 +65,8 @@ export default function Home() {
             Bine ai venit la Oltenița Imobiliare
           </h1>
           <p className="text-lg md:text-2xl text-gray-200">
-            Vânzări • Cumparari• Inchirieri • Apartamente • Case • Terenuri • Spații
-            comerciale • Garaje
+            Vânzări • Închirieri • Apartamente • Case • Terenuri • Spații
+            comerciale
           </p>
         </div>
       </div>
@@ -112,8 +112,10 @@ export default function Home() {
               >
                 <img
                   src={
-                    listing.imageUrl && listing.imageUrl.startsWith("http")
+                    listing.imageUrl
                       ? listing.imageUrl
+                      : listing.images && listing.images.length > 0
+                      ? listing.images[0]
                       : "https://via.placeholder.com/400x250?text=Imagine+disponibila+in+curand"
                   }
                   alt={listing.title}
