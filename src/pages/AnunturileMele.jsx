@@ -99,15 +99,29 @@ export default function AnunturileMele() {
                 </span>
               )}
 
-              <img
-                src={
-                  listing.imageUrl ||
-                  (listing.images && listing.images[0]) ||
-                  "https://via.placeholder.com/400x250?text=Fără+imagine"
-                }
-                alt={listing.title}
-                className="w-full h-40 object-cover rounded mb-4"
-              />
+              {/* Mini-galerie imagini */}
+              <div className="flex space-x-2 overflow-x-auto mb-4">
+                {listing.images && listing.images.length > 0 ? (
+                  listing.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Imagine ${idx + 1}`}
+                      className="w-24 h-20 object-cover rounded"
+                    />
+                  ))
+                ) : (
+                  <img
+                    src={
+                      listing.imageUrl ||
+                      "https://via.placeholder.com/100x80?text=Fără+imagine"
+                    }
+                    alt={listing.title}
+                    className="w-24 h-20 object-cover rounded"
+                  />
+                )}
+              </div>
+
               <h2 className="text-lg font-bold mb-1">{listing.title}</h2>
 
               {listing.category && (
@@ -145,7 +159,9 @@ export default function AnunturileMele() {
                       : "bg-green-600 hover:bg-green-700"
                   }`}
                 >
-                  {listing.status === "rezervat" ? "Marchează disponibil" : "Rezervat"}
+                  {listing.status === "rezervat"
+                    ? "Marchează disponibil"
+                    : "Rezervat"}
                 </button>
               </div>
             </div>
