@@ -53,7 +53,7 @@ export default function AnunturileMele() {
           {listings.map((listing) => (
             <div
               key={listing._id}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition"
+              className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
             >
               <img
                 src={
@@ -64,7 +64,18 @@ export default function AnunturileMele() {
                 alt={listing.title}
                 className="w-full h-40 object-cover rounded mb-4"
               />
-              <h2 className="text-lg font-bold mb-2">{listing.title}</h2>
+              <h2 className="text-lg font-bold mb-1">{listing.title}</h2>
+
+              {/* Categoria mică sub titlu */}
+              {listing.category && (
+                <Link
+                  to={`/anunturi?categorie=${listing.category}`}
+                  className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
+                >
+                  {listing.category}
+                </Link>
+              )}
+
               <p className="text-gray-600 mb-2">{listing.price} €</p>
               <Link
                 to={`/anunt/${listing._id}`}
