@@ -18,7 +18,14 @@ export default function AnunturileMele() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
       const data = await res.json();
 
-      const myListings = data.filter((listing) => listing.userEmail === userEmail);
+      console.log("📦 Toate anunțurile:", data);
+      console.log("📧 User logat:", userEmail);
+
+      // filtrăm doar cele ale userului logat
+      const myListings = data.filter(
+        (listing) => listing.userEmail === userEmail
+      );
+
       setListings(myListings);
     } catch (err) {
       console.error("❌ Eroare la preluarea anunțurilor:", err);
@@ -48,9 +55,12 @@ export default function AnunturileMele() {
 
   const handleRezervat = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}/rezervat`, {
-        method: "PATCH",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/listings/${id}/rezervat`,
+        {
+          method: "PATCH",
+        }
+      );
       if (res.ok) {
         fetchListings();
       }
@@ -107,27 +117,35 @@ export default function AnunturileMele() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full border p-2 rounded"
                     required
                   />
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full border p-2 rounded"
                     required
                   />
                   <input
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
                     className="w-full border p-2 rounded"
                     required
                   />
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     className="w-full border p-2 rounded"
                     required
                   />
@@ -148,12 +166,12 @@ export default function AnunturileMele() {
                   </div>
                 </form>
               ) : (
-                // Card afișare anunț
                 <>
                   <h3 className="text-xl font-semibold">{listing.title}</h3>
                   <p>{listing.description}</p>
                   <p className="text-blue-600 font-bold">{listing.price} €</p>
                   <p className="text-gray-500">{listing.location}</p>
+
                   {listing.images?.length > 0 && (
                     <img
                       src={listing.images[0]}
@@ -176,7 +194,9 @@ export default function AnunturileMele() {
                       onClick={() => handleRezervat(listing._id)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                     >
-                      {listing.rezervat ? "Marchează Disponibil" : "Marchează Rezervat"}
+                      {listing.rezervat
+                        ? "Marchează Disponibil"
+                        : "Marchează Rezervat"}
                     </button>
                     <button
                       onClick={() => startEdit(listing)}
