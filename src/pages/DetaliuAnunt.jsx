@@ -79,16 +79,23 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* Imagine */}
-      <img
-        src={
-          listing.imageUrl ||
-          (listing.images && listing.images[0]) ||
-          "https://via.placeholder.com/600x400?text=Imagine"
-        }
-        alt={listing.title}
-        className="w-full h-80 object-cover rounded-lg mb-6"
-      />
+      {/* Imagine + badge Rezervat */}
+      <div className="relative mb-6">
+        {listing.status === "rezervat" && (
+          <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+            Rezervat
+          </span>
+        )}
+        <img
+          src={
+            listing.imageUrl ||
+            (listing.images && listing.images[0]) ||
+            "https://via.placeholder.com/600x400?text=Imagine"
+          }
+          alt={listing.title}
+          className="w-full h-80 object-cover rounded-lg"
+        />
+      </div>
 
       {/* Detalii */}
       <p className="text-gray-700 mb-4">{listing.description}</p>
