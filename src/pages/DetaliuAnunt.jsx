@@ -54,10 +54,11 @@ export default function DetaliuAnunt() {
 
   if (!listing) return <p className="text-center py-8">Se încarcă...</p>;
 
-  // Lista de imagini: dacă există mai multe, le punem în slider
-  const images = listing.images && listing.images.length > 0
-    ? listing.images
-    : [listing.imageUrl || "https://via.placeholder.com/600x400?text=Imagine"];
+  // Lista de imagini: slider dacă sunt mai multe
+  const images =
+    listing.images && listing.images.length > 0
+      ? listing.images
+      : [listing.imageUrl || "https://via.placeholder.com/600x400?text=Imagine"];
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % images.length);
@@ -140,9 +141,48 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
+      {/* Distribuire anunț */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-2">Distribuie anunțul:</h3>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(window.location.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            WhatsApp
+          </a>
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Facebook
+          </a>
+          <a
+            href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-sky-500 text-white rounded hover:bg-sky-600"
+          >
+            Telegram
+          </a>
+          <a
+            href={`https://www.instagram.com/?url=${encodeURIComponent(window.location.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600"
+          >
+            Instagram
+          </a>
+        </div>
+      </div>
+
       {/* Acțiuni - doar pentru user logat */}
       {isLoggedIn && (
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 mt-6">
           <Link to={`/editeaza-anunt/${listing._id}`}>
             <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
               Editează
