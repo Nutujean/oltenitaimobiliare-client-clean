@@ -5,7 +5,6 @@ export default function Anunturi() {
   const [listings, setListings] = useState([]);
   const location = useLocation();
 
-  // extragem parametru categorie din URL
   const params = new URLSearchParams(location.search);
   const categorie = params.get("categorie");
 
@@ -16,7 +15,6 @@ export default function Anunturi() {
         const data = await res.json();
 
         if (categorie) {
-          // filtrăm după categorie
           const filtrate = data.filter(
             (item) =>
               item.category &&
@@ -40,16 +38,21 @@ export default function Anunturi() {
       </h1>
 
       {listings.length === 0 ? (
-        <p className="text-center text-gray-500">
-          Nu există anunțuri în această categorie.
-        </p>
+        <p className="text-center text-gray-500">Nu există anunțuri în această categorie.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {listings.map((listing) => (
             <div
               key={listing._id}
-              className="border rounded-lg shadow hover:shadow-lg transition bg-white"
+              className="relative border rounded-lg shadow hover:shadow-lg transition bg-white"
             >
+              {/* Badge Rezervat */}
+              {listing.status === "rezervat" && (
+                <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                  Rezervat
+                </span>
+              )}
+
               <img
                 src={
                   listing.imageUrl ||
@@ -62,7 +65,6 @@ export default function Anunturi() {
               <div className="p-4">
                 <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
 
-                {/* Categoria mică sub titlu */}
                 {listing.category && (
                   <Link
                     to={`/anunturi?categorie=${listing.category}`}

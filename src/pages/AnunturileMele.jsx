@@ -7,7 +7,7 @@ export default function AnunturileMele() {
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
-    if (!isLoggedIn) return; // dacă nu e logat, nu facem fetch
+    if (!isLoggedIn) return;
 
     const fetchMyListings = async () => {
       try {
@@ -53,8 +53,15 @@ export default function AnunturileMele() {
           {listings.map((listing) => (
             <div
               key={listing._id}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
+              className="relative border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
             >
+              {/* Badge Rezervat */}
+              {listing.status === "rezervat" && (
+                <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                  Rezervat
+                </span>
+              )}
+
               <img
                 src={
                   listing.imageUrl ||
@@ -66,7 +73,6 @@ export default function AnunturileMele() {
               />
               <h2 className="text-lg font-bold mb-1">{listing.title}</h2>
 
-              {/* Categoria mică sub titlu */}
               {listing.category && (
                 <Link
                   to={`/anunturi?categorie=${listing.category}`}

@@ -38,7 +38,7 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white text-center">
-            Vânzări • Închirieri • Apartamente • Case • Terenuri
+            Vânzări • Cumparari • Închirieri • Apartamente • Garsoniere • Case • Terenuri • Spatii comerciale • Garaje 
           </h1>
         </div>
       </div>
@@ -77,8 +77,15 @@ export default function Home() {
               {listings.map((listing) => (
                 <div
                   key={listing._id}
-                  className="border rounded-lg shadow hover:shadow-lg transition bg-white"
+                  className="relative border rounded-lg shadow hover:shadow-lg transition bg-white"
                 >
+                  {/* Badge Rezervat */}
+                  {listing.status === "rezervat" && (
+                    <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      Rezervat
+                    </span>
+                  )}
+
                   <img
                     src={
                       listing.imageUrl ||
@@ -91,7 +98,6 @@ export default function Home() {
                   <div className="p-4">
                     <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
 
-                    {/* Categoria mică, gri, link spre filtrare */}
                     {listing.category && (
                       <Link
                         to={`/anunturi?categorie=${listing.category}`}
@@ -113,7 +119,6 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Buton pentru toate anunțurile */}
             <div className="text-center mt-8">
               <Link
                 to="/anunturi"
