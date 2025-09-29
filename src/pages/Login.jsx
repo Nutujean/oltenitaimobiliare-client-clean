@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
@@ -14,25 +18,30 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) throw new Error("Eroare la login!");
+      if (!res.ok) {
+        throw new Error("Email sau parolă incorectă!");
+      }
 
       const data = await res.json();
+      console.log("✅ Login response:", data);
 
-      // ✅ Salvăm token și email
+      // Salvăm token și email în localStorage
       localStorage.setItem("token", data.token);
-      localStorage.setItem("email", email);
+      localStorage.setItem("email", data.user.email);
 
-      alert("✅ Autentificare reușită!");
-      window.location.href = "/"; // redirect către homepage
+      // Redirect direct la "Anunțurile Mele"
+      navigate("/anunturile-mele");
     } catch (err) {
-      console.error("❌ Eroare la login:", err);
-      alert("❌ Email sau parolă incorectă!");
+      console.error("❌ Eroare login:", err);
+      setError(err.message);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow">
+    <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Autentificare</h2>
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -54,7 +63,7 @@ export default function Login() {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
-          Autentificare
+          Login
         </button>
       </form>
     </div>
