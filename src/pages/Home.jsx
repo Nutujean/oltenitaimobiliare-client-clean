@@ -26,7 +26,7 @@ export default function Home() {
     },
     {
       name: "Spații comerciale",
-      img: "/spatiu_comercial.jpg",
+      img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
     },
   ];
 
@@ -60,10 +60,14 @@ export default function Home() {
             "url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80')",
         }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white text-center px-4">
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             Bine ai venit la Oltenița Imobiliare
           </h1>
+          <p className="text-lg md:text-2xl text-gray-200">
+            Vânzări • Cumparari• Inchirieri • Apartamente • Case • Terenuri • Spații
+            comerciale • Garaje
+          </p>
         </div>
       </div>
 
@@ -108,8 +112,9 @@ export default function Home() {
               >
                 <img
                   src={
-                    listing.imageUrl ||
-                    "https://via.placeholder.com/400x250?text=Fără+imagine"
+                    listing.imageUrl && listing.imageUrl.startsWith("http")
+                      ? listing.imageUrl
+                      : "https://via.placeholder.com/400x250?text=Imagine+disponibila+in+curand"
                   }
                   alt={listing.title}
                   className="h-48 w-full object-cover"
