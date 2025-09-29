@@ -4,27 +4,46 @@ import { Link } from "react-router-dom";
 export default function Home() {
   const [listings, setListings] = useState([]);
 
-  const categories = [
-    { name: "Apartamente", slug: "apartamente", img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80" },
-    { name: "Case", slug: "case", img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80" },
-    { name: "Terenuri", slug: "terenuri", img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80" },
-    { name: "Garsoniere", slug: "garsoniere", img: "/garsoniera.jpg" },
-    { name: "Garaje", slug: "garaje", img: "/garaj.jpg" },
-    { name: "Spații comerciale", slug: "spatii-comerciale", img: "/spatiu_comercial.jpg" },
-  ];
-
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
-        setListings(data.slice(-6).reverse()); // ultimele 6
+        setListings(data.slice(0, 6)); // afișăm primele 6 anunțuri pe home
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
     };
+
     fetchListings();
   }, []);
+
+  const categories = [
+    {
+      name: "Apartamente",
+      img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      name: "Case",
+      img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      name: "Terenuri",
+      img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      name: "Garsoniere",
+      img: "/garsoniera.jpg",
+    },
+    {
+      name: "Garaje",
+      img: "/garaj.jpg",
+    },
+    {
+      name: "Spații comerciale",
+      img: "/spatiu_comercial.jpg",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -37,8 +56,8 @@ export default function Home() {
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white text-center">
-            Vânzări • Cumparari • Închirieri • Apartamente • Garsoniere • Case • Terenuri • Spatii comerciale • Garaje
+          <h1 className="text-4xl md:text-6xl font-bold text-white text-center px-4">
+            Vânzări, Închirieri și Oferte Imobiliare în Oltenița și împrejurimi
           </h1>
         </div>
       </div>
@@ -50,7 +69,7 @@ export default function Home() {
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              to={`/anunturi?categorie=${cat.slug}`}
+              to={`/anunturi?categorie=${cat.name}`}
               className="relative rounded-xl overflow-hidden shadow-lg group cursor-pointer"
             >
               <img
@@ -66,68 +85,52 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ULTIMELE ANUNȚURI */}
+      {/* ANUNȚURI RECENTE */}
       <div className="max-w-6xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-8 text-center">Ultimele anunțuri</h2>
-        {listings.length === 0 ? (
-          <p className="text-center text-gray-500">Nu există anunțuri încă.</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {listings.map((listing) => (
-                <div
-                  key={listing._id}
-                  className="relative border rounded-lg shadow hover:shadow-lg transition bg-white"
-                >
-                  {/* Badge Rezervat */}
-                  {listing.status === "rezervat" && (
-                    <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
-                      Rezervat
-                    </span>
-                  )}
-
-                  <img
-                    src={
-                      listing.imageUrl ||
-                      (listing.images && listing.images[0]) ||
-                      "https://via.placeholder.com/400x250?text=Fără+imagine"
-                    }
-                    alt={listing.title}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
-
-                    {listing.category && (
-                      <Link
-                        to={`/anunturi?categorie=${listing.category}`}
-                        className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
-                      >
-                        {listing.category}
-                      </Link>
-                    )}
-
-                    <p className="text-gray-600 mb-2">{listing.price} €</p>
-                    <Link
-                      to={`/anunt/${listing._id}`}
-                      className="inline-block mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                    >
-                      Vezi detalii
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center mt-8">
-              <Link
-                to="/anunturi"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        <h2 className="text-2xl font-bold mb-8 text-center">Anunțuri recente</h2>
+        {listings.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {listings.map((listing) => (
+              <div
+                key={listing._id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
               >
-                Vezi toate anunțurile →
-              </Link>
-            </div>
-          </>
+                {/* Badge Rezervat */}
+                {listing.status === "rezervat" && (
+                  <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    Rezervat
+                  </span>
+                )}
+
+                <img
+                  src={
+                    listing.images && listing.images.length > 0
+                      ? listing.images[0]
+                      : "https://via.placeholder.com/400x250?text=Fără+imagine"
+                  }
+                  alt={listing.title}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h2 className="text-lg font-bold mb-2">{listing.title}</h2>
+                  <p className="text-gray-600 mb-2 truncate">
+                    {listing.description}
+                  </p>
+                  <p className="text-blue-600 font-semibold mb-4">
+                    {listing.price} €
+                  </p>
+                  <Link
+                    to={`/anunt/${listing._id}`}
+                    className="block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Detalii
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center">Nu există anunțuri disponibile.</p>
         )}
       </div>
     </div>
