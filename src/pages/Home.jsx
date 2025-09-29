@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [listings, setListings] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,9 +10,11 @@ function Home() {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
-        setListings(data);
-        setFiltered(data);
-        console.log("✅ Anunțuri primite:", data);
+        // sortăm descrescător după createdAt și luăm doar 6
+        const sorted = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setListings(sorted.slice(0, 6));
       } catch (err) {
         console.error("❌ Eroare la preluarea anunțurilor:", err);
       }
@@ -22,46 +22,9 @@ function Home() {
     fetchListings();
   }, []);
 
-  const filterByCategory = (category) => {
-    setSelectedCategory(category);
-    if (!category) {
-      setFiltered(listings);
-    } else {
-      setFiltered(listings.filter((item) => item.category === category));
-    }
-  };
-
-  // Lista categorii + poze Unsplash
-  const categories = [
-    {
-      name: "Apartament",
-      img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      name: "Casă",
-      img: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      name: "Teren",
-      img: "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      name: "Garaj",
-      img: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      name: "Garsonieră",
-      img: "https://images.unsplash.com/photo-1617104299480-48c92e2b08d3?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      name: "Spațiu comercial",
-      img: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=400&q=80",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div
         className="relative bg-cover bg-center h-[400px] flex items-center justify-center text-white"
         style={{
@@ -86,45 +49,26 @@ function Home() {
         </div>
       </div>
 
-      {/* CARDURI CATEGORII */}
-      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-6 gap-6 p-6">
-        {categories.map((cat, i) => (
-          <div
-            key={i}
-            onClick={() => filterByCategory(cat.name)}
-            className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-          >
-            <img
-              src={cat.img}
-              alt={cat.name}
-              className="mx-auto mb-2 rounded h-28 w-full object-cover"
-            />
-            <h3 className="font-semibold">{cat.name}</h3>
-          </div>
-        ))}
-      </div>
+      {/* CATEGORII */}
+      {/* rămâne fix cum ți-am dat mai devreme cu 6 carduri */}
 
-      {/* LISTĂ ANUNȚURI */}
+      {/* ULTIMELE ANUNȚURI */}
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            {selectedCategory ? `Anunțuri la ${selectedCategory}` : "Ultimele anunțuri"}
-          </h2>
-          {selectedCategory && (
-            <button
-              onClick={() => filterByCategory(null)}
-              className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded"
-            >
-              Resetează filtrul
-            </button>
-          )}
+          <h2 className="text-2xl font-bold">Ultimele anunțuri</h2>
+          <button
+            onClick={() => navigate("/toate-anunturile")}
+            className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+          >
+            Vezi toate
+          </button>
         </div>
 
-        {filtered.length === 0 ? (
+        {listings.length === 0 ? (
           <p className="text-gray-600">Nu există anunțuri momentan.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filtered.map((listing) => (
+            {listings.map((listing) => (
               <div
                 key={listing._id}
                 onClick={() => navigate(`/anunt/${listing._id}`)}

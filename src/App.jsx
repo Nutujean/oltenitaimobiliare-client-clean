@@ -4,25 +4,19 @@ import Home from "./pages/Home";
 import AdaugaAnunt from "./pages/AdaugaAnunt";
 import AnunturileMele from "./pages/AnunturileMele";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
-import EditareAnunt from "./pages/EditareAnunt"
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import ToateAnunturile from "./pages/ToateAnunturile";
 
 function App() {
   return (
     <Router>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 p-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/adauga" element={<AdaugaAnunt />} />
-          <Route path="/anunturile-mele" element={<AnunturileMele />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/anunt/:id" element={<DetaliuAnunt />} />
-          <Route path="/editare-anunt/:id" element={<EditareAnunt />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
+        <Route path="/anunturile-mele" element={<AnunturileMele />} />
+        <Route path="/anunt/:id" element={<DetaliuAnunt />} />
+        <Route path="/toate-anunturile" element={<ToateAnunturile />} />
+      </Routes>
     </Router>
   );
 }
