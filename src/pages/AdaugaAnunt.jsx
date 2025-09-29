@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
 
 export default function AdaugaAnunt() {
-  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -13,10 +10,11 @@ export default function AdaugaAnunt() {
     imageUrl: "",
   });
 
-  // dacă nu e logat → redirect la login
+  const isLoggedIn = !!localStorage.getItem("token");
+
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/login"); // dacă nu e logat, redirecționează la login
     }
   }, [isLoggedIn, navigate]);
 
@@ -35,9 +33,9 @@ export default function AdaugaAnunt() {
         },
         body: JSON.stringify(formData),
       });
-      navigate("/anunturile-mele"); // după adăugare mergem la anunțurile mele
+      navigate("/anunturile-mele");
     } catch (error) {
-      console.error("Eroare la adăugare anunț:", error);
+      console.error("Eroare la adăugarea anunțului:", error);
     }
   };
 
@@ -65,7 +63,7 @@ export default function AdaugaAnunt() {
         <input
           type="number"
           name="price"
-          placeholder="Preț"
+          placeholder="Preț (€)"
           value={formData.price}
           onChange={handleChange}
           className="w-full border p-2 rounded"
@@ -74,7 +72,7 @@ export default function AdaugaAnunt() {
         <input
           type="text"
           name="imageUrl"
-          placeholder="Link imagine"
+          placeholder="URL imagine"
           value={formData.imageUrl}
           onChange={handleChange}
           className="w-full border p-2 rounded"
@@ -83,7 +81,7 @@ export default function AdaugaAnunt() {
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          Salvează Anunț
+          Adaugă
         </button>
       </form>
     </div>
