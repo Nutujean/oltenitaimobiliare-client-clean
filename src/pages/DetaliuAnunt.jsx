@@ -20,6 +20,33 @@ export default function DetaliuAnunt() {
     fetchListing();
   }, [id]);
 
+  const handleDelete = async () => {
+    if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+          method: "DELETE",
+        });
+        navigate("/"); // după ștergere mergem înapoi la homepage
+      } catch (error) {
+        console.error("Eroare la ștergere:", error);
+      }
+    }
+  };
+
+  const handleReserve = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rezervat" }),
+      });
+      setListing((prev) => ({ ...prev, status: "rezervat" }));
+      alert("Anunțul a fost marcat ca rezervat ✅");
+    } catch (error) {
+      console.error("Eroare la actualizare:", error);
+    }
+  };
+
   if (!listing) return <p className="text-center py-8">Se încarcă...</p>;
 
   return (
@@ -45,7 +72,19 @@ export default function DetaliuAnunt() {
       />
 
       <p className="text-gray-700 mb-4">{listing.description}</p>
-      <p className="text-xl font-semibold mb-6">{listing.price} €</p>
+      <p className="text-xl font-semibold mb-2">{listing.price} €</p>
+      {listing.status && (
+        <p className="mb-6">
+          Status:{" "}
+          <span
+            className={`font-bold ${
+              listing.status === "rezervat" ? "text-yellow-600" : "text-green-600"
+            }`}
+          >
+            {listing.status}
+          </span>
+        </p>
+      )}
 
       {/* Butoane acțiuni */}
       <div className="flex space-x-4">
@@ -55,11 +94,17 @@ export default function DetaliuAnunt() {
           </button>
         </Link>
 
-        <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+        <button
+          onClick={handleDelete}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
           Șterge
         </button>
 
-        <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+        <button
+          onClick={handleReserve}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        >
           Rezervat
         </button>
       </div>
