@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -10,6 +10,7 @@ export default function DetaliuAnunt() {
   const { id } = useParams();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -17,12 +18,14 @@ export default function DetaliuAnunt() {
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/listings/${id}`
         );
-        if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
-
+        if (!res.ok) {
+          throw new Error("Nu s-a putut încărca anunțul.");
+        }
         const data = await res.json();
         setListing(data);
       } catch (err) {
-        console.error("❌ Eroare fetch detaliu anunț:", err);
+        console.error("❌ Eroare fetch DetaliuAnunt:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -32,6 +35,7 @@ export default function DetaliuAnunt() {
   }, [id]);
 
   if (loading) return <p className="text-center mt-4">Se încarcă...</p>;
+  if (error) return <p className="text-center mt-4 text-red-500">{error}</p>;
   if (!listing) return <p className="text-center mt-4">Anunțul nu există.</p>;
 
   return (
@@ -63,6 +67,16 @@ export default function DetaliuAnunt() {
       <p className="text-gray-600">
         {listing.category} | {listing.location}
       </p>
+
+      {/* ✅ Buton Înapoi */}
+      <div className="mt-6">
+        <Link
+          to="/"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          ← Înapoi la anunțuri
+        </Link>
+      </div>
     </div>
   );
 }
