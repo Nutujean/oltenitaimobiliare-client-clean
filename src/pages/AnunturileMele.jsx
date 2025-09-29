@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 export default function AnunturileMele() {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
 
   const fetchMyListings = async () => {
@@ -19,8 +22,12 @@ export default function AnunturileMele() {
   };
 
   useEffect(() => {
-    fetchMyListings();
-  }, []);
+    if (!isLoggedIn) {
+      navigate("/login");
+    } else {
+      fetchMyListings();
+    }
+  }, [isLoggedIn]);
 
   const handleDelete = async (id) => {
     if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
@@ -31,7 +38,7 @@ export default function AnunturileMele() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        fetchMyListings(); // reîncărcăm lista
+        fetchMyListings();
       } catch (error) {
         console.error("Eroare la ștergere:", error);
       }
@@ -48,7 +55,7 @@ export default function AnunturileMele() {
         },
         body: JSON.stringify({ status: "rezervat" }),
       });
-      fetchMyListings(); // reîncărcăm lista
+      fetchMyListings();
     } catch (error) {
       console.error("Eroare la rezervare:", error);
     }
@@ -67,7 +74,7 @@ export default function AnunturileMele() {
 
       {listings.length === 0 ? (
         <p className="text-center py-8">
-          Nu ai încă anunțuri. <br />
+          Nu ai încă anunțuri.{" "}
           <Link to="/adauga-anunt" className="text-blue-600 underline">
             Adaugă primul tău anunț
           </Link>

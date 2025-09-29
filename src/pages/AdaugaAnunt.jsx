@@ -1,119 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 export default function AdaugaAnunt() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
-  const [images, setImages] = useState([]);
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  const userEmail = localStorage.getItem("email");
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    imageUrl: "",
+  });
 
-  const categorii = ["Apartament", "Casă", "Teren", "Garsonieră", "Garaj", "Spațiu comercial"];
-  const localitati = ["Radovanu","Cascioarele","Valea Rosie","Mitreni","Soldanu","Negoiesti","Curcani","Oltenița", "Chirnogi", "Clatesti","Ulmeni", "Spantov", "Chiselet", "Manastirea"];
+  // dacă nu e logat → redirect la login
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
 
-  const handleImageChange = (e) => {
-    setImages([...e.target.files]);
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("category", category);
-    formData.append("location", location);
-    formData.append("userEmail", userEmail);
-    images.forEach((img) => formData.append("images", img));
-
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/listings`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
       });
-
-      if (!res.ok) throw new Error("Eroare la salvarea anunțului.");
-      alert("✅ Anunț adăugat cu succes!");
-    } catch (err) {
-      alert(err.message);
+      navigate("/anunturile-mele"); // după adăugare mergem la anunțurile mele
+    } catch (error) {
+      console.error("Eroare la adăugare anunț:", error);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-6">Adaugă un anunț</h2>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Adaugă Anunț</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
+          name="title"
           placeholder="Titlu"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={formData.title}
+          onChange={handleChange}
           className="w-full border p-2 rounded"
           required
         />
         <textarea
+          name="description"
           placeholder="Descriere"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formData.description}
+          onChange={handleChange}
           className="w-full border p-2 rounded"
           required
         />
         <input
           type="number"
-          placeholder="Preț (EUR)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          name="price"
+          placeholder="Preț"
+          value={formData.price}
+          onChange={handleChange}
           className="w-full border p-2 rounded"
           required
         />
-
-        {/* ✅ Dropdown categorii */}
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Selectează categorie</option>
-          {categorii.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        {/* ✅ Dropdown localități */}
-        <select
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Selectează localitatea</option>
-          {localitati.map((loc) => (
-            <option key={loc} value={loc}>
-              {loc}
-            </option>
-          ))}
-        </select>
-
         <input
-          type="file"
-          multiple
-          onChange={handleImageChange}
-          className="w-full"
+          type="text"
+          name="imageUrl"
+          placeholder="Link imagine"
+          value={formData.imageUrl}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
         />
-
         <button
           type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          Adaugă anunț
+          Salvează Anunț
         </button>
       </form>
     </div>
