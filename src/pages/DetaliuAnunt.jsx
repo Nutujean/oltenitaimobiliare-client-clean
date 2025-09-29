@@ -5,6 +5,7 @@ export default function DetaliuAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
+  const [currentImage, setCurrentImage] = useState(0);
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -53,12 +54,25 @@ export default function DetaliuAnunt() {
 
   if (!listing) return <p className="text-center py-8">Se încarcă...</p>;
 
+  // Lista de imagini: dacă există mai multe, le punem în slider
+  const images = listing.images && listing.images.length > 0
+    ? listing.images
+    : [listing.imageUrl || "https://via.placeholder.com/600x400?text=Imagine"];
+
+  const nextImage = () => {
+    setCurrentImage((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Buton Înapoi */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+        className="mb-6 px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-900 transition"
       >
         ← Înapoi
       </button>
@@ -79,7 +93,7 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* Imagine + badge Rezervat */}
+      {/* Galerie imagini */}
       <div className="relative mb-6">
         {listing.status === "rezervat" && (
           <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
@@ -87,14 +101,27 @@ export default function DetaliuAnunt() {
           </span>
         )}
         <img
-          src={
-            listing.imageUrl ||
-            (listing.images && listing.images[0]) ||
-            "https://via.placeholder.com/600x400?text=Imagine"
-          }
-          alt={listing.title}
+          src={images[currentImage]}
+          alt={`Imagine ${currentImage + 1}`}
           className="w-full h-80 object-cover rounded-lg"
         />
+
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white px-2 py-1 rounded hover:bg-opacity-90"
+            >
+              ‹
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white px-2 py-1 rounded hover:bg-opacity-90"
+            >
+              ›
+            </button>
+          </>
+        )}
       </div>
 
       {/* Detalii */}
@@ -113,7 +140,7 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* Acțiuni - vizibile doar pentru user logat */}
+      {/* Acțiuni - doar pentru user logat */}
       {isLoggedIn && (
         <div className="flex space-x-4">
           <Link to={`/editeaza-anunt/${listing._id}`}>
