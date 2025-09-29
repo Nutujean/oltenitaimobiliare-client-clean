@@ -36,7 +36,7 @@ export default function AdaugaAnunt() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("email"); // email salvat la login/register
+    const userEmail = localStorage.getItem("email"); // email-ul logat
 
     console.log("📧 Email trimis la backend:", userEmail);
 
@@ -83,7 +83,22 @@ export default function AdaugaAnunt() {
         <input type="number" placeholder="Preț" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 rounded" required />
         <input type="text" placeholder="Categorie" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border p-2 rounded" required />
         <input type="text" placeholder="Locație" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full border p-2 rounded" required />
-        <input type="file" multiple onChange={(e) => setImages(e.target.files)} className="w-full border p-2 rounded" />
+        
+        {/* input imagini cu limită max 15 */}
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => {
+            if (e.target.files.length > 15) {
+              alert("Poți încărca maximum 15 poze!");
+              return;
+            }
+            setImages(e.target.files);
+          }}
+          className="w-full border p-2 rounded"
+        />
+
         <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
           Adaugă anunț
         </button>
