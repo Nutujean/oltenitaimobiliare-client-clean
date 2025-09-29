@@ -14,8 +14,20 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-blue-600">
-          Oltenița Imobiliare
+        <Link to="/" className="flex items-center space-x-2">
+          {/* Icon casă */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8 text-blue-600"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 3l9 8h-3v9h-12v-9h-3l9-8z" />
+          </svg>
+          <span className="text-xl font-bold">
+            <span className="text-blue-600">Oltenița</span>{" "}
+            <span className="text-green-600">Imobiliare</span>
+          </span>
         </Link>
 
         {/* Meniu */}
