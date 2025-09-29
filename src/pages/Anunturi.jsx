@@ -40,7 +40,9 @@ export default function Anunturi() {
       </h1>
 
       {listings.length === 0 ? (
-        <p className="text-center text-gray-500">Nu există anunțuri în această categorie.</p>
+        <p className="text-center text-gray-500">
+          Nu există anunțuri în această categorie.
+        </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {listings.map((listing) => (
@@ -58,7 +60,18 @@ export default function Anunturi() {
                 className="w-full h-48 object-cover rounded-t-lg"
               />
               <div className="p-4">
-                <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
+                <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
+
+                {/* Categoria mică sub titlu */}
+                {listing.category && (
+                  <Link
+                    to={`/anunturi?categorie=${listing.category}`}
+                    className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
+                  >
+                    {listing.category}
+                  </Link>
+                )}
+
                 <p className="text-gray-600 mb-2">{listing.price} €</p>
                 <Link
                   to={`/anunt/${listing._id}`}
