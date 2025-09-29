@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -15,22 +10,16 @@ export default function DetaliuAnunt() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/listings/${id}`
-        );
-        if (!res.ok) {
-          throw new Error("Nu s-a putut încărca anunțul.");
-        }
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
+        if (!res.ok) throw new Error("Nu s-a putut încărca anunțul.");
         const data = await res.json();
         setListing(data);
       } catch (err) {
-        console.error("❌ Eroare fetch DetaliuAnunt:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchListing();
   }, [id]);
 
@@ -42,33 +31,26 @@ export default function DetaliuAnunt() {
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">{listing.title}</h2>
 
-      {/* ✅ Slider cu poze */}
       {listing.images?.length > 0 && (
-        <Swiper
-          modules={[Navigation, Pagination]}
-          navigation
-          pagination={{ clickable: true }}
-          className="mb-4 rounded"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {listing.images.map((img, index) => (
-            <SwiperSlide key={index}>
-              <img
-                src={img}
-                alt={`${listing.title} - poza ${index + 1}`}
-                className="w-full h-96 object-cover rounded"
-              />
-            </SwiperSlide>
+            <img
+              key={index}
+              src={img}
+              alt={`${listing.title} - poza ${index + 1}`}
+              className="w-full h-80 object-cover rounded"
+            />
           ))}
-        </Swiper>
+        </div>
       )}
 
       <p className="text-lg">{listing.description}</p>
       <p className="text-xl font-bold mt-2">{listing.price} EUR</p>
-      <p className="text-gray-600">
-        {listing.category} | {listing.location}
+      <p className="text-gray-600">{listing.category} | {listing.location}</p>
+      <p className="mt-2">
+        {listing.rezervat ? "✅ Rezervat" : "🟢 Disponibil"}
       </p>
 
-      {/* ✅ Buton Înapoi */}
       <div className="mt-6">
         <Link
           to="/"
