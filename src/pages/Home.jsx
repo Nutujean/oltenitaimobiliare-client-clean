@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
     },
     {
       name: "Spații comerciale",
-      img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
+      img: "/spatiu_comercial.jpg",
     },
   ];
 
@@ -36,18 +36,17 @@ export default function Home() {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
-        setListings(data);
+        setListings(data.slice(-6).reverse()); // ultimele 6 anunțuri
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
     };
-
     fetchListings();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div
         className="relative h-[400px] bg-cover bg-center"
         style={{
@@ -55,22 +54,16 @@ export default function Home() {
             "url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80')",
         }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            Bine ai venit la Oltenița Imobiliare
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white text-center">
+            Vânzări • Închirieri • Apartamente • Case • Terenuri
           </h1>
-          <p className="text-lg md:text-2xl text-gray-200">
-            Vânzări • Închirieri • Apartamente • Case • Terenuri • Spații
-            comerciale
-          </p>
         </div>
       </div>
 
       {/* CATEGORII */}
       <div className="max-w-6xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-8 text-center">
-          Categorii populare
-        </h2>
+        <h2 className="text-2xl font-bold mb-8 text-center">Categorii populare</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {categories.map((cat, idx) => (
             <div
@@ -90,46 +83,35 @@ export default function Home() {
         </div>
       </div>
 
-      {/* LISTA ANUNȚURI */}
+      {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-8 text-center">Anunțuri recente</h2>
-
+        <h2 className="text-2xl font-bold mb-8 text-center">Ultimele anunțuri</h2>
         {listings.length === 0 ? (
-          <p className="text-gray-500 text-center">
-            Momentan nu există anunțuri.
-          </p>
+          <p className="text-center text-gray-500">Nu există anunțuri încă.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {listings.map((listing) => (
               <div
                 key={listing._id}
-                className="group relative bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
+                className="border rounded-lg shadow hover:shadow-lg transition bg-white"
               >
                 <img
                   src={
-                    listing.imageUrl
-                      ? listing.imageUrl
-                      : listing.images && listing.images.length > 0
-                      ? listing.images[0]
-                      : "https://via.placeholder.com/400x250?text=Imagine+disponibila+in+curand"
+                    listing.imageUrl ||
+                    (listing.images && listing.images[0]) ||
+                    "https://via.placeholder.com/400x250?text=Fără+imagine"
                   }
                   alt={listing.title}
-                  className="h-48 w-full object-cover"
+                  className="w-full h-48 object-cover rounded-t-lg"
                 />
-
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {listing.title}
-                  </h3>
-                  <p className="text-gray-600">{listing.price} €</p>
-                </div>
-
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Link to={`/anunt/${listing._id}`}>
-                    <button className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-50">
-                      Detalii
-                    </button>
+                  <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
+                  <p className="text-gray-600 mb-2">{listing.price} €</p>
+                  <Link
+                    to={`/anunt/${listing._id}`}
+                    className="inline-block mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Vezi detalii
                   </Link>
                 </div>
               </div>
