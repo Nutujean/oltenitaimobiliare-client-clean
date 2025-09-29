@@ -31,24 +31,33 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-      {/* ✅ Slider cu imagini */}
-      {listing.images?.length > 0 ? (
-        <Swiper spaceBetween={10} slidesPerView={1}>
-          {listing.images.map((img, index) => (
-            <SwiperSlide key={index}>
-              <img
-                src={img}
-                alt={`${listing.title} - poza ${index + 1}`}
-                className="w-full h-96 object-cover rounded"
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      ) : (
-        <div className="w-full h-96 bg-gray-200 flex items-center justify-center rounded">
-          <span className="text-gray-500">Fără imagini</span>
-        </div>
-      )}
+      {/* ✅ Slider cu banner Rezervat */}
+      <div className="relative">
+        {listing.images?.length > 0 ? (
+          <Swiper spaceBetween={10} slidesPerView={1}>
+            {listing.images.map((img, index) => (
+              <SwiperSlide key={index}>
+                <img
+                  src={img}
+                  alt={`${listing.title} - poza ${index + 1}`}
+                  className="w-full h-96 object-cover rounded"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <div className="w-full h-96 bg-gray-200 flex items-center justify-center rounded">
+            <span className="text-gray-500">Fără imagini</span>
+          </div>
+        )}
+
+        {/* ✅ Banner mare peste poze dacă e rezervat */}
+        {listing.rezervat && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
+            <span className="text-white text-3xl font-bold">REZERVAT</span>
+          </div>
+        )}
+      </div>
 
       <div className="mt-6">
         <h2 className="text-2xl font-bold">{listing.title}</h2>
