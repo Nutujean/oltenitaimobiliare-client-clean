@@ -1,92 +1,119 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 export default function Anunturi() {
   const [listings, setListings] = useState([]);
+  const [sortOrder, setSortOrder] = useState(""); // "", "price-asc", "price-desc", "date-new", "date-old"
   const location = useLocation();
 
-  const params = new URLSearchParams(location.search);
-  const categorie = params.get("categorie");
+  // extragem categoria din query string (ex: /anunturi?categorie=Case)
+  const queryParams = new URLSearchParams(location.search);
+  const category = queryParams.get("categorie");
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
+        let url = `${import.meta.env.VITE_API_URL}/listings`;
+        if (category) url += `?category=${category}`;
+
+        const res = await fetch(url);
         const data = await res.json();
 
-        if (categorie) {
-          const filtrate = data.filter(
-            (item) =>
-              item.category &&
-              item.category.toLowerCase().replace(" ", "-") === categorie
-          );
-          setListings(filtrate);
-        } else {
-          setListings(data);
-        }
+        setListings(data);
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
     };
+
     fetchListings();
-  }, [categorie]);
+  }, [category]);
+
+  // funcție pentru sortare
+  const sortedListings = [...listings].sort((a, b) => {
+    if (sortOrder === "price-asc") return a.price - b.price;
+    if (sortOrder === "price-desc") return b.price - a.price;
+    if (sortOrder === "date-new")
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    if (sortOrder === "date-old")
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    return 0;
+  });
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {categorie ? `Anunțuri - ${categorie}` : "Toate Anunțurile"}
+      {/* Titlu */}
+      <h1 className="text-3xl font-bold mb-6">
+        {category ? `Anunțuri din categoria: ${category}` : "Toate anunțurile"}
       </h1>
 
-      {listings.length === 0 ? (
-        <p className="text-center text-gray-500">
-          Nu există anunțuri în această categorie.
-        </p>
-      ) : (
+      {/* Filtre */}
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">
+        {/* Sortare după preț */}
+        <div>
+          <label className="mr-3 font-semibold">Sortează după preț:</label>
+          <select
+            value={sortOrder.includes("price") ? sortOrder : ""}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-3 py-2 border rounded"
+          >
+            <option value="">Fără sortare</option>
+            <option value="price-asc">Crescător</option>
+            <option value="price-desc">Descrescător</option>
+          </select>
+        </div>
+
+        {/* Sortare după dată */}
+        <div>
+          <label className="mr-3 font-semibold">Sortează după dată:</label>
+          <select
+            value={sortOrder.includes("date") ? sortOrder : ""}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-3 py-2 border rounded"
+          >
+            <option value="">Fără sortare</option>
+            <option value="date-new">Cel mai nou</option>
+            <option value="date-old">Cel mai vechi</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Listă anunțuri */}
+      {sortedListings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {listings.map((listing) => (
+          {sortedListings.map((listing) => (
             <div
               key={listing._id}
-              className="relative border rounded-lg shadow hover:shadow-lg transition bg-white"
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
             >
-              {/* Badge Rezervat */}
-              {listing.status === "rezervat" && (
-                <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
-                  Rezervat
-                </span>
-              )}
-
               <img
                 src={
-                  listing.imageUrl ||
-                  (listing.images && listing.images[0]) ||
-                  "https://via.placeholder.com/400x250?text=Fără+imagine"
+                  listing.images && listing.images.length > 0
+                    ? listing.images[0]
+                    : "https://via.placeholder.com/400x250?text=Fără+imagine"
                 }
                 alt={listing.title}
-                className="w-full h-48 object-cover rounded-t-lg"
+                className="w-full h-48 object-cover"
               />
               <div className="p-4">
-                <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
-
-                {listing.category && (
-                  <Link
-                    to={`/anunturi?categorie=${listing.category}`}
-                    className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
-                  >
-                    {listing.category}
-                  </Link>
-                )}
-
-                <p className="text-gray-600 mb-2">{listing.price} €</p>
+                <h2 className="text-lg font-bold mb-2">{listing.title}</h2>
+                <p className="text-gray-600 mb-2 truncate">
+                  {listing.description}
+                </p>
+                <p className="text-blue-600 font-semibold mb-4">
+                  {listing.price} €
+                </p>
                 <Link
                   to={`/anunt/${listing._id}`}
-                  className="inline-block mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  className="block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                 >
-                  Vezi detalii
+                  Detalii
                 </Link>
               </div>
             </div>
           ))}
         </div>
+      ) : (
+        <p>Nu există anunțuri disponibile.</p>
       )}
     </div>
   );
