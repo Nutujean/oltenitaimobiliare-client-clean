@@ -6,6 +6,7 @@ import AdaugaAnunt from "./pages/AdaugaAnunt";
 import AnunturileMele from "./pages/AnunturileMele";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import EditareAnunt from "./pages/EditareAnunt";
 import DetaliuAnunt from "./pages/DetaliuAnunt"; // ai deja fișierul acesta
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <Route path="/anunturile-mele" element={<AnunturileMele />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
             <Route path="/anunt/:id" element={<DetaliuAnunt />} />
           </Routes>
         </main>
