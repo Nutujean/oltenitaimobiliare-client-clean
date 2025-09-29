@@ -5,30 +5,12 @@ export default function Home() {
   const [listings, setListings] = useState([]);
 
   const categories = [
-    {
-      name: "Apartamente",
-      img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Case",
-      img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Terenuri",
-      img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Garsoniere",
-      img: "/garsoniera.jpg",
-    },
-    {
-      name: "Garaje",
-      img: "/garaj.jpg",
-    },
-    {
-      name: "Spații comerciale",
-      img: "/spatiu_comercial.jpg",
-    },
+    { name: "Apartamente", slug: "apartamente", img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80" },
+    { name: "Case", slug: "case", img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80" },
+    { name: "Terenuri", slug: "terenuri", img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80" },
+    { name: "Garsoniere", slug: "garsoniere", img: "/garsoniera.jpg" },
+    { name: "Garaje", slug: "garaje", img: "/garaj.jpg" },
+    { name: "Spații comerciale", slug: "spatii-comerciale", img: "/spatiu_comercial.jpg" },
   ];
 
   useEffect(() => {
@@ -36,7 +18,7 @@ export default function Home() {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
-        setListings(data.slice(-6).reverse()); // ultimele 6 anunțuri
+        setListings(data.slice(-6).reverse()); // ultimele 6
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
@@ -66,8 +48,9 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-8 text-center">Categorii populare</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {categories.map((cat, idx) => (
-            <div
+            <Link
               key={idx}
+              to={`/anunturi?categorie=${cat.slug}`}
               className="relative rounded-xl overflow-hidden shadow-lg group cursor-pointer"
             >
               <img
@@ -78,7 +61,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                 <h3 className="text-xl font-bold text-white">{cat.name}</h3>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
