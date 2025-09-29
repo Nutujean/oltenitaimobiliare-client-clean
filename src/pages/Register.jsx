@@ -1,102 +1,70 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { API_URL } from "../config";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await fetch(
-        "https://oltenitaimobiliare-backend.onrender.com/api/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-      if (!res.ok) throw new Error("Eroare la înregistrare");
+      if (!res.ok) throw new Error("Eroare la înregistrare!");
 
-      alert("Cont creat cu succes!");
-      navigate("/login");
-    } catch (error) {
-      console.error(error);
-      alert("A apărut o eroare la înregistrare!");
+      const data = await res.json();
+
+      // ✅ Salvăm token și email
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("email", email);
+
+      alert("✅ Cont creat cu succes!");
+      window.location.href = "/"; // redirect către homepage
+    } catch (err) {
+      console.error("❌ Eroare la înregistrare:", err);
+      alert("❌ Nu s-a putut crea contul!");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold mb-8 text-center">Înregistrare</h2>
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-xl p-6 space-y-6"
-      >
-        {/* Nume */}
-        <div>
-          <label className="block font-medium mb-2">Nume</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block font-medium mb-2">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-        </div>
-
-        {/* Parola */}
-        <div>
-          <label className="block font-medium mb-2">Parolă</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg"
-            required
-          />
-        </div>
-
-        {/* Buton */}
+    <div className="max-w-md mx-auto p-6 bg-white rounded shadow">
+      <h2 className="text-2xl font-bold mb-4">Înregistrează-te</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Nume"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Parolă"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
         >
           Creează cont
         </button>
-
-        <p className="text-center text-sm mt-4">
-          Ai deja cont?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Autentifică-te
-          </Link>
-        </p>
       </form>
     </div>
   );

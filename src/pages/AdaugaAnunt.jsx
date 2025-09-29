@@ -40,9 +40,10 @@ export default function AdaugaAnunt() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("email"); // salvat la login/register
 
     try {
-      // 1. Upload imagini la Cloudinary
+      // 1. Upload imagini
       const uploadedImages = await handleImageUpload(images);
 
       // 2. Trimite anunțul la backend
@@ -59,6 +60,7 @@ export default function AdaugaAnunt() {
           category,
           location,
           images: uploadedImages,
+          userEmail, // trimitem emailul userului logat
         }),
       });
 
