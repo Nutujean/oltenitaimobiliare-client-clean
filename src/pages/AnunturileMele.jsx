@@ -63,12 +63,16 @@ export default function AnunturileMele() {
       <h2 className="text-2xl font-bold mb-6">Anunțurile Mele</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {listings.map((listing) => (
-          <div key={listing._id} className="border rounded p-4 shadow bg-white">
-            {/* ✅ Click pe titlu sau pe prima poză duce la detalii */}
+          <div key={listing._id} className="relative border rounded p-4 shadow bg-white">
+            {/* ✅ Badge Rezervat peste poză */}
+            {listing.rezervat && (
+              <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                Rezervat
+              </span>
+            )}
+
             <Link to={`/anunt/${listing._id}`}>
-              <h3 className="font-bold text-lg hover:underline">
-                {listing.title}
-              </h3>
+              <h3 className="font-bold text-lg hover:underline">{listing.title}</h3>
             </Link>
 
             {listing.images?.length > 0 && (
@@ -83,9 +87,6 @@ export default function AnunturileMele() {
 
             <p className="mt-2 font-semibold">{listing.price} EUR</p>
             <p className="text-gray-600">{listing.location}</p>
-            <p className="mt-2">
-              {listing.rezervat ? "✅ Rezervat" : "🟢 Disponibil"}
-            </p>
 
             <div className="flex justify-between mt-4">
               <Link

@@ -37,14 +37,13 @@ export default function Home() {
               key={listing._id}
               className="relative border rounded shadow hover:shadow-lg bg-white"
             >
-              {/* ✅ Badge Rezervat */}
+              {/* ✅ Badge Rezervat peste poză */}
               {listing.rezervat && (
                 <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                   Rezervat
                 </span>
               )}
 
-              {/* ✅ Prima poză */}
               {listing.images?.length > 0 ? (
                 <img
                   src={listing.images[0]}
