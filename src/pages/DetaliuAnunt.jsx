@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -31,17 +36,24 @@ export default function DetaliuAnunt() {
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">{listing.title}</h2>
 
+      {/* ✅ Slider Swiper */}
       {listing.images?.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <Swiper
+          modules={[Navigation, Pagination]}
+          navigation
+          pagination={{ clickable: true }}
+          className="mb-4 rounded"
+        >
           {listing.images.map((img, index) => (
-            <img
-              key={index}
-              src={img}
-              alt={`${listing.title} - poza ${index + 1}`}
-              className="w-full h-80 object-cover rounded"
-            />
+            <SwiperSlide key={index}>
+              <img
+                src={img}
+                alt={`${listing.title} - poza ${index + 1}`}
+                className="w-full h-96 object-cover rounded"
+              />
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
       )}
 
       <p className="text-lg">{listing.description}</p>
