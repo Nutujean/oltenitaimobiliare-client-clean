@@ -66,11 +66,16 @@ export default function DetaliuAnunt() {
       {/* Titlu */}
       <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
 
-      {/* Categoria */}
+      {/* Categoria cu link */}
       {listing.category && (
         <p className="text-gray-500 mb-4">
           Categoria:{" "}
-          <span className="font-semibold capitalize">{listing.category}</span>
+          <Link
+            to={`/anunturi?categorie=${listing.category}`}
+            className="font-semibold capitalize text-blue-600 hover:underline"
+          >
+            {listing.category}
+          </Link>
         </p>
       )}
 
