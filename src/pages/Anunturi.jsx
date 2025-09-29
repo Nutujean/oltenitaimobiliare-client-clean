@@ -46,35 +46,20 @@ export default function Anunturi() {
         {category ? `Anunțuri din categoria: ${category}` : "Toate anunțurile"}
       </h1>
 
-      {/* Filtre */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">
-        {/* Sortare după preț */}
-        <div>
-          <label className="mr-3 font-semibold">Sortează după preț:</label>
-          <select
-            value={sortOrder.includes("price") ? sortOrder : ""}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="px-3 py-2 border rounded"
-          >
-            <option value="">Fără sortare</option>
-            <option value="price-asc">Crescător</option>
-            <option value="price-desc">Descrescător</option>
-          </select>
-        </div>
-
-        {/* Sortare după dată */}
-        <div>
-          <label className="mr-3 font-semibold">Sortează după dată:</label>
-          <select
-            value={sortOrder.includes("date") ? sortOrder : ""}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="px-3 py-2 border rounded"
-          >
-            <option value="">Fără sortare</option>
-            <option value="date-new">Cel mai nou</option>
-            <option value="date-old">Cel mai vechi</option>
-          </select>
-        </div>
+      {/* Dropdown unic pentru sortare */}
+      <div className="mb-6">
+        <label className="mr-3 font-semibold">Sortează după:</label>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="px-3 py-2 border rounded"
+        >
+          <option value="">Fără sortare</option>
+          <option value="price-asc">Preț crescător</option>
+          <option value="price-desc">Preț descrescător</option>
+          <option value="date-new">Cel mai nou</option>
+          <option value="date-old">Cel mai vechi</option>
+        </select>
       </div>
 
       {/* Listă anunțuri */}
