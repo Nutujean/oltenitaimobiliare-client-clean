@@ -1,20 +1,12 @@
-import React from "react";
-
-function Confidentialitate() {
+export default function Confidentialitate() {
   return (
-    <div className="container form-box">
-      <h2>🔒 Politica de confidențialitate</h2>
-      <p>
-        Protejarea datelor tale este importantă pentru noi. Toate datele 
-        colectate pe Oltenita Imobiliare sunt folosite doar pentru
-        funcționarea platformei și nu vor fi distribuite către terți.
-      </p>
-      <p>
-        Dacă ai întrebări legate de datele tale, te rugăm să ne contactezi la 
-        <strong> contact@oltenitaimobiliare.ro</strong>.
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">Politică de confidențialitate</h1>
+      <p className="text-gray-700">
+        Respectăm confidențialitatea datelor tale. Informațiile personale sunt
+        folosite exclusiv pentru crearea și administrarea contului, precum și
+        pentru publicarea și gestionarea anunțurilor tale.
       </p>
     </div>
   );
 }
-
-export default Confidentialitate;

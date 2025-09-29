@@ -10,6 +10,9 @@ import Anunturi from "./pages/Anunturi";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import Profil from "./pages/Profil";
+import Contact from "./pages/Contact";
+import Termeni from "./pages/Termeni";
+import Confidentialitate from "./pages/Confidentialitate";
 
 function App() {
   return (
@@ -30,9 +33,11 @@ function App() {
             <Route path="/anunt/:id" element={<DetaliuAnunt />} />
             <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
             <Route path="/profil" element={<Profil />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/termeni" element={<Termeni />} />
+            <Route path="/confidentialitate" element={<Confidentialitate />} />
           </Routes>
         </main>
-
         {/* Footer jos */}
         <Footer />
       </div>
