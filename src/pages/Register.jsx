@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -11,35 +13,42 @@ export default function Register() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password }),
       });
 
-      if (!res.ok) throw new Error("Eroare la înregistrare!");
+      if (!res.ok) {
+        alert("❌ A apărut o eroare la înregistrare!");
+        return;
+      }
 
       const data = await res.json();
 
-      // ✅ Salvăm token și email
+      // Salvăm token și email în localStorage
       localStorage.setItem("token", data.token);
-      localStorage.setItem("email", email);
+      localStorage.setItem("email", data.email);
 
-      alert("✅ Cont creat cu succes!");
-      window.location.href = "/"; // redirect către homepage
+      console.log("✅ Înregistrare reușită, email salvat:", data.email);
+
+      // 👉 Redirecționează direct către Anunțurile Mele
+      navigate("/anunturile-mele");
     } catch (err) {
       console.error("❌ Eroare la înregistrare:", err);
-      alert("❌ Nu s-a putut crea contul!");
+      alert("A apărut o eroare la înregistrare!");
     }
   };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Înregistrează-te</h2>
+      <h2 className="text-2xl font-bold mb-4">Înregistrare</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          placeholder="Nume"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Nume utilizator"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="w-full border p-2 rounded"
           required
         />
