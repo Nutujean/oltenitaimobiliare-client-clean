@@ -10,9 +10,11 @@ import Anunturi from "./pages/Anunturi";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import Profil from "./pages/Profil";
+import Despre from "./pages/Despre";
 import Contact from "./pages/Contact";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -21,7 +23,7 @@ function App() {
         {/* Navbar sus */}
         <Navbar />
 
-        {/* Conținutul principal */}
+        {/* Conținut principal */}
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -33,11 +35,14 @@ function App() {
             <Route path="/anunt/:id" element={<DetaliuAnunt />} />
             <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
             <Route path="/profil" element={<Profil />} />
+            <Route path="/despre" element={<Despre />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Termeni />} />
             <Route path="/confidentialitate" element={<Confidentialitate />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
+
         {/* Footer jos */}
         <Footer />
       </div>
