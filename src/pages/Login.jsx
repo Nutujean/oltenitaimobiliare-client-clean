@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -27,11 +25,11 @@ export default function Login() {
         throw new Error(data.message || "Eroare la login");
       }
 
-      // salvăm token-ul
+      // salvăm token-ul în localStorage
       localStorage.setItem("token", data.token);
 
-      // redirect la homepage
-      navigate("/");
+      // redirect + refresh pagina → Navbar se actualizează instant
+      window.location.href = "/";
     } catch (err) {
       setError(err.message);
     }
