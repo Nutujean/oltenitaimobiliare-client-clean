@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -16,7 +13,7 @@ export default function DetaliuAnunt() {
     const fetchListing = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
-        if (!res.ok) throw new Error("Nu s-a putut încărca anunțul.");
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
         const data = await res.json();
         setListing(data);
       } catch (err) {
@@ -28,22 +25,15 @@ export default function DetaliuAnunt() {
     fetchListing();
   }, [id]);
 
-  if (loading) return <p className="text-center mt-4">Se încarcă...</p>;
-  if (error) return <p className="text-center mt-4 text-red-500">{error}</p>;
-  if (!listing) return <p className="text-center mt-4">Anunțul nu există.</p>;
+  if (loading) return <p className="text-center mt-6">Se încarcă...</p>;
+  if (error) return <p className="text-center text-red-500 mt-6">{error}</p>;
+  if (!listing) return <p className="text-center mt-6">Anunțul nu există.</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-4">{listing.title}</h2>
-
-      {/* ✅ Slider Swiper */}
-      {listing.images?.length > 0 && (
-        <Swiper
-          modules={[Navigation, Pagination]}
-          navigation
-          pagination={{ clickable: true }}
-          className="mb-4 rounded"
-        >
+      {/* ✅ Slider cu imagini */}
+      {listing.images?.length > 0 ? (
+        <Swiper spaceBetween={10} slidesPerView={1}>
           {listing.images.map((img, index) => (
             <SwiperSlide key={index}>
               <img
@@ -54,22 +44,28 @@ export default function DetaliuAnunt() {
             </SwiperSlide>
           ))}
         </Swiper>
+      ) : (
+        <div className="w-full h-96 bg-gray-200 flex items-center justify-center rounded">
+          <span className="text-gray-500">Fără imagini</span>
+        </div>
       )}
 
-      <p className="text-lg">{listing.description}</p>
-      <p className="text-xl font-bold mt-2">{listing.price} EUR</p>
-      <p className="text-gray-600">{listing.category} | {listing.location}</p>
-      <p className="mt-2">
-        {listing.rezervat ? "✅ Rezervat" : "🟢 Disponibil"}
-      </p>
-
       <div className="mt-6">
-        <Link
-          to="/"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          ← Înapoi la anunțuri
-        </Link>
+        <h2 className="text-2xl font-bold">{listing.title}</h2>
+        <p className="text-blue-600 font-semibold text-xl">{listing.price} EUR</p>
+        <p className="text-gray-600">{listing.location}</p>
+        <p className="mt-2 text-sm bg-gray-100 inline-block px-2 py-1 rounded">
+          {listing.category}
+        </p>
+        <p className="mt-4">{listing.description}</p>
+        <p className="mt-4">
+          Status:{" "}
+          {listing.rezervat ? (
+            <span className="text-red-600 font-bold">Rezervat</span>
+          ) : (
+            <span className="text-green-600 font-bold">Disponibil</span>
+          )}
+        </p>
       </div>
     </div>
   );
