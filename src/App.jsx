@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import AdaugaAnunt from "./pages/AdaugaAnunt";
 import AnunturileMele from "./pages/AnunturileMele";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
+import EditareAnunt from "./pages/EditareAnunt"
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/login" element={<Login />} />
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
+          <Route path="/editare-anunt/:id" element={<EditareAnunt />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </div>
