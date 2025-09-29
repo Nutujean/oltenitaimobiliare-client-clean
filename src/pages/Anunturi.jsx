@@ -38,7 +38,9 @@ export default function Anunturi() {
       </h1>
 
       {listings.length === 0 ? (
-        <p className="text-center text-gray-500">Nu există anunțuri în această categorie.</p>
+        <p className="text-center text-gray-500">
+          Nu există anunțuri în această categorie.
+        </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {listings.map((listing) => (
