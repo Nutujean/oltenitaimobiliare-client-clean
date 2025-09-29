@@ -93,8 +93,8 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* Acțiuni */}
-      {isLoggedIn ? (
+      {/* Acțiuni - vizibile doar pentru user logat */}
+      {isLoggedIn && (
         <div className="flex space-x-4">
           <Link to={`/editeaza-anunt/${listing._id}`}>
             <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
@@ -116,10 +116,6 @@ export default function DetaliuAnunt() {
             Rezervat
           </button>
         </div>
-      ) : (
-        <p className="mt-6 text-gray-500 italic">
-          Trebuie să fii logat ca să poți edita sau șterge acest anunț.
-        </p>
       )}
     </div>
   );
