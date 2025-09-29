@@ -46,7 +46,7 @@ function Home() {
             Găsește-ți locuința ideală în Oltenița
           </h1>
           <p className="text-lg md:text-xl mb-6">
-            Vânzări • Închirieri • Terenuri • Spații comerciale
+            Vânzări • Cumparari • Inchirieri • Apartamente • Case • Garsoniere • Spații comerciale • Terenuri • Garaje
           </p>
           <a
             href="/adauga-anunt"
