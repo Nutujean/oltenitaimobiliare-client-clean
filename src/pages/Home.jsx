@@ -3,24 +3,20 @@ import React, { useState, useEffect } from "react";
 function Home() {
   const [listings, setListings] = useState([]);
 
-  // Exemplu fetch anunțuri (poți adapta după backend-ul tău)
+  // Fetch anunțuri din backend
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
         setListings(data);
+        console.log("✅ Anunțuri primite:", data);
       } catch (err) {
-        console.error("Eroare la preluarea anunțurilor:", err);
+        console.error("❌ Eroare la preluarea anunțurilor:", err);
       }
     };
     fetchListings();
   }, []);
-
-  const filterByCategory = (category) => {
-    if (!category) return listings;
-    return listings.filter((item) => item.category === category);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,10 +47,7 @@ function Home() {
 
       {/* CARDURI CATEGORII */}
       <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 p-6">
-        <div
-          onClick={() => filterByCategory("Apartament")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
+        <div className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center">
           <img
             src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80"
             alt="Apartamente"
@@ -63,10 +56,7 @@ function Home() {
           <h3 className="font-semibold">Apartamente</h3>
         </div>
 
-        <div
-          onClick={() => filterByCategory("Casă")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
+        <div className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center">
           <img
             src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80"
             alt="Case"
@@ -75,10 +65,7 @@ function Home() {
           <h3 className="font-semibold">Case</h3>
         </div>
 
-        <div
-          onClick={() => filterByCategory("Teren")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
+        <div className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center">
           <img
             src="https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=400&q=80"
             alt="Terenuri"
@@ -87,10 +74,7 @@ function Home() {
           <h3 className="font-semibold">Terenuri</h3>
         </div>
 
-        <div
-          onClick={() => filterByCategory("Garaj")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
+        <div className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center">
           <img
             src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=400&q=80"
             alt="Garaje"
@@ -99,10 +83,7 @@ function Home() {
           <h3 className="font-semibold">Garaje</h3>
         </div>
 
-        <div
-          onClick={() => filterByCategory("Spațiu comercial")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
+        <div className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center">
           <img
             src="https://images.unsplash.com/photo-1598970434795-0c54fe7c0642?auto=format&fit=crop&w=400&q=80"
             alt="Spații comerciale"
@@ -110,6 +91,42 @@ function Home() {
           />
           <h3 className="font-semibold">Spații comerciale</h3>
         </div>
+      </div>
+
+      {/* LISTĂ ANUNȚURI */}
+      <div className="max-w-6xl mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-6">Ultimele anunțuri</h2>
+        {listings.length === 0 ? (
+          <p className="text-gray-600">Nu există anunțuri momentan.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {listings.map((listing) => (
+              <div
+                key={listing._id}
+                className="bg-white shadow rounded-lg overflow-hidden"
+              >
+                <img
+                  src={
+                    listing.images && listing.images.length > 0
+                      ? listing.images[0]
+                      : "https://via.placeholder.com/400x250?text=Fără+imagine"
+                  }
+                  alt={listing.title}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-2">
+                    {listing.title}
+                  </h3>
+                  <p className="text-gray-600 mb-2">{listing.location}</p>
+                  <p className="text-blue-600 font-bold">
+                    {listing.price} EUR
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
