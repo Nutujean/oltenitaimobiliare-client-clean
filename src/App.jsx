@@ -10,13 +10,15 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/adauga" element={<AdaugaAnunt />} />
-        <Route path="/anunturile-mele" element={<AnunturileMele />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
+      <div className="min-h-screen bg-gray-50 p-4">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/adauga" element={<AdaugaAnunt />} />
+          <Route path="/anunturile-mele" element={<AnunturileMele />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
