@@ -25,10 +25,11 @@ export default function Login() {
         throw new Error(data.message || "Eroare la login");
       }
 
-      // salvăm token-ul în localStorage
+      // salvăm token-ul și numele
       localStorage.setItem("token", data.token);
+      localStorage.setItem("name", data.name);
 
-      // redirect + refresh pagina → Navbar se actualizează instant
+      // redirect + refresh → Navbar se actualizează
       window.location.href = "/";
     } catch (err) {
       setError(err.message);

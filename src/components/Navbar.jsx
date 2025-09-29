@@ -4,16 +4,25 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    // verificăm dacă există token în localStorage
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const name = localStorage.getItem("name");
+    if (token) {
+      setIsLoggedIn(true);
+      setUserName(name);
+    } else {
+      setIsLoggedIn(false);
+      setUserName("");
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("name");
     setIsLoggedIn(false);
+    setUserName("");
     navigate("/login");
   };
 
@@ -33,6 +42,10 @@ export default function Navbar() {
 
           {isLoggedIn ? (
             <>
+              <span className="text-gray-700 font-medium">
+                Bun venit, {userName} 👋
+              </span>
+
               <Link to="/anunturile-mele" className="hover:text-blue-600">
                 Anunțurile Mele
               </Link>

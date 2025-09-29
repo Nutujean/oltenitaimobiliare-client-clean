@@ -25,10 +25,11 @@ export default function Register() {
         throw new Error(data.message || "Eroare la înregistrare");
       }
 
-      // după înregistrare, salvăm token-ul
+      // salvăm token-ul și numele
       localStorage.setItem("token", data.token);
+      localStorage.setItem("name", data.name);
 
-      // redirect + refresh pagina → Navbar se actualizează instant
+      // redirect + refresh → Navbar se actualizează
       window.location.href = "/";
     } catch (err) {
       setError(err.message);
