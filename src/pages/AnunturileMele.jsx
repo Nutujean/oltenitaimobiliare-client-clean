@@ -1,106 +1,96 @@
 import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const email = localStorage.getItem("email");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchListings = async () => {
+    const fetchMyListings = async () => {
       try {
-        console.log("📧 Email trimis la backend:", email);
-
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/listings/user/${email}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `${import.meta.env.VITE_API_URL}/listings/user/${email}`
         );
-
-        if (!res.ok) {
-          throw new Error("Eroare la încărcarea anunțurilor");
-        }
-
+        if (!res.ok) throw new Error("Nu s-au putut încărca anunțurile mele");
         const data = await res.json();
-        console.log("📦 Anunțurile utilizatorului:", data);
         setListings(data);
       } catch (err) {
-        console.error(err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (email) {
-      fetchListings();
-    }
-  }, [email, token]);
+    if (email) fetchMyListings();
+  }, [email]);
 
-  if (loading) {
-    return <p className="text-center mt-4">Se încarcă anunțurile...</p>;
-  }
+  const handleDelete = async (id) => {
+    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
+    await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setListings((prev) => prev.filter((l) => l._id !== id));
+  };
 
-  if (!listings.length) {
-    return <p className="text-center mt-4">Nu ai anunțuri încă.</p>;
-  }
+  const handleRezervat = async (id) => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/listings/${id}/rezervat`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const updated = await res.json();
+    setListings((prev) =>
+      prev.map((l) =>
+        l._id === id ? { ...l, rezervat: updated.rezervat } : l
+      )
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Se încarcă...</p>;
+  if (error) return <p className="text-center mt-4 text-red-500">{error}</p>;
+  if (!listings.length) return <p className="text-center mt-4">Nu ai anunțuri încă.</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Anunțurile Mele</h2>
+    <div className="max-w-4xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Anunțurile Mele</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {listings.map((listing) => (
-          <div
-            key={listing._id}
-            className="border rounded-lg p-4 shadow bg-white"
-          >
-            <h3 className="text-lg font-semibold">{listing.title}</h3>
-            <p>{listing.description}</p>
-            <p className="font-bold">{listing.price} EUR</p>
-            <p className="text-sm text-gray-600">
-              {listing.category} - {listing.location}
-            </p>
-
-            {/* ✅ Slider cu poze */}
+          <div key={listing._id} className="border rounded p-4 shadow bg-white">
+            <h3 className="font-bold">{listing.title}</h3>
             {listing.images?.length > 0 && (
-              <Swiper
-                modules={[Navigation, Pagination]}
-                navigation
-                pagination={{ clickable: true }}
-                className="mt-3 rounded"
-              >
-                {listing.images.map((img, index) => (
-                  <SwiperSlide key={index}>
-                    <img
-                      src={img}
-                      alt={`${listing.title} - poza ${index + 1}`}
-                      className="rounded w-full h-64 object-cover"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+              <img
+                src={listing.images[0]}
+                alt={listing.title}
+                className="rounded mt-2 h-40 w-full object-cover"
+              />
             )}
+            <p>{listing.price} EUR</p>
+            <p>{listing.location}</p>
+            <p>{listing.rezervat ? "✅ Rezervat" : "Disponibil"}</p>
 
-            {/* Butoane acțiuni */}
             <div className="flex justify-between mt-4">
-              <button className="bg-yellow-500 text-white px-3 py-1 rounded">
+              <button
+                onClick={() => alert("Editează va fi implementat")}
+                className="bg-yellow-500 text-white px-3 py-1 rounded"
+              >
                 Editează
               </button>
-              <button className="bg-red-500 text-white px-3 py-1 rounded">
+              <button
+                onClick={() => handleDelete(listing._id)}
+                className="bg-red-500 text-white px-3 py-1 rounded"
+              >
                 Șterge
               </button>
               <button
+                onClick={() => handleRezervat(listing._id)}
                 className={`${
-                  listing.rezervat
-                    ? "bg-gray-500"
-                    : "bg-green-600 hover:bg-green-700"
+                  listing.rezervat ? "bg-gray-500" : "bg-green-600 hover:bg-green-700"
                 } text-white px-3 py-1 rounded`}
               >
                 {listing.rezervat ? "Rezervat" : "Marchează rezervat"}
