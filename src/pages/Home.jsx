@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [listings, setListings] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const navigate = useNavigate();
 
-  // Fetch anunțuri din backend
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
         setListings(data);
-        setFiltered(data); // la început afișăm toate
+        setFiltered(data);
         console.log("✅ Anunțuri primite:", data);
       } catch (err) {
         console.error("❌ Eroare la preluarea anunțurilor:", err);
@@ -30,6 +31,34 @@ function Home() {
     }
   };
 
+  // Lista categorii + poze Unsplash
+  const categories = [
+    {
+      name: "Apartament",
+      img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80",
+    },
+    {
+      name: "Casă",
+      img: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80",
+    },
+    {
+      name: "Teren",
+      img: "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=400&q=80",
+    },
+    {
+      name: "Garaj",
+      img: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=400&q=80",
+    },
+    {
+      name: "Garsonieră",
+      img: "https://images.unsplash.com/photo-1617104299480-48c92e2b08d3?auto=format&fit=crop&w=400&q=80",
+    },
+    {
+      name: "Spațiu comercial",
+      img: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=400&q=80",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HERO SECTION */}
@@ -46,7 +75,7 @@ function Home() {
             Găsește-ți locuința ideală în Oltenița
           </h1>
           <p className="text-lg md:text-xl mb-6">
-            Vânzări • Cumparari • Inchirieri • Apartamente • Case • Garsoniere • Spații comerciale • Terenuri • Garaje
+            Vânzări • Închirieri • Terenuri • Spații comerciale
           </p>
           <a
             href="/adauga-anunt"
@@ -58,66 +87,21 @@ function Home() {
       </div>
 
       {/* CARDURI CATEGORII */}
-      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 p-6">
-        <div
-          onClick={() => filterByCategory("Apartament")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80"
-            alt="Apartamente"
-            className="mx-auto mb-2 rounded h-28 w-full object-cover"
-          />
-          <h3 className="font-semibold">Apartamente</h3>
-        </div>
-
-        <div
-          onClick={() => filterByCategory("Casă")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80"
-            alt="Case"
-            className="mx-auto mb-2 rounded h-28 w-full object-cover"
-          />
-          <h3 className="font-semibold">Case</h3>
-        </div>
-
-        <div
-          onClick={() => filterByCategory("Teren")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=400&q=80"
-            alt="Terenuri"
-            className="mx-auto mb-2 rounded h-28 w-full object-cover"
-          />
-          <h3 className="font-semibold">Terenuri</h3>
-        </div>
-
-        <div
-          onClick={() => filterByCategory("Garaj")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=400&q=80"
-            alt="Garaje"
-            className="mx-auto mb-2 rounded h-28 w-full object-cover"
-          />
-          <h3 className="font-semibold">Garaje</h3>
-        </div>
-
-        <div
-          onClick={() => filterByCategory("Spațiu comercial")}
-          className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1598970434795-0c54fe7c0642?auto=format&fit=crop&w=400&q=80"
-            alt="Spații comerciale"
-            className="mx-auto mb-2 rounded h-28 w-full object-cover"
-          />
-          <h3 className="font-semibold">Spații comerciale</h3>
-        </div>
+      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-6 gap-6 p-6">
+        {categories.map((cat, i) => (
+          <div
+            key={i}
+            onClick={() => filterByCategory(cat.name)}
+            className="cursor-pointer bg-white shadow hover:shadow-lg rounded-lg p-4 text-center"
+          >
+            <img
+              src={cat.img}
+              alt={cat.name}
+              className="mx-auto mb-2 rounded h-28 w-full object-cover"
+            />
+            <h3 className="font-semibold">{cat.name}</h3>
+          </div>
+        ))}
       </div>
 
       {/* LISTĂ ANUNȚURI */}
@@ -143,7 +127,8 @@ function Home() {
             {filtered.map((listing) => (
               <div
                 key={listing._id}
-                className="bg-white shadow hover:shadow-lg rounded-lg overflow-hidden cursor-pointer"
+                onClick={() => navigate(`/anunt/${listing._id}`)}
+                className="bg-white shadow hover:shadow-lg rounded-lg overflow-hidden cursor-pointer transition-transform transform hover:scale-105"
               >
                 <img
                   src={
