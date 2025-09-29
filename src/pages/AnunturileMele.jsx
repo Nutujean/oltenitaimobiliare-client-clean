@@ -1,222 +1,114 @@
 import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    location: "",
-  });
-
-  const userEmail = localStorage.getItem("email");
-
-  const fetchListings = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
-      const data = await res.json();
-
-      console.log("📦 Toate anunțurile:", data);
-      console.log("📧 User logat:", userEmail);
-
-      // filtrăm doar cele ale userului logat
-      const myListings = data.filter(
-        (listing) => listing.userEmail === userEmail
-      );
-
-      setListings(myListings);
-    } catch (err) {
-      console.error("❌ Eroare la preluarea anunțurilor:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetchListings();
-  }, [userEmail]);
+    const fetchListings = async () => {
+      try {
+        console.log("📧 Email trimis la backend:", email);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/listings/user/${email}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setListings(listings.filter((l) => l._id !== id));
-      }
-    } catch (err) {
-      console.error("❌ Eroare la ștergere:", err);
-    }
-  };
-
-  const handleRezervat = async (id) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/listings/${id}/rezervat`,
-        {
-          method: "PATCH",
+        if (!res.ok) {
+          throw new Error("Eroare la încărcarea anunțurilor");
         }
-      );
-      if (res.ok) {
-        fetchListings();
+
+        const data = await res.json();
+        console.log("📦 Anunțurile utilizatorului:", data);
+        setListings(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("❌ Eroare la schimbarea statusului:", err);
+    };
+
+    if (email) {
+      fetchListings();
     }
-  };
-
-  const startEdit = (listing) => {
-    setEditingId(listing._id);
-    setFormData({
-      title: listing.title,
-      description: listing.description,
-      price: listing.price,
-      location: listing.location,
-    });
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        setEditingId(null);
-        fetchListings();
-      }
-    } catch (err) {
-      console.error("❌ Eroare la actualizare:", err);
-    }
-  };
+  }, [email, token]);
 
   if (loading) {
-    return <p className="p-6">Se încarcă anunțurile tale...</p>;
+    return <p className="text-center mt-4">Se încarcă anunțurile...</p>;
+  }
+
+  if (!listings.length) {
+    return <p className="text-center mt-4">Nu ai anunțuri încă.</p>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Anunțurile Mele</h2>
-      {listings.length === 0 ? (
-        <p>Nu ai anunțuri încă.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {listings.map((listing) => (
-            <div key={listing._id} className="border rounded p-4 shadow">
-              {editingId === listing._id ? (
-                // Formular editare
-                <form onSubmit={handleEditSubmit} className="space-y-2">
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                    >
-                      Salvează
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
-                    >
-                      Anulează
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <h3 className="text-xl font-semibold">{listing.title}</h3>
-                  <p>{listing.description}</p>
-                  <p className="text-blue-600 font-bold">{listing.price} €</p>
-                  <p className="text-gray-500">{listing.location}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {listings.map((listing) => (
+          <div
+            key={listing._id}
+            className="border rounded-lg p-4 shadow bg-white"
+          >
+            <h3 className="text-lg font-semibold">{listing.title}</h3>
+            <p>{listing.description}</p>
+            <p className="font-bold">{listing.price} EUR</p>
+            <p className="text-sm text-gray-600">
+              {listing.category} - {listing.location}
+            </p>
 
-                  {listing.images?.length > 0 && (
+            {/* ✅ Slider cu poze */}
+            {listing.images?.length > 0 && (
+              <Swiper
+                modules={[Navigation, Pagination]}
+                navigation
+                pagination={{ clickable: true }}
+                className="mt-3 rounded"
+              >
+                {listing.images.map((img, index) => (
+                  <SwiperSlide key={index}>
                     <img
-                      src={listing.images[0]}
-                      alt={listing.title}
-                      className="mt-2 rounded"
+                      src={img}
+                      alt={`${listing.title} - poza ${index + 1}`}
+                      className="rounded w-full h-64 object-cover"
                     />
-                  )}
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
 
-                  <p className="text-sm text-gray-400 mt-2">
-                    Status:{" "}
-                    {listing.rezervat ? (
-                      <span className="text-red-500 font-bold">Rezervat</span>
-                    ) : (
-                      <span className="text-green-600 font-bold">Disponibil</span>
-                    )}
-                  </p>
-
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => handleRezervat(listing._id)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                    >
-                      {listing.rezervat
-                        ? "Marchează Disponibil"
-                        : "Marchează Rezervat"}
-                    </button>
-                    <button
-                      onClick={() => startEdit(listing)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                    >
-                      Editează
-                    </button>
-                    <button
-                      onClick={() => handleDelete(listing._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Șterge
-                    </button>
-                  </div>
-                </>
-              )}
+            {/* Butoane acțiuni */}
+            <div className="flex justify-between mt-4">
+              <button className="bg-yellow-500 text-white px-3 py-1 rounded">
+                Editează
+              </button>
+              <button className="bg-red-500 text-white px-3 py-1 rounded">
+                Șterge
+              </button>
+              <button
+                className={`${
+                  listing.rezervat
+                    ? "bg-gray-500"
+                    : "bg-green-600 hover:bg-green-700"
+                } text-white px-3 py-1 rounded`}
+              >
+                {listing.rezervat ? "Rezervat" : "Marchează rezervat"}
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
