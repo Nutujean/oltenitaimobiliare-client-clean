@@ -37,6 +37,8 @@ export default function Home() {
             className="border rounded p-4 shadow bg-white hover:shadow-lg transition block"
           >
             <h3 className="font-bold">{listing.title}</h3>
+
+            {/* ✅ Doar prima poză pe homepage */}
             {listing.images?.length > 0 && (
               <img
                 src={listing.images[0]}
@@ -44,6 +46,7 @@ export default function Home() {
                 className="rounded mt-2 h-40 w-full object-cover"
               />
             )}
+
             <p className="mt-2 font-semibold">{listing.price} EUR</p>
             <p className="text-gray-600">{listing.location}</p>
             <p className="mt-2">

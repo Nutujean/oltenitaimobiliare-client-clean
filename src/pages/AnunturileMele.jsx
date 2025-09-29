@@ -54,25 +54,36 @@ export default function AnunturileMele() {
 
   if (loading) return <p className="text-center mt-4">Se încarcă...</p>;
   if (error) return <p className="text-center mt-4 text-red-500">{error}</p>;
-  if (!listings.length) return <p className="text-center mt-4">Nu ai anunțuri încă.</p>;
+  if (!listings.length)
+    return <p className="text-center mt-4">Nu ai anunțuri încă.</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Anunțurile Mele</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {listings.map((listing) => (
           <div key={listing._id} className="border rounded p-4 shadow bg-white">
             <h3 className="font-bold">{listing.title}</h3>
+
+            {/* ✅ Toate pozele într-o grilă */}
             {listing.images?.length > 0 && (
-              <img
-                src={listing.images[0]}
-                alt={listing.title}
-                className="rounded mt-2 h-40 w-full object-cover"
-              />
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {listing.images.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`${listing.title} - poza ${index + 1}`}
+                    className="rounded h-24 w-full object-cover"
+                  />
+                ))}
+              </div>
             )}
-            <p>{listing.price} EUR</p>
-            <p>{listing.location}</p>
-            <p>{listing.rezervat ? "✅ Rezervat" : "Disponibil"}</p>
+
+            <p className="mt-2 font-semibold">{listing.price} EUR</p>
+            <p className="text-gray-600">{listing.location}</p>
+            <p className="mt-2">
+              {listing.rezervat ? "✅ Rezervat" : "🟢 Disponibil"}
+            </p>
 
             <div className="flex justify-between mt-4">
               <button
@@ -90,7 +101,9 @@ export default function AnunturileMele() {
               <button
                 onClick={() => handleRezervat(listing._id)}
                 className={`${
-                  listing.rezervat ? "bg-gray-500" : "bg-green-600 hover:bg-green-700"
+                  listing.rezervat
+                    ? "bg-gray-500"
+                    : "bg-green-600 hover:bg-green-700"
                 } text-white px-3 py-1 rounded`}
               >
                 {listing.rezervat ? "Rezervat" : "Marchează rezervat"}
