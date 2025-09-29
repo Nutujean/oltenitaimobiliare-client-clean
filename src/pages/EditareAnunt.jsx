@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-export default function EditareAnunt() {   // 👈 AICI trebuie "export default"
+export default function EditareAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -11,7 +11,16 @@ export default function EditareAnunt() {   // 👈 AICI trebuie "export default"
     imageUrl: "",
   });
 
+  const isLoggedIn = !!localStorage.getItem("token");
+
   useEffect(() => {
+    // dacă nu e logat, redirect la login
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    // dacă e logat, încărcăm datele anunțului
     const fetchListing = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
@@ -22,7 +31,7 @@ export default function EditareAnunt() {   // 👈 AICI trebuie "export default"
       }
     };
     fetchListing();
-  }, [id]);
+  }, [id, isLoggedIn, navigate]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
