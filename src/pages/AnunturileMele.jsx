@@ -43,6 +43,42 @@ export default function AnunturileMele() {
     );
   }
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setListings((prev) => prev.filter((item) => item._id !== id));
+      } catch (error) {
+        console.error("Eroare la ștergere:", error);
+      }
+    }
+  };
+
+  const handleReserve = async (id) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: "rezervat" }),
+      });
+      setListings((prev) =>
+        prev.map((item) =>
+          item._id === id ? { ...item, status: "rezervat" } : item
+        )
+      );
+    } catch (error) {
+      console.error("Eroare la actualizare:", error);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Anunțurile Mele</h1>
@@ -83,12 +119,30 @@ export default function AnunturileMele() {
               )}
 
               <p className="text-gray-600 mb-2">{listing.price} €</p>
-              <Link
-                to={`/anunt/${listing._id}`}
-                className="inline-block px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >
-                Detalii
-              </Link>
+
+              {/* Butoane de acțiune */}
+              <div className="flex flex-col space-y-2 mt-3">
+                <Link
+                  to={`/editeaza-anunt/${listing._id}`}
+                  className="px-3 py-1 text-center bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                >
+                  Editează
+                </Link>
+
+                <button
+                  onClick={() => handleDelete(listing._id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                >
+                  Șterge
+                </button>
+
+                <button
+                  onClick={() => handleReserve(listing._id)}
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                  Rezervat
+                </button>
+              </div>
             </div>
           ))}
         </div>
