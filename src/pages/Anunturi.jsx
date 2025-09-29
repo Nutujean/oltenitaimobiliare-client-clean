@@ -68,8 +68,15 @@ export default function Anunturi() {
           {sortedListings.map((listing) => (
             <div
               key={listing._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
             >
+              {/* Badge Rezervat */}
+              {listing.status === "rezervat" && (
+                <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                  Rezervat
+                </span>
+              )}
+
               <img
                 src={
                   listing.images && listing.images.length > 0
