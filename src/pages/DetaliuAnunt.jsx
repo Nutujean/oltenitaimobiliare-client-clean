@@ -64,7 +64,15 @@ export default function DetaliuAnunt() {
       </button>
 
       {/* Titlu */}
-      <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
+      <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
+
+      {/* Categoria */}
+      {listing.category && (
+        <p className="text-gray-500 mb-4">
+          Categoria:{" "}
+          <span className="font-semibold capitalize">{listing.category}</span>
+        </p>
+      )}
 
       {/* Imagine */}
       <img
