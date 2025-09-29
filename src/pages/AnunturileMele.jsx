@@ -64,20 +64,21 @@ export default function AnunturileMele() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {listings.map((listing) => (
           <div key={listing._id} className="border rounded p-4 shadow bg-white">
-            <h3 className="font-bold">{listing.title}</h3>
+            {/* ✅ Click pe titlu sau pe prima poză duce la detalii */}
+            <Link to={`/anunt/${listing._id}`}>
+              <h3 className="font-bold text-lg hover:underline">
+                {listing.title}
+              </h3>
+            </Link>
 
-            {/* ✅ toate pozele în grilă */}
             {listing.images?.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {listing.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`${listing.title} - poza ${index + 1}`}
-                    className="rounded h-24 w-full object-cover"
-                  />
-                ))}
-              </div>
+              <Link to={`/anunt/${listing._id}`}>
+                <img
+                  src={listing.images[0]}
+                  alt={listing.title}
+                  className="rounded h-32 w-full object-cover mt-2"
+                />
+              </Link>
             )}
 
             <p className="mt-2 font-semibold">{listing.price} EUR</p>
