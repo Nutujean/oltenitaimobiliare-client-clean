@@ -9,27 +9,33 @@ export default function EditareAnunt() {
     description: "",
     price: "",
     imageUrl: "",
+    category: "",
   });
 
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
-    // dacă nu e logat, redirect la login
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
 
-    // dacă e logat, încărcăm datele anunțului
     const fetchListing = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
         const data = await res.json();
-        setFormData(data);
+        setFormData({
+          title: data.title || "",
+          description: data.description || "",
+          price: data.price || "",
+          imageUrl: data.imageUrl || "",
+          category: data.category || "",
+        });
       } catch (error) {
         console.error("Eroare la încărcarea anunțului:", error);
       }
     };
+
     fetchListing();
   }, [id, isLoggedIn, navigate]);
 
@@ -66,6 +72,7 @@ export default function EditareAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <textarea
           name="description"
           value={formData.description}
@@ -73,6 +80,7 @@ export default function EditareAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <input
           type="number"
           name="price"
@@ -81,6 +89,7 @@ export default function EditareAnunt() {
           className="w-full border p-2 rounded"
           required
         />
+
         <input
           type="text"
           name="imageUrl"
@@ -88,6 +97,24 @@ export default function EditareAnunt() {
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
+        {/* Select pentru categorie */}
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Alege categoria</option>
+          <option value="apartamente">Apartamente</option>
+          <option value="case">Case</option>
+          <option value="terenuri">Terenuri</option>
+          <option value="garsoniere">Garsoniere</option>
+          <option value="garaje">Garaje</option>
+          <option value="spatii-comerciale">Spații comerciale</option>
+        </select>
+
         <button
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
