@@ -89,7 +89,18 @@ export default function Home() {
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
                   <div className="p-4">
-                    <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
+                    <h3 className="text-lg font-bold mb-1">{listing.title}</h3>
+
+                    {/* Categoria mică, gri, link spre filtrare */}
+                    {listing.category && (
+                      <Link
+                        to={`/anunturi?categorie=${listing.category}`}
+                        className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
+                      >
+                        {listing.category}
+                      </Link>
+                    )}
+
                     <p className="text-gray-600 mb-2">{listing.price} €</p>
                     <Link
                       to={`/anunt/${listing._id}`}
