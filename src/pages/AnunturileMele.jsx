@@ -59,7 +59,8 @@ export default function AnunturileMele() {
     }
   };
 
-  const handleReserve = async (id) => {
+  const handleToggleReserve = async (id, currentStatus) => {
+    const newStatus = currentStatus === "rezervat" ? "disponibil" : "rezervat";
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
         method: "PUT",
@@ -67,11 +68,11 @@ export default function AnunturileMele() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ status: "rezervat" }),
+        body: JSON.stringify({ status: newStatus }),
       });
       setListings((prev) =>
         prev.map((item) =>
-          item._id === id ? { ...item, status: "rezervat" } : item
+          item._id === id ? { ...item, status: newStatus } : item
         )
       );
     } catch (error) {
@@ -137,10 +138,14 @@ export default function AnunturileMele() {
                 </button>
 
                 <button
-                  onClick={() => handleReserve(listing._id)}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  onClick={() => handleToggleReserve(listing._id, listing.status)}
+                  className={`px-3 py-1 text-white rounded transition ${
+                    listing.status === "rezervat"
+                      ? "bg-gray-600 hover:bg-gray-700"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
-                  Rezervat
+                  {listing.status === "rezervat" ? "Marchează disponibil" : "Rezervat"}
                 </button>
               </div>
             </div>
