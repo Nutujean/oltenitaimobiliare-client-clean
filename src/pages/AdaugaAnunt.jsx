@@ -19,12 +19,8 @@ export default function AdaugaAnunt() {
       try {
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
+          { method: "POST", body: formData }
         );
-
         const data = await res.json();
         if (data.secure_url) {
           uploadedImages.push(data.secure_url);
@@ -40,13 +36,13 @@ export default function AdaugaAnunt() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("email"); // salvat la login/register
+    const userEmail = localStorage.getItem("email"); // email salvat la login/register
+
+    console.log("📧 Email trimis la backend:", userEmail);
 
     try {
-      // 1. Upload imagini
       const uploadedImages = await handleImageUpload(images);
 
-      // 2. Trimite anunțul la backend
       const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`, {
         method: "POST",
         headers: {
@@ -60,7 +56,7 @@ export default function AdaugaAnunt() {
           category,
           location,
           images: uploadedImages,
-          userEmail, // trimitem emailul userului logat
+          userEmail,
         }),
       });
 
@@ -82,55 +78,13 @@ export default function AdaugaAnunt() {
     <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Adaugă un anunț</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Titlu"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <textarea
-          placeholder="Descriere"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="number"
-          placeholder="Preț"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Categorie"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Locație"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="file"
-          multiple
-          onChange={(e) => setImages(e.target.files)}
-          className="w-full border p-2 rounded"
-        />
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
+        <input type="text" placeholder="Titlu" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border p-2 rounded" required />
+        <textarea placeholder="Descriere" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border p-2 rounded" required />
+        <input type="number" placeholder="Preț" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 rounded" required />
+        <input type="text" placeholder="Categorie" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border p-2 rounded" required />
+        <input type="text" placeholder="Locație" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full border p-2 rounded" required />
+        <input type="file" multiple onChange={(e) => setImages(e.target.files)} className="w-full border p-2 rounded" />
+        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
           Adaugă anunț
         </button>
       </form>
