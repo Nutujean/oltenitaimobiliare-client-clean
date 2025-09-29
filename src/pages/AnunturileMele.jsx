@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
@@ -65,7 +66,7 @@ export default function AnunturileMele() {
           <div key={listing._id} className="border rounded p-4 shadow bg-white">
             <h3 className="font-bold">{listing.title}</h3>
 
-            {/* ✅ Toate pozele într-o grilă */}
+            {/* ✅ toate pozele în grilă */}
             {listing.images?.length > 0 && (
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {listing.images.map((img, index) => (
@@ -86,12 +87,12 @@ export default function AnunturileMele() {
             </p>
 
             <div className="flex justify-between mt-4">
-              <button
-                onClick={() => alert("Editează va fi implementat")}
-                className="bg-yellow-500 text-white px-3 py-1 rounded"
+              <Link
+                to={`/editare-anunt/${listing._id}`}
+                className="bg-yellow-500 text-white px-3 py-1 rounded text-center"
               >
                 Editează
-              </button>
+              </Link>
               <button
                 onClick={() => handleDelete(listing._id)}
                 className="bg-red-500 text-white px-3 py-1 rounded"
