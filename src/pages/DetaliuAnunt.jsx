@@ -1,10 +1,11 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-export default function DetaliuAnunt() {   // 👈 aici e default
+export default function DetaliuAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -54,6 +55,7 @@ export default function DetaliuAnunt() {   // 👈 aici e default
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Buton Înapoi */}
       <button
         onClick={() => navigate(-1)}
         className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
@@ -61,8 +63,10 @@ export default function DetaliuAnunt() {   // 👈 aici e default
         ← Înapoi
       </button>
 
+      {/* Titlu */}
       <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
+      {/* Imagine */}
       <img
         src={
           listing.imageUrl ||
@@ -73,6 +77,7 @@ export default function DetaliuAnunt() {   // 👈 aici e default
         className="w-full h-80 object-cover rounded-lg mb-6"
       />
 
+      {/* Detalii */}
       <p className="text-gray-700 mb-4">{listing.description}</p>
       <p className="text-xl font-semibold mb-2">{listing.price} €</p>
       {listing.status && (
@@ -88,27 +93,34 @@ export default function DetaliuAnunt() {   // 👈 aici e default
         </p>
       )}
 
-      <div className="flex space-x-4">
-        <Link to={`/editeaza-anunt/${listing._id}`}>
-          <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-            Editează
+      {/* Acțiuni */}
+      {isLoggedIn ? (
+        <div className="flex space-x-4">
+          <Link to={`/editeaza-anunt/${listing._id}`}>
+            <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
+              Editează
+            </button>
+          </Link>
+
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Șterge
           </button>
-        </Link>
 
-        <button
-          onClick={handleDelete}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-        >
-          Șterge
-        </button>
-
-        <button
-          onClick={handleReserve}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Rezervat
-        </button>
-      </div>
+          <button
+            onClick={handleReserve}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            Rezervat
+          </button>
+        </div>
+      ) : (
+        <p className="mt-6 text-gray-500 italic">
+          Trebuie să fii logat ca să poți edita sau șterge acest anunț.
+        </p>
+      )}
     </div>
   );
 }
