@@ -4,24 +4,21 @@ export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-  try {
-    const stored = localStorage.getItem("favorites");
-
-    if (!stored || stored === "undefined" || stored === "null") {
-      setFavorites([]);
-    } else {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        setFavorites(parsed);
-      } else {
-        setFavorites([]);
+    try {
+      const stored = localStorage.getItem("favorites");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed);
+        } else {
+          setFavorites([]);
+        }
       }
+    } catch (err) {
+      console.warn("❌ Eroare la citirea din localStorage:", err);
+      setFavorites([]);
     }
-  } catch (err) {
-    console.warn("❌ Eroare la citirea din localStorage:", err);
-    setFavorites([]);
-  }
-}, []);
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -37,17 +34,21 @@ export default function Favorite() {
             >
               <img
                 src={
-                  fav.imageUrl ||
-                  "https://via.placeholder.com/300x200?text=Fără+imagine"
+                  fav.imageUrl && fav.imageUrl !== "undefined"
+                    ? fav.imageUrl
+                    : "https://via.placeholder.com/400x250?text=Fără+imagine"
                 }
                 alt={fav.title}
                 className="w-full h-40 object-cover rounded mb-3"
               />
               <h2 className="text-lg font-bold">{fav.title}</h2>
               <p className="text-gray-600">{fav.price} €</p>
-              <p className="text-sm text-gray-500 capitalize">
-                {fav.category}
-              </p>
+              <p className="text-sm text-gray-500 capitalize">{fav.category}</p>
+
+              {/* 👇 locația afișată aici */}
+              {fav.location && (
+                <p className="text-sm text-gray-500">📍 {fav.location}</p>
+              )}
             </div>
           ))}
         </div>
