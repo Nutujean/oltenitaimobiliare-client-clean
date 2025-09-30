@@ -37,15 +37,24 @@ export default function DetaliuAnunt() {
       />
 
       <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
+
       <p className="text-xl text-green-700 font-semibold mb-2">
         <strong>Preț:</strong> {listing.price} €
       </p>
+
       <p className="text-gray-700 mb-4">{listing.description}</p>
 
-      {/* 👇 locația afișată aici */}
+      {/* 📍 Locația */}
       {listing.location && (
         <p className="text-gray-600 mb-2">
           <strong>Locație:</strong> {listing.location}
+        </p>
+      )}
+
+      {/* 📞 Telefon */}
+      {listing.phone && (
+        <p className="text-gray-600 mb-2">
+          <strong>Telefon:</strong> {listing.phone}
         </p>
       )}
 
