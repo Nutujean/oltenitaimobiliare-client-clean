@@ -6,7 +6,6 @@ export default function Anunturi() {
   const [sortOrder, setSortOrder] = useState(""); // "", "price-asc", "price-desc", "date-new", "date-old"
   const location = useLocation();
 
-  // extragem categoria din query string (ex: /anunturi?categorie=Case)
   const queryParams = new URLSearchParams(location.search);
   const category = queryParams.get("categorie");
 
@@ -28,7 +27,6 @@ export default function Anunturi() {
     fetchListings();
   }, [category]);
 
-  // funcție pentru sortare
   const sortedListings = [...listings].sort((a, b) => {
     if (sortOrder === "price-asc") return a.price - b.price;
     if (sortOrder === "price-desc") return b.price - a.price;
@@ -41,12 +39,11 @@ export default function Anunturi() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Titlu */}
       <h1 className="text-3xl font-bold mb-6">
         {category ? `Anunțuri din categoria: ${category}` : "Toate anunțurile"}
       </h1>
 
-      {/* Dropdown unic pentru sortare */}
+      {/* Dropdown sortare */}
       <div className="mb-6">
         <label className="mr-3 font-semibold">Sortează după:</label>
         <select
@@ -62,7 +59,6 @@ export default function Anunturi() {
         </select>
       </div>
 
-      {/* Listă anunțuri */}
       {sortedListings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sortedListings.map((listing) => (
@@ -70,11 +66,11 @@ export default function Anunturi() {
               key={listing._id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
             >
-              {/* Badge Rezervat */}
+              {/* Badge Rezervat (stil sticker) */}
               {listing.status === "rezervat" && (
-                <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
                   Rezervat
-                </span>
+                </div>
               )}
 
               <img

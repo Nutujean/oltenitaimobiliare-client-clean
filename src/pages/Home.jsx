@@ -95,11 +95,11 @@ export default function Home() {
                 key={listing._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
               >
-                {/* Badge Rezervat */}
+                {/* Badge Rezervat (stil sticker) */}
                 {listing.status === "rezervat" && (
-                  <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+                  <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
                     Rezervat
-                  </span>
+                  </div>
                 )}
 
                 <img
