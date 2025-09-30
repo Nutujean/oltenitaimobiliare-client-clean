@@ -9,6 +9,11 @@ export default function DetaliuAnunt() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
 
+  const optimizeImage = (url) => {
+    if (!url || !url.includes("cloudinary.com")) return url;
+    return url.replace("/upload/", "/upload/f_auto,q_auto/");
+  };
+
   useEffect(() => {
     const fetchAnunt = async () => {
       try {
@@ -38,20 +43,9 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* SEO meta tags */}
       <Helmet>
         <title>{anunt.title} - Oltenița Imobiliare</title>
         <meta name="description" content={anunt.description?.slice(0, 150)} />
-        <meta property="og:title" content={anunt.title} />
-        <meta property="og:description" content={anunt.description?.slice(0, 150)} />
-        <meta
-          property="og:image"
-          content={
-            anunt.images?.[0] ||
-            "https://via.placeholder.com/600x400?text=Oltenita+Imobiliare"
-          }
-        />
-        <meta property="og:type" content="website" />
       </Helmet>
 
       <button
@@ -63,13 +57,13 @@ export default function DetaliuAnunt() {
 
       <h1 className="text-3xl font-bold mb-4">{anunt.title}</h1>
       <p className="text-xl text-blue-600 font-semibold mb-6">
-       Preț: {anunt.price} €
+        Preț: {anunt.price} €
       </p>
-       {/* Carusel imagini */}
+
       {anunt.images && anunt.images.length > 0 && (
         <div className="relative w-full h-96 overflow-hidden rounded-lg shadow">
           <img
-            src={anunt.images[currentIndex]}
+            src={optimizeImage(anunt.images[currentIndex])}
             alt="imagine anunt"
             onClick={() => setZoom(true)}
             className="w-full h-full object-cover cursor-zoom-in transition-transform duration-500"
@@ -90,22 +84,9 @@ export default function DetaliuAnunt() {
               </button>
             </>
           )}
-          {anunt.images.length > 1 && (
-            <div className="absolute bottom-2 w-full flex justify-center space-x-2">
-              {anunt.images.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`w-3 h-3 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       )}
 
-      {/* Fullscreen zoom */}
       {zoom && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
           <button
@@ -115,7 +96,7 @@ export default function DetaliuAnunt() {
             ✕
           </button>
           <img
-            src={anunt.images[currentIndex]}
+            src={optimizeImage(anunt.images[currentIndex])}
             alt="zoom"
             className="max-w-full max-h-full object-contain"
           />

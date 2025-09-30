@@ -5,6 +5,11 @@ import { Helmet } from "react-helmet-async";
 export default function Anunturi() {
   const [listings, setListings] = useState([]);
 
+  const optimizeImage = (url) => {
+    if (!url || !url.includes("cloudinary.com")) return url;
+    return url.replace("/upload/", "/upload/f_auto,q_auto/");
+  };
+
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -20,23 +25,12 @@ export default function Anunturi() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* SEO meta tags */}
       <Helmet>
         <title>Anunțuri imobiliare - Oltenița Imobiliare</title>
         <meta
           name="description"
           content="Toate anunțurile de vânzare și închiriere din Oltenița și împrejurimi."
         />
-        <meta property="og:title" content="Anunțuri imobiliare - Oltenița Imobiliare" />
-        <meta
-          property="og:description"
-          content="Vezi anunțuri cu apartamente, case, terenuri și spații comerciale disponibile în Oltenița și împrejurimi."
-        />
-        <meta
-          property="og:image"
-          content="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80"
-        />
-        <meta property="og:type" content="website" />
       </Helmet>
 
       <h1 className="text-3xl font-bold mb-6">Toate anunțurile</h1>
@@ -50,7 +44,7 @@ export default function Anunturi() {
               <img
                 src={
                   listing.images && listing.images.length > 0
-                    ? listing.images[0]
+                    ? optimizeImage(listing.images[0])
                     : "https://via.placeholder.com/400x250?text=Fără+imagine"
                 }
                 alt={listing.title}
@@ -59,7 +53,7 @@ export default function Anunturi() {
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-2">{listing.title}</h2>
                 <p className="text-blue-600 font-semibold mb-4">
-                  {listing.price} €
+                  Preț: {listing.price} €
                 </p>
                 <Link
                   to={`/anunt/${listing._id}`}
