@@ -42,7 +42,9 @@ export default function Favorite() {
                 className="w-full h-40 object-cover rounded mb-3"
               />
               <h2 className="text-lg font-bold">{fav.title}</h2>
-              <p className="text-gray-600">{fav.price} €</p>
+              <p className="text-gray-600">
+                <strong>Preț:</strong> {listing.price} €
+              </p>
               <p className="text-sm text-gray-500 capitalize">{fav.category}</p>
 
               {/* 👇 locația afișată aici */}
