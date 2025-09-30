@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function AnunturileMele() {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const isLoggedIn = !!localStorage.getItem("token");
+
+  const optimizeImage = (url) => {
+    if (!url || !url.includes("cloudinary.com")) return url;
+    return url.replace("/upload/", "/upload/f_auto,q_auto/");
+  };
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -30,6 +36,9 @@ export default function AnunturileMele() {
   if (!isLoggedIn) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <Helmet>
+          <title>Anunțurile mele - Oltenița Imobiliare</title>
+        </Helmet>
         <p className="text-gray-600 text-lg">
           Trebuie să fii logat pentru a vedea <b>Anunțurile Mele</b>.
         </p>
@@ -82,6 +91,10 @@ export default function AnunturileMele() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Anunțurile mele - Oltenița Imobiliare</title>
+      </Helmet>
+
       <h1 className="text-2xl font-bold mb-6">Anunțurile Mele</h1>
       {listings.length === 0 ? (
         <p>Nu ai adăugat încă niciun anunț.</p>
@@ -92,20 +105,18 @@ export default function AnunturileMele() {
               key={listing._id}
               className="relative border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
             >
-              {/* Badge Rezervat */}
               {listing.status === "rezervat" && (
                 <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
                   Rezervat
                 </span>
               )}
 
-              {/* Mini-galerie imagini */}
               <div className="flex space-x-2 overflow-x-auto mb-4">
                 {listing.images && listing.images.length > 0 ? (
                   listing.images.map((img, idx) => (
                     <img
                       key={idx}
-                      src={img}
+                      src={optimizeImage(img)}
                       alt={`Imagine ${idx + 1}`}
                       className="w-24 h-20 object-cover rounded"
                     />
@@ -133,9 +144,8 @@ export default function AnunturileMele() {
                 </Link>
               )}
 
-              <p className="text-gray-600 mb-2">{listing.price} €</p>
+              <p className="text-gray-600 mb-2">Preț: {listing.price} €</p>
 
-              {/* Butoane de acțiune */}
               <div className="flex flex-col space-y-2 mt-3">
                 <Link
                   to={`/editeaza-anunt/${listing._id}`}

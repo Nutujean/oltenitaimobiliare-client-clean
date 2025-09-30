@@ -5,6 +5,11 @@ import { Helmet } from "react-helmet-async";
 export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
 
+  const optimizeImage = (url) => {
+    if (!url || !url.includes("cloudinary.com")) return url;
+    return url.replace("/upload/", "/upload/f_auto,q_auto/");
+  };
+
   useEffect(() => {
     const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(storedFavorites);
@@ -14,19 +19,6 @@ export default function Favorite() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <Helmet>
         <title>Anunțuri favorite - Oltenița Imobiliare</title>
-        <meta
-          name="description"
-          content="Vezi lista de anunțuri favorite pe Oltenița Imobiliare."
-        />
-        <meta
-          property="og:title"
-          content="Anunțuri favorite - Oltenița Imobiliare"
-        />
-        <meta
-          property="og:description"
-          content="Păstrează și revino rapid la anunțurile care îți plac."
-        />
-        <meta property="og:type" content="website" />
       </Helmet>
 
       <h1 className="text-3xl font-bold mb-6">Anunțurile mele favorite</h1>
@@ -42,7 +34,7 @@ export default function Favorite() {
               <img
                 src={
                   fav.images && fav.images.length > 0
-                    ? fav.images[0]
+                    ? optimizeImage(fav.images[0])
                     : "https://via.placeholder.com/400x250?text=Fără+imagine"
                 }
                 alt={fav.title}
@@ -50,7 +42,9 @@ export default function Favorite() {
               />
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-2">{fav.title}</h2>
-                <p className="text-blue-600 font-semibold mb-4">{fav.price} €</p>
+                <p className="text-blue-600 font-semibold mb-4">
+                  Preț: {fav.price} €
+                </p>
                 <Link
                   to={`/anunt/${fav._id}`}
                   className="block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
