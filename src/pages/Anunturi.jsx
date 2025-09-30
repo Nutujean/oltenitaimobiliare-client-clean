@@ -3,8 +3,10 @@ import { useLocation, Link } from "react-router-dom";
 
 export default function Anunturi() {
   const [listings, setListings] = useState([]);
-  const [sortOrder, setSortOrder] = useState(""); // "", "price-asc", "price-desc", "date-new", "date-old"
+  const [favorites, setFavorites] = useState([]);
+  const [sortOrder, setSortOrder] = useState("");
   const location = useLocation();
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const queryParams = new URLSearchParams(location.search);
   const category = queryParams.get("categorie");
@@ -17,15 +19,41 @@ export default function Anunturi() {
 
         const res = await fetch(url);
         const data = await res.json();
-
         setListings(data);
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
     };
 
+    const fetchFavorites = async () => {
+      if (!isLoggedIn) return;
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const data = await res.json();
+        setFavorites(data.map((fav) => fav._id));
+      } catch (error) {
+        console.error("Eroare la favorite:", error);
+      }
+    };
+
     fetchListings();
-  }, [category]);
+    fetchFavorites();
+  }, [category, isLoggedIn]);
+
+  const toggleFavorite = async (listingId) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites/${listingId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      setFavorites(data);
+    } catch (error) {
+      console.error("Eroare la toggle favorite:", error);
+    }
+  };
 
   const sortedListings = [...listings].sort((a, b) => {
     if (sortOrder === "price-asc") return a.price - b.price;
@@ -66,11 +94,21 @@ export default function Anunturi() {
               key={listing._id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
             >
-              {/* Badge Rezervat (stil sticker) */}
+              {/* Badge Rezervat */}
               {listing.status === "rezervat" && (
                 <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
                   Rezervat
                 </div>
+              )}
+
+              {/* Favorite ❤️ */}
+              {isLoggedIn && (
+                <button
+                  onClick={() => toggleFavorite(listing._id)}
+                  className="absolute top-2 right-2 text-2xl"
+                >
+                  {favorites.includes(listing._id) ? "❤️" : "🤍"}
+                </button>
               )}
 
               <img

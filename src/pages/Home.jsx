@@ -3,46 +3,58 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   const [listings, setListings] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
         const data = await res.json();
-        setListings(data.slice(0, 6)); // afișăm primele 6 anunțuri pe home
+        setListings(data.slice(0, 6)); // doar primele 6 anunțuri pe home
       } catch (error) {
         console.error("Eroare la încărcarea anunțurilor:", error);
       }
     };
 
+    const fetchFavorites = async () => {
+      if (!isLoggedIn) return;
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const data = await res.json();
+        setFavorites(data.map((fav) => fav._id));
+      } catch (error) {
+        console.error("Eroare la favorite:", error);
+      }
+    };
+
     fetchListings();
-  }, []);
+    fetchFavorites();
+  }, [isLoggedIn]);
+
+  const toggleFavorite = async (listingId) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites/${listingId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      setFavorites(data);
+    } catch (error) {
+      console.error("Eroare la toggle favorite:", error);
+    }
+  };
 
   const categories = [
-    {
-      name: "Apartamente",
-      img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Case",
-      img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Terenuri",
-      img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Garsoniere",
-      img: "/garsoniera.jpg",
-    },
-    {
-      name: "Garaje",
-      img: "/garaj.jpg",
-    },
-    {
-      name: "Spații comerciale",
-      img: "/spatiu_comercial.jpg",
-    },
+    { name: "Apartamente", img: "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80" },
+    { name: "Case", img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=800&q=80" },
+    { name: "Terenuri", img: "https://images.unsplash.com/photo-1523978591478-c753949ff840?auto=format&fit=crop&w=800&q=80" },
+    { name: "Garsoniere", img: "/garsoniera.jpg" },
+    { name: "Garaje", img: "/garaj.jpg" },
+    { name: "Spații comerciale", img: "/spatiu_comercial.jpg" },
   ];
 
   return (
@@ -95,11 +107,21 @@ export default function Home() {
                 key={listing._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition relative"
               >
-                {/* Badge Rezervat (stil sticker) */}
+                {/* Badge Rezervat */}
                 {listing.status === "rezervat" && (
                   <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
                     Rezervat
                   </div>
+                )}
+
+                {/* Favorite ❤️ */}
+                {isLoggedIn && (
+                  <button
+                    onClick={() => toggleFavorite(listing._id)}
+                    className="absolute top-2 right-2 text-2xl"
+                  >
+                    {favorites.includes(listing._id) ? "❤️" : "🤍"}
+                  </button>
                 )}
 
                 <img
