@@ -1,53 +1,63 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
-    window.location.reload();
+    localStorage.removeItem("user");
+    navigate("/");
   };
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-blue-600 text-white shadow">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-blue-600">
+        {/* Logo / Brand */}
+        <Link to="/" className="text-2xl font-bold">
           Oltenița Imobiliare
         </Link>
 
-        {/* Meniu */}
+        {/* Linkuri */}
         <div className="flex space-x-6 items-center">
-          <Link to="/" className="hover:text-blue-600">Acasă</Link>
-          <Link to="/anunturi" className="hover:text-blue-600">Anunțuri</Link>
-          {isLoggedIn && (
+          <Link to="/" className="hover:text-yellow-300">
+            Acasă
+          </Link>
+          <Link to="/anunturi" className="hover:text-yellow-300">
+            Anunțuri
+          </Link>
+          <Link to="/adauga-anunt" className="hover:text-yellow-300">
+            Adaugă anunț
+          </Link>
+          <Link to="/anunturile-mele" className="hover:text-yellow-300">
+            Anunțurile Mele
+          </Link>
+          <Link to="/favorite" className="hover:text-yellow-300">
+            Favorite
+          </Link>
+
+          {/* Autentificare */}
+          {token ? (
             <>
-              <Link to="/adauga-anunt" className="hover:text-blue-600">Adaugă anunț</Link>
-              <Link to="/anunturile-mele" className="hover:text-blue-600">Anunțurile mele</Link>
-              <Link to="/favorite" className="hover:text-blue-600 flex items-center">
-                Favorite <span className="ml-1">❤️</span>
+              <Link to="/profil" className="hover:text-yellow-300">
+                {user?.name || "Profil"}
               </Link>
-              <Link to="/profil" className="hover:text-blue-600">Profil</Link>
               <button
                 onClick={handleLogout}
-                className="hover:text-red-600"
+                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
               >
                 Logout
               </button>
             </>
-          )}
-          {!isLoggedIn && (
+          ) : (
             <>
-              <Link to="/login" className="hover:text-blue-600">Login</Link>
-              <Link to="/register" className="hover:text-blue-600">Register</Link>
+              <Link to="/login" className="hover:text-yellow-300">
+                Login
+              </Link>
+              <Link to="/register" className="hover:text-yellow-300">
+                Register
+              </Link>
             </>
           )}
         </div>
