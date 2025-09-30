@@ -1,54 +1,50 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
 export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites")
-      ? JSON.parse(localStorage.getItem("favorites"))
-      : [];
-    setFavorites(storedFavorites);
+    try {
+      const stored = localStorage.getItem("favorites");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed);
+        } else {
+          setFavorites([]);
+        }
+      }
+    } catch (err) {
+      console.warn("❌ Eroare la citirea din localStorage:", err);
+      setFavorites([]);
+    }
   }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <Helmet>
-        <title>Anunțuri favorite - Oltenița Imobiliare</title>
-      </Helmet>
-
-      <h1 className="text-3xl font-bold mb-6">Anunțurile mele favorite</h1>
+      <h1 className="text-2xl font-bold mb-6">Favorite</h1>
       {favorites.length === 0 ? (
-        <p className="text-gray-600">Nu ai anunțuri favorite.</p>
+        <p>Nu ai adăugat încă anunțuri la favorite.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {favorites.map((fav) => (
+          {favorites.map((fav, idx) => (
             <div
-              key={fav._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+              key={idx}
+              className="border rounded-lg shadow p-4 bg-white hover:shadow-lg transition"
             >
               <img
                 src={
-                  fav.images && fav.images.length > 0
-                    ? fav.images[0]
-                    : "https://via.placeholder.com/400x250?text=Fără+imagine"
+                  fav.imageUrl ||
+                  "https://via.placeholder.com/300x200?text=Fără+imagine"
                 }
                 alt={fav.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-40 object-cover rounded mb-3"
               />
-              <div className="p-4">
-                <h2 className="text-lg font-bold mb-2">{fav.title}</h2>
-                <p className="text-blue-600 font-semibold mb-4">
-                  Preț: {fav.price} €
-                </p>
-                <Link
-                  to={`/anunt/${fav._id}`}
-                  className="block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Vezi detalii
-                </Link>
-              </div>
+              <h2 className="text-lg font-bold">{fav.title}</h2>
+              <p className="text-gray-600">{fav.price} €</p>
+              <p className="text-sm text-gray-500 capitalize">
+                {fav.category}
+              </p>
             </div>
           ))}
         </div>
