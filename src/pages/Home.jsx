@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
 export default function Home() {
@@ -8,11 +9,12 @@ export default function Home() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
+        console.log("🌍 Cerere făcută la:", `${API_URL}/listings`);
         const res = await fetch(`${API_URL}/listings`);
         if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor");
 
         const data = await res.json();
-        console.log("✅ Anunțuri primite:", data);
+        console.log("📦 Răspuns primit de la backend:", data);
         setListings(data);
       } catch (err) {
         console.error("❌ Eroare la fetch listings:", err);
@@ -25,11 +27,25 @@ export default function Home() {
 
   return (
     <div>
+      <Helmet>
+        <title>Oltenița Imobiliare - Cumpără, vinde sau închiriază</title>
+        <meta
+          name="description"
+          content="Cumpără, vinde sau închiriază apartamente, case, terenuri și alte proprietăți în zona Oltenița."
+        />
+        <meta property="og:title" content="Oltenița Imobiliare" />
+        <meta
+          property="og:description"
+          content="Caută cele mai noi anunțuri imobiliare din Oltenița și împrejurimi."
+        />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       {/* 🔹 Hero */}
       <section
         className="h-[500px] bg-cover bg-center flex items-center justify-center text-white"
         style={{
-          backgroundImage: "url('/hero.jpg')", // pune hero.jpg în public/
+          backgroundImage: "url('/hero.jpg')",
         }}
       >
         <div className="bg-black bg-opacity-50 p-6 rounded-lg text-center">
