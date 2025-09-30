@@ -5,13 +5,18 @@ export default function Profil() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      setUser(stored ? JSON.parse(stored) : null);
-    } catch {
+  try {
+    const stored = localStorage.getItem("user");
+
+    if (!stored || stored === "undefined" || stored === "null") {
       setUser(null);
+    } else {
+      setUser(JSON.parse(stored));
     }
-  }, []);
+  } catch {
+    setUser(null);
+  }
+}, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

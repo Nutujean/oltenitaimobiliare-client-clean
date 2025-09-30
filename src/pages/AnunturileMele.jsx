@@ -3,22 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function AnunturileMele() {
   const navigate = useNavigate();
-  const [listings, setListings] = useState([]);
   const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+
+  let user = null;
+  try {
+    const stored = localStorage.getItem("user");
+    user = stored ? JSON.parse(stored) : null;
+  } catch {
+    user = null;
+  }
+
+  const [listings, setListings] = useState([]);
 
   useEffect(() => {
     if (!token) return;
 
     const fetchMyListings = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/listings/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor");
         const data = await res.json();
         setListings(data);
@@ -46,43 +55,6 @@ export default function AnunturileMele() {
     );
   }
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setListings((prev) => prev.filter((item) => item._id !== id));
-      } catch (error) {
-        console.error("Eroare la ștergere:", error);
-      }
-    }
-  };
-
-  const handleToggleReserve = async (id, currentStatus) => {
-    const newStatus = currentStatus === "rezervat" ? "disponibil" : "rezervat";
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      setListings((prev) =>
-        prev.map((item) =>
-          item._id === id ? { ...item, status: newStatus } : item
-        )
-      );
-    } catch (error) {
-      console.error("Eroare la actualizare:", error);
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Anunțurile Mele</h1>
@@ -95,78 +67,14 @@ export default function AnunturileMele() {
               key={listing._id}
               className="relative border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
             >
-              {/* Badge Rezervat */}
-              {listing.status === "rezervat" && (
-                <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
-                  Rezervat
-                </span>
-              )}
-
-              {/* Mini-galerie imagini */}
-              <div className="flex space-x-2 overflow-x-auto mb-4">
-                {listing.images && listing.images.length > 0 ? (
-                  listing.images.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt={`Imagine ${idx + 1}`}
-                      className="w-24 h-20 object-cover rounded"
-                    />
-                  ))
-                ) : (
-                  <img
-                    src={
-                      listing.imageUrl ||
-                      "https://via.placeholder.com/100x80?text=Fără+imagine"
-                    }
-                    alt={listing.title}
-                    className="w-24 h-20 object-cover rounded"
-                  />
-                )}
-              </div>
-
               <h2 className="text-lg font-bold mb-1">{listing.title}</h2>
-
-              {listing.category && (
-                <Link
-                  to={`/anunturi?categorie=${listing.category}`}
-                  className="text-sm text-gray-500 hover:underline block mb-2 capitalize"
-                >
-                  {listing.category}
-                </Link>
-              )}
-
               <p className="text-gray-600 mb-2">{listing.price} €</p>
-
-              {/* Butoane de acțiune */}
-              <div className="flex flex-col space-y-2 mt-3">
-                <Link
-                  to={`/editeaza-anunt/${listing._id}`}
-                  className="px-3 py-1 text-center bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-                >
-                  Editează
-                </Link>
-
-                <button
-                  onClick={() => handleDelete(listing._id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                >
-                  Șterge
-                </button>
-
-                <button
-                  onClick={() => handleToggleReserve(listing._id, listing.status)}
-                  className={`px-3 py-1 text-white rounded transition ${
-                    listing.status === "rezervat"
-                      ? "bg-gray-600 hover:bg-gray-700"
-                      : "bg-green-600 hover:bg-green-700"
-                  }`}
-                >
-                  {listing.status === "rezervat"
-                    ? "Marchează disponibil"
-                    : "Rezervat"}
-                </button>
-              </div>
+              <Link
+                to={`/editeaza-anunt/${listing._id}`}
+                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+              >
+                Editează
+              </Link>
             </div>
           ))}
         </div>

@@ -4,21 +4,24 @@ export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("favorites");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
-        } else {
-          setFavorites([]);
-        }
-      }
-    } catch (err) {
-      console.warn("❌ Eroare la citirea din localStorage:", err);
+  try {
+    const stored = localStorage.getItem("favorites");
+
+    if (!stored || stored === "undefined" || stored === "null") {
       setFavorites([]);
+    } else {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        setFavorites(parsed);
+      } else {
+        setFavorites([]);
+      }
     }
-  }, []);
+  } catch (err) {
+    console.warn("❌ Eroare la citirea din localStorage:", err);
+    setFavorites([]);
+  }
+}, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
