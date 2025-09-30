@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 import API_URL from "../api";
 
 export default function Home() {
@@ -66,15 +68,25 @@ export default function Home() {
                 key={listing._id}
                 className="border rounded-lg shadow bg-white overflow-hidden hover:shadow-lg transition"
               >
-                <img
-                  src={
-                    listing.imageUrl && listing.imageUrl !== "undefined"
-                      ? listing.imageUrl
-                      : "https://via.placeholder.com/400x250?text=Fără+imagine"
-                  }
-                  alt={listing.title}
-                  className="w-full h-48 object-cover"
-                />
+                {/* Slider pentru imagini */}
+                <Swiper spaceBetween={10} slidesPerView={1}>
+                  {(listing.images && listing.images.length > 0
+                    ? listing.images
+                    : [listing.imageUrl]
+                  ).map((img, i) => (
+                    <SwiperSlide key={i}>
+                      <img
+                        src={
+                          img ||
+                          "https://via.placeholder.com/400x250?text=Fără+imagine"
+                        }
+                        alt={listing.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
                 <div className="p-4 space-y-2">
                   <h2 className="text-lg font-bold">{listing.title}</h2>
                   <p className="text-gray-600">
@@ -84,7 +96,9 @@ export default function Home() {
                     {listing.category}
                   </p>
                   {listing.location && (
-                    <p className="text-sm text-gray-500">📍 {listing.location}</p>
+                    <p className="text-sm text-gray-500">
+                      📍 {listing.location}
+                    </p>
                   )}
                   {listing.phone && (
                     <p className="text-sm text-gray-500">

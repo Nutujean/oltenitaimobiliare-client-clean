@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
@@ -32,15 +34,24 @@ export default function Favorite() {
               key={idx}
               className="border rounded-lg shadow p-4 bg-white hover:shadow-lg transition"
             >
-              <img
-                src={
-                  fav.imageUrl && fav.imageUrl !== "undefined"
-                    ? fav.imageUrl
-                    : "https://via.placeholder.com/400x250?text=Fără+imagine"
-                }
-                alt={fav.title}
-                className="w-full h-40 object-cover rounded mb-3"
-              />
+              <Swiper spaceBetween={10} slidesPerView={1}>
+                {(fav.images && fav.images.length > 0
+                  ? fav.images
+                  : [fav.imageUrl]
+                ).map((img, i) => (
+                  <SwiperSlide key={i}>
+                    <img
+                      src={
+                        img ||
+                        "https://via.placeholder.com/400x250?text=Fără+imagine"
+                      }
+                      alt={fav.title}
+                      className="w-full h-40 object-cover rounded mb-3"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
               <h2 className="text-lg font-bold">{fav.title}</h2>
               <p className="text-gray-600">
                 <strong>Preț:</strong> {fav.price} €
