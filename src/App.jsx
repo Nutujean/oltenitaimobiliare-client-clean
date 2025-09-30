@@ -1,52 +1,56 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import AdaugaAnunt from "./pages/AdaugaAnunt";
-import AnunturileMele from "./pages/AnunturileMele";
-import Anunturi from "./pages/Anunturi";
-import DetaliuAnunt from "./pages/DetaliuAnunt";
-import EditareAnunt from "./pages/EditareAnunt";
-import Profil from "./pages/Profil";
-import DespreNoi from "./pages/DespreNoi";
 import Contact from "./pages/Contact";
+import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
+import Cookies from "./pages/Cookies";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profil from "./pages/Profil";
+import AnunturileMele from "./pages/AnunturileMele";
+import Favorite from "./pages/Favorite";
+
+import AdaugaAnunt from "./pages/AdaugaAnunt";
+import EditareAnunt from "./pages/EditareAnunt";
+import DetaliuAnunt from "./pages/DetaliuAnunt";
+
 import NotFound from "./pages/NotFound";
 
 function App() {
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen">
-        {/* Navbar sus */}
-        <Navbar />
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
 
-        {/* Conținut principal */}
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
-            <Route path="/anunturile-mele" element={<AnunturileMele />} />
-            <Route path="/anunturi" element={<Anunturi />} />
-            <Route path="/anunt/:id" element={<DetaliuAnunt />} />
-            <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
-            <Route path="/profil" element={<Profil />} />
-            <Route path="/despre" element={<DespreNoi />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/termeni" element={<Termeni />} />
-            <Route path="/confidentialitate" element={<Confidentialitate />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/despre" element={<DespreNoi />} />
+          <Route path="/termeni" element={<Termeni />} />
+          <Route path="/confidentialitate" element={<Confidentialitate />} />
+          <Route path="/cookies" element={<Cookies />} />
 
-        {/* Footer jos */}
-        <Footer />
-      </div>
-    </Router>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profil" element={<Profil />} />
+          <Route path="/anunturile-mele" element={<AnunturileMele />} />
+          <Route path="/favorite" element={<Favorite />} />
+
+          <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
+          <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
+          <Route path="/anunt/:id" element={<DetaliuAnunt />} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
