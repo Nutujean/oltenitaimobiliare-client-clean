@@ -25,14 +25,16 @@ export default function Navbar() {
         </Link>
 
         {/* Meniu */}
-        <div className="flex space-x-6">
+        <div className="flex space-x-6 items-center">
           <Link to="/" className="hover:text-blue-600">Acasă</Link>
           <Link to="/anunturi" className="hover:text-blue-600">Anunțuri</Link>
           {isLoggedIn && (
             <>
               <Link to="/adauga-anunt" className="hover:text-blue-600">Adaugă anunț</Link>
               <Link to="/anunturile-mele" className="hover:text-blue-600">Anunțurile mele</Link>
-              <Link to="/favorite" className="hover:text-blue-600">Favorite</Link>
+              <Link to="/favorite" className="hover:text-blue-600 flex items-center">
+                Favorite <span className="ml-1">❤️</span>
+              </Link>
               <Link to="/profil" className="hover:text-blue-600">Profil</Link>
               <button
                 onClick={handleLogout}
