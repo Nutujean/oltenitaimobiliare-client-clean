@@ -1,118 +1,95 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
 export default function EditareAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [images, setImages] = useState([]);
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchAnunt = async () => {
+    const fetchListing = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
         const data = await res.json();
-        setTitle(data.title);
-        setPrice(data.price);
-        setDescription(data.description);
-        setCategory(data.category);
-        setImages(data.images || []);
-      } catch (error) {
-        console.error("Eroare la încărcarea anunțului:", error);
+
+        setTitle(data.title || "");
+        setPrice(data.price || "");
+        setDescription(data.description || "");
+        setCategory(data.category || "");
+        setPhone(data.phone || "");
+      } catch (err) {
+        console.error(err.message);
+        setError("Nu s-a putut încărca anunțul.");
       }
     };
-    fetchAnunt();
+
+    fetchListing();
   }, [id]);
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    const uploadedImages = [];
-
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append(
-        "upload_preset",
-        import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-      );
-
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${
-            import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-          }/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        const data = await res.json();
-
-        // 🔹 optimizăm link-ul direct după upload
-        const optimizedUrl = data.secure_url.replace(
-          "/upload/",
-          "/upload/f_auto,q_auto/"
-        );
-
-        uploadedImages.push(optimizedUrl);
-      } catch (error) {
-        console.error("Eroare la upload:", error);
-      }
-    }
-
-    setImages((prev) => [...prev, ...uploadedImages]);
+  const validatePhone = (number) => {
+    const regex = /^(\+4|0)?7\d{8}$/; // validare nr. românesc (07xxxxxxxx sau +407xxxxxxxx)
+    return regex.test(number);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Validare câmpuri obligatorii
+    if (!title || !price || !category || !phone) {
+      setError("Completează titlul, prețul, categoria și telefonul!");
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      setError("Numărul de telefon nu este valid! Exemplu: 07XXXXXXXX");
+      return;
+    }
+
     try {
+      setLoading(true);
+      setError("");
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          title,
-          price,
-          description,
-          category,
-          images,
-        }),
+        body: JSON.stringify({ title, price, description, category, phone }),
       });
 
-      if (res.ok) {
-        navigate("/anunturile-mele");
-      } else {
-        console.error("Eroare la actualizarea anunțului");
-      }
-    } catch (error) {
-      console.error(error);
+      if (!res.ok) throw new Error("Eroare la salvarea anunțului");
+
+      navigate("/anunturile-mele");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <Helmet>
-        <title>Editează anunț - Oltenița Imobiliare</title>
-      </Helmet>
+      <h1 className="text-2xl font-bold mb-6">Editează anunțul</h1>
 
-      <h1 className="text-3xl font-bold mb-6">Editează anunț</h1>
+      {error && (
+        <p className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">{error}</p>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          placeholder="Titlu"
+          placeholder="Titlu anunț"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
+          className="w-full border rounded px-3 py-2"
         />
 
         <input
@@ -120,56 +97,39 @@ export default function EditareAnunt() {
           placeholder="Preț (€)"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="text"
+          placeholder="Categorie (ex: apartament, casă...)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="text"
+          placeholder="Telefon (ex: 07XXXXXXXX)"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full border rounded px-3 py-2"
         />
 
         <textarea
           placeholder="Descriere"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 border rounded"
-          rows="5"
-          required
+          className="w-full border rounded px-3 py-2"
+          rows="4"
         ></textarea>
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full p-2 border rounded"
-        >
-          <option value="apartamente">Apartamente</option>
-          <option value="case">Case</option>
-          <option value="terenuri">Terenuri</option>
-          <option value="garsoniere">Garsoniere</option>
-          <option value="garaje">Garaje</option>
-          <option value="spații comerciale">Spații comerciale</option>
-        </select>
-
-        <input
-          type="file"
-          multiple
-          onChange={handleImageUpload}
-          className="w-full p-2 border rounded"
-        />
-
-        {/* Preview imagini */}
-        <div className="flex flex-wrap gap-2">
-          {images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Preview ${idx}`}
-              className="w-24 h-24 object-cover rounded"
-            />
-          ))}
-        </div>
 
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          disabled={loading}
+          className="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition disabled:opacity-50"
         >
-          Salvează modificările
+          {loading ? "Se salvează..." : "Salvează modificările"}
         </button>
       </form>
     </div>
