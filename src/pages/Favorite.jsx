@@ -43,7 +43,7 @@ export default function Favorite() {
               />
               <h2 className="text-lg font-bold">{fav.title}</h2>
               <p className="text-gray-600">
-                <strong>Preț:</strong> {listing.price} €
+                <strong>Preț:</strong> {fav.price} €
               </p>
               <p className="text-sm text-gray-500 capitalize">{fav.category}</p>
 
