@@ -46,10 +46,11 @@ export default function Favorite() {
                 <strong>Preț:</strong> {fav.price} €
               </p>
               <p className="text-sm text-gray-500 capitalize">{fav.category}</p>
-
-              {/* 👇 locația afișată aici */}
               {fav.location && (
                 <p className="text-sm text-gray-500">📍 {fav.location}</p>
+              )}
+              {fav.phone && (
+                <p className="text-sm text-gray-500">📞 {fav.phone}</p>
               )}
             </div>
           ))}

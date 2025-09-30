@@ -48,13 +48,16 @@ export default function AnunturileMele() {
               <div className="p-4 space-y-2">
                 <h2 className="text-lg font-bold">{listing.title}</h2>
                 <p className="text-gray-600">
-                <strong>Preț:</strong> {listing.price} €
+                  <strong>Preț:</strong> {listing.price} €
                 </p>
                 <p className="text-sm text-gray-500 capitalize">
                   {listing.category}
                 </p>
                 {listing.location && (
                   <p className="text-sm text-gray-500">📍 {listing.location}</p>
+                )}
+                {listing.phone && (
+                  <p className="text-sm text-gray-500">📞 {listing.phone}</p>
                 )}
               </div>
             </div>

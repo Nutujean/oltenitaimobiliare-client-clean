@@ -13,7 +13,6 @@ export default function Home() {
         if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor");
 
         const data = await res.json();
-        console.log("📦 Anunțuri primite:", data);
         setListings(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("❌ Eroare la fetch listings:", err);
@@ -34,18 +33,18 @@ export default function Home() {
         />
       </Helmet>
 
-      {/* 🔹 Hero */}
+      {/* Hero */}
       <section
         className="h-[500px] bg-cover bg-center flex items-center justify-center text-white"
-        style={{
-          backgroundImage: "url('/hero.jpg')", // asigură-te că hero.jpg e în public/
-        }}
+        style={{ backgroundImage: "url('/hero.jpg')" }}
       >
         <div className="bg-black bg-opacity-50 p-6 rounded-lg text-center">
           <h1 className="text-4xl font-bold mb-4">
             Bine ai venit la Oltenița Imobiliare
           </h1>
-          <p className="mb-4">Caută, vinde sau închiriază proprietăți în zona ta</p>
+          <p className="mb-4">
+            Caută, vinde sau închiriază proprietăți în zona ta
+          </p>
           <Link
             to="/adauga-anunt"
             className="bg-green-600 px-6 py-3 rounded-lg font-bold hover:bg-green-700"
@@ -55,55 +54,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔹 Categorii */}
-      <section className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          <Link to="/?categorie=apartamente" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/apartament.jpg" alt="Apartamente" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Apartamente
-            </div>
-          </Link>
-
-          <Link to="/?categorie=case" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/casa.jpg" alt="Case" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Case
-            </div>
-          </Link>
-
-          <Link to="/?categorie=terenuri" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/teren.jpg" alt="Terenuri" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Terenuri
-            </div>
-          </Link>
-
-          <Link to="/?categorie=garsoniere" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/garsoniera.jpg" alt="Garsoniere" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Garsoniere
-            </div>
-          </Link>
-
-          <Link to="/?categorie=garaje" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/garaj.jpg" alt="Garaje" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Garaje
-            </div>
-          </Link>
-
-          <Link to="/?categorie=spatiu-comercial" className="relative rounded-lg overflow-hidden shadow-lg">
-            <img src="/spatiu.jpg" alt="Spațiu comercial" className="w-full h-40 object-cover" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-lg font-bold">
-              Spațiu comercial
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* 🔹 Anunțuri recente */}
+      {/* Anunțuri recente */}
       <section className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
         {listings.length === 0 ? (
@@ -127,13 +78,16 @@ export default function Home() {
                 <div className="p-4 space-y-2">
                   <h2 className="text-lg font-bold">{listing.title}</h2>
                   <p className="text-gray-600">
-                  <strong>Preț:</strong> {listing.price} €
+                    <strong>Preț:</strong> {listing.price} €
                   </p>
                   <p className="text-sm text-gray-500 capitalize">
                     {listing.category}
                   </p>
                   {listing.location && (
                     <p className="text-sm text-gray-500">📍 {listing.location}</p>
+                  )}
+                  {listing.phone && (
+                    <p className="text-sm text-gray-500">📞 {listing.phone}</p>
                   )}
                 </div>
               </div>
