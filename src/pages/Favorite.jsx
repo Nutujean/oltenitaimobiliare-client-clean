@@ -5,13 +5,10 @@ import { Helmet } from "react-helmet-async";
 export default function Favorite() {
   const [favorites, setFavorites] = useState([]);
 
-  const optimizeImage = (url) => {
-    if (!url || !url.includes("cloudinary.com")) return url;
-    return url.replace("/upload/", "/upload/f_auto,q_auto/");
-  };
-
   useEffect(() => {
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    const storedFavorites = localStorage.getItem("favorites")
+      ? JSON.parse(localStorage.getItem("favorites"))
+      : [];
     setFavorites(storedFavorites);
   }, []);
 
@@ -34,7 +31,7 @@ export default function Favorite() {
               <img
                 src={
                   fav.images && fav.images.length > 0
-                    ? optimizeImage(fav.images[0])
+                    ? fav.images[0]
                     : "https://via.placeholder.com/400x250?text=Fără+imagine"
                 }
                 alt={fav.title}

@@ -3,7 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -14,12 +16,10 @@ export default function Navbar() {
   return (
     <nav className="bg-blue-600 text-white shadow">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Logo / Brand */}
         <Link to="/" className="text-2xl font-bold">
           Oltenița Imobiliare
         </Link>
 
-        {/* Linkuri */}
         <div className="flex space-x-6 items-center">
           <Link to="/" className="hover:text-yellow-300">
             Acasă
@@ -37,7 +37,6 @@ export default function Navbar() {
             Favorite
           </Link>
 
-          {/* Autentificare */}
           {token ? (
             <>
               <Link to="/profil" className="hover:text-yellow-300">
