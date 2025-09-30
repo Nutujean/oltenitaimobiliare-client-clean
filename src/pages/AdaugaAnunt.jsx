@@ -3,57 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 export default function AdaugaAnunt() {
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("apartamente");
+  const [images, setImages] = useState([]);
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    category: "",
-    images: [],
-  });
-  const [uploading, setUploading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageChange = async (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    const uploadedImages = [];
 
-    if (formData.images.length + files.length > 15) {
-      alert("Maxim 15 imagini sunt permise!");
-      return;
-    }
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "upload_preset",
+        import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+      );
 
-    setUploading(true);
-    try {
-      const uploadedImages = [];
-
-      for (const file of files) {
-        const data = new FormData();
-        data.append("file", file);
-        data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
+      try {
         const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          { method: "POST", body: data }
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+          }/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
         );
 
-        const imgData = await res.json();
-        uploadedImages.push(imgData.secure_url);
-      }
+        const data = await res.json();
 
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...uploadedImages],
-      }));
-    } catch (error) {
-      console.error("Eroare la upload:", error);
-      alert("Nu s-au putut încărca pozele.");
-    } finally {
-      setUploading(false);
+        // 🔹 optimizăm link-ul direct după upload
+        const optimizedUrl = data.secure_url.replace(
+          "/upload/",
+          "/upload/f_auto,q_auto/"
+        );
+
+        uploadedImages.push(optimizedUrl);
+      } catch (error) {
+        console.error("Eroare la upload:", error);
+      }
     }
+
+    setImages((prev) => [...prev, ...uploadedImages]);
   };
 
   const handleSubmit = async (e) => {
@@ -66,114 +60,97 @@ export default function AdaugaAnunt() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          title,
+          price,
+          description,
+          category,
+          images,
+        }),
       });
 
       if (res.ok) {
-        alert("✅ Anunț adăugat cu succes!");
         navigate("/anunturile-mele");
       } else {
-        alert("❌ Eroare la adăugarea anunțului.");
+        console.error("Eroare la adăugarea anunțului");
       }
     } catch (error) {
-      console.error("Eroare:", error);
+      console.error(error);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* SEO meta tags */}
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <Helmet>
-        <title>Adaugă anunț - Oltenița Imobiliare</title>
-        <meta
-          name="description"
-          content="Publică gratuit anunțul tău imobiliar pe Oltenița Imobiliare."
-        />
-        <meta property="og:title" content="Adaugă anunț - Oltenița Imobiliare" />
-        <meta
-          property="og:description"
-          content="Încarcă titlu, descriere, preț și imagini pentru anunțul tău imobiliar."
-        />
-        <meta
-          property="og:image"
-          content="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80"
-        />
-        <meta property="og:type" content="website" />
+        <title>Adaugă un anunț - Oltenița Imobiliare</title>
       </Helmet>
 
-      <h1 className="text-3xl font-bold mb-6">Adaugă un anunț</h1>
+      <h1 className="text-3xl font-bold mb-6">Adaugă un anunț nou</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          name="title"
           placeholder="Titlu"
-          value={formData.title}
-          onChange={handleChange}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           className="w-full p-2 border rounded"
           required
         />
-        <textarea
-          name="description"
-          placeholder="Descriere"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
+
         <input
           type="number"
-          name="price"
           placeholder="Preț (€)"
-          value={formData.price}
-          onChange={handleChange}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
           className="w-full p-2 border rounded"
           required
         />
-        <select
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
+
+        <textarea
+          placeholder="Descriere"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           className="w-full p-2 border rounded"
+          rows="5"
           required
+        ></textarea>
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full p-2 border rounded"
         >
-          <option value="">Selectează categoria</option>
-          <option value="Apartamente">Apartamente</option>
-          <option value="Case">Case</option>
-          <option value="Terenuri">Terenuri</option>
-          <option value="Garsoniere">Garsoniere</option>
-          <option value="Garaje">Garaje</option>
-          <option value="Spații comerciale">Spații comerciale</option>
+          <option value="apartamente">Apartamente</option>
+          <option value="case">Case</option>
+          <option value="terenuri">Terenuri</option>
+          <option value="garsoniere">Garsoniere</option>
+          <option value="garaje">Garaje</option>
+          <option value="spații comerciale">Spații comerciale</option>
         </select>
 
-        {/* Upload poze */}
         <input
           type="file"
           multiple
-          accept="image/*"
-          onChange={handleImageChange}
-          className="w-full"
+          onChange={handleImageUpload}
+          className="w-full p-2 border rounded"
         />
 
-        {/* Previzualizare */}
-        {formData.images.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            {formData.images.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt="preview"
-                className="w-full h-24 object-cover rounded"
-              />
-            ))}
-          </div>
-        )}
+        {/* Preview poze */}
+        <div className="flex flex-wrap gap-2">
+          {images.map((img, idx) => (
+            <img
+              key={idx}
+              src={img}
+              alt={`Preview ${idx}`}
+              className="w-24 h-24 object-cover rounded"
+            />
+          ))}
+        </div>
 
         <button
           type="submit"
-          disabled={uploading}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
-          {uploading ? "Se încarcă..." : "Adaugă anunț"}
+          Adaugă anunț
         </button>
       </form>
     </div>
