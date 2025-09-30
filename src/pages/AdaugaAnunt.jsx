@@ -1,136 +1,120 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import API_URL from "../api";
 
 export default function AdaugaAnunt() {
-  const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [phone, setPhone] = useState("");
-  const [images, setImages] = useState([]);
-  const [error, setError] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("apartamente");
+  const [location, setLocation] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleImageChange = (e) => {
-    setImages([...e.target.files]);
-  };
-
-  const validatePhone = (number) => {
-    const regex = /^(\+4|0)?7\d{8}$/; // acceptă 07XXXXXXXX sau +407XXXXXXXX
-    return regex.test(number);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ✅ Validare câmpuri obligatorii
-    if (!title || !price || !category || !phone) {
-      setError("Te rog completează titlul, prețul, categoria și telefonul!");
-      return;
-    }
-
-    if (!validatePhone(phone)) {
-      setError("Numărul de telefon nu este valid! Exemplu: 07XXXXXXXX");
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
-      setError("");
-
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("price", price);
-      formData.append("description", description);
-      formData.append("category", category);
-      formData.append("phone", phone);
-
-      images.forEach((img) => formData.append("images", img));
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`, {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/listings`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: JSON.stringify({
+          title,
+          description,
+          price,
+          category,
+          location,   // 👈 locația adăugată
+          imageUrl,
+        }),
       });
 
-      if (!res.ok) throw new Error("Eroare la adăugarea anunțului");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la salvare");
 
-      navigate("/anunturile-mele");
+      alert("✅ Anunț adăugat cu succes!");
+      window.location.href = "/";
     } catch (err) {
-      setError(err.message);
+      alert("❌ " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Adaugă un anunț nou</h1>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-2xl mx-auto p-6 space-y-4 bg-white shadow rounded"
+    >
+      <h1 className="text-2xl font-bold mb-4">Adaugă un anunț</h1>
 
-      {error && (
-        <p className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">{error}</p>
-      )}
+      <input
+        type="text"
+        placeholder="Titlu"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="w-full border p-2 rounded"
+        required
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Titlu anunț"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+      <textarea
+        placeholder="Descriere"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full border p-2 rounded"
+        rows="4"
+        required
+      />
 
-        <input
-          type="number"
-          placeholder="Preț (€)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+      <input
+        type="number"
+        placeholder="Preț (€)"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        className="w-full border p-2 rounded"
+        required
+      />
 
-        <input
-          type="text"
-          placeholder="Categorie (ex: apartament, casă...)"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="w-full border p-2 rounded"
+      >
+        <option value="apartamente">Apartamente</option>
+        <option value="case">Case</option>
+        <option value="terenuri">Terenuri</option>
+        <option value="garsoniere">Garsoniere</option>
+        <option value="garaje">Garaje</option>
+        <option value="spatiu-comercial">Spațiu comercial</option>
+      </select>
 
-        <input
-          type="text"
-          placeholder="Telefon (ex: 07XXXXXXXX)"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+      <input
+        type="text"
+        placeholder="Locație"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        className="w-full border p-2 rounded"
+        required
+      />
 
-        <textarea
-          placeholder="Descriere"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          rows="4"
-        ></textarea>
+      <input
+        type="text"
+        placeholder="URL Imagine (Cloudinary)"
+        value={imageUrl}
+        onChange={(e) => setImageUrl(e.target.value)}
+        className="w-full border p-2 rounded"
+      />
 
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleImageChange}
-          className="w-full"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          {loading ? "Se adaugă..." : "Adaugă Anunț"}
-        </button>
-      </form>
-    </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-green-600 text-white px-4 py-2 rounded w-full"
+      >
+        {loading ? "Se încarcă..." : "Adaugă Anunț"}
+      </button>
+    </form>
   );
 }
