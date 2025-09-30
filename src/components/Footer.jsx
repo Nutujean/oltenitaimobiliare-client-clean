@@ -39,6 +39,11 @@ export default function Footer() {
                 Politică de confidențialitate
               </Link>
             </li>
+            <li>
+              <Link to="/cookies" className="hover:text-white">
+                Politică de cookie-uri
+              </Link>
+            </li>
           </ul>
         </div>
 
