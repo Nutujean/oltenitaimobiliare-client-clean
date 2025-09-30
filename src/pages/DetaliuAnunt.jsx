@@ -7,6 +7,7 @@ export default function DetaliuAnunt() {
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
+  const [favorites, setFavorites] = useState([]);
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -19,37 +20,34 @@ export default function DetaliuAnunt() {
         console.error("Eroare la încărcarea anunțului:", error);
       }
     };
-    fetchListing();
-  }, [id]);
 
-  const handleDelete = async () => {
-    if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
+    const fetchFavorites = async () => {
+      if (!isLoggedIn) return;
       try {
-        await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-          method: "DELETE",
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        navigate("/");
+        const data = await res.json();
+        setFavorites(data.map((fav) => fav._id));
       } catch (error) {
-        console.error("Eroare la ștergere:", error);
+        console.error("Eroare la favorite:", error);
       }
-    }
-  };
+    };
 
-  const handleReserve = async () => {
+    fetchListing();
+    fetchFavorites();
+  }, [id, isLoggedIn]);
+
+  const toggleFavorite = async (listingId) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ status: "rezervat" }),
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites/${listingId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setListing((prev) => ({ ...prev, status: "rezervat" }));
-      alert("Anunțul a fost marcat ca rezervat ✅");
+      const data = await res.json();
+      setFavorites(data);
     } catch (error) {
-      console.error("Eroare la actualizare:", error);
+      console.error("Eroare la toggle favorite:", error);
     }
   };
 
@@ -78,8 +76,18 @@ export default function DetaliuAnunt() {
         ← Înapoi
       </button>
 
-      {/* Titlu */}
-      <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
+      {/* Titlu + ❤️ */}
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-bold">{listing.title}</h1>
+        {isLoggedIn && (
+          <button
+            onClick={() => toggleFavorite(listing._id)}
+            className="text-3xl"
+          >
+            {favorites.includes(listing._id) ? "❤️" : "🤍"}
+          </button>
+        )}
+      </div>
 
       {/* Categoria */}
       {listing.category && (
@@ -155,7 +163,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* Acțiuni - doar pentru user logat */}
+      {/* Acțiuni doar pt user logat */}
       {isLoggedIn && (
         <div className="flex space-x-4 mt-6">
           <Link to={`/editeaza-anunt/${listing._id}`}>
@@ -164,13 +172,31 @@ export default function DetaliuAnunt() {
             </button>
           </Link>
           <button
-            onClick={handleDelete}
+            onClick={async () => {
+              if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
+                await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                });
+                navigate("/");
+              }
+            }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
             Șterge
           </button>
           <button
-            onClick={handleReserve}
+            onClick={async () => {
+              await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ status: "rezervat" }),
+              });
+              setListing((prev) => ({ ...prev, status: "rezervat" }));
+            }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Marchează ca rezervat
