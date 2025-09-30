@@ -87,7 +87,15 @@ export default function Home() {
                     <p className="text-sm text-gray-500">📍 {listing.location}</p>
                   )}
                   {listing.phone && (
-                    <p className="text-sm text-gray-500">📞 {listing.phone}</p>
+                    <p className="text-sm text-gray-500">
+                      📞{" "}
+                      <a
+                        href={`tel:${listing.phone}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {listing.phone}
+                      </a>
+                    </p>
                   )}
                 </div>
               </div>

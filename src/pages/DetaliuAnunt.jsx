@@ -44,17 +44,21 @@ export default function DetaliuAnunt() {
 
       <p className="text-gray-700 mb-4">{listing.description}</p>
 
-      {/* 📍 Locația */}
       {listing.location && (
         <p className="text-gray-600 mb-2">
           <strong>Locație:</strong> {listing.location}
         </p>
       )}
 
-      {/* 📞 Telefon */}
       {listing.phone && (
         <p className="text-gray-600 mb-2">
-          <strong>Telefon:</strong> {listing.phone}
+          <strong>Telefon:</strong>{" "}
+          <a
+            href={`tel:${listing.phone}`}
+            className="text-blue-600 hover:underline"
+          >
+            {listing.phone}
+          </a>
         </p>
       )}
 

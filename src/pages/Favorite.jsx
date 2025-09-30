@@ -50,7 +50,15 @@ export default function Favorite() {
                 <p className="text-sm text-gray-500">📍 {fav.location}</p>
               )}
               {fav.phone && (
-                <p className="text-sm text-gray-500">📞 {fav.phone}</p>
+                <p className="text-sm text-gray-500">
+                  📞{" "}
+                  <a
+                    href={`tel:${fav.phone}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {fav.phone}
+                  </a>
+                </p>
               )}
             </div>
           ))}
