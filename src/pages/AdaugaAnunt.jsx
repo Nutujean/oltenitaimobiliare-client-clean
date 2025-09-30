@@ -1,99 +1,86 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
 export default function AdaugaAnunt() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("apartamente");
+  const [category, setCategory] = useState("");
+  const [phone, setPhone] = useState("");
   const [images, setImages] = useState([]);
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    const uploadedImages = [];
+  const handleImageChange = (e) => {
+    setImages([...e.target.files]);
+  };
 
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append(
-        "upload_preset",
-        import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-      );
-
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${
-            import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-          }/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        const data = await res.json();
-
-        // 🔹 optimizăm link-ul direct după upload
-        const optimizedUrl = data.secure_url.replace(
-          "/upload/",
-          "/upload/f_auto,q_auto/"
-        );
-
-        uploadedImages.push(optimizedUrl);
-      } catch (error) {
-        console.error("Eroare la upload:", error);
-      }
-    }
-
-    setImages((prev) => [...prev, ...uploadedImages]);
+  const validatePhone = (number) => {
+    const regex = /^(\+4|0)?7\d{8}$/; // acceptă 07XXXXXXXX sau +407XXXXXXXX
+    return regex.test(number);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Validare câmpuri obligatorii
+    if (!title || !price || !category || !phone) {
+      setError("Te rog completează titlul, prețul, categoria și telefonul!");
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      setError("Numărul de telefon nu este valid! Exemplu: 07XXXXXXXX");
+      return;
+    }
+
     try {
+      setLoading(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("price", price);
+      formData.append("description", description);
+      formData.append("category", category);
+      formData.append("phone", phone);
+
+      images.forEach((img) => formData.append("images", img));
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          title,
-          price,
-          description,
-          category,
-          images,
-        }),
+        body: formData,
       });
 
-      if (res.ok) {
-        navigate("/anunturile-mele");
-      } else {
-        console.error("Eroare la adăugarea anunțului");
-      }
-    } catch (error) {
-      console.error(error);
+      if (!res.ok) throw new Error("Eroare la adăugarea anunțului");
+
+      navigate("/anunturile-mele");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <Helmet>
-        <title>Adaugă un anunț - Oltenița Imobiliare</title>
-      </Helmet>
+      <h1 className="text-2xl font-bold mb-6">Adaugă un anunț nou</h1>
 
-      <h1 className="text-3xl font-bold mb-6">Adaugă un anunț nou</h1>
+      {error && (
+        <p className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">{error}</p>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
-          placeholder="Titlu"
+          placeholder="Titlu anunț"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
+          className="w-full border rounded px-3 py-2"
         />
 
         <input
@@ -101,56 +88,47 @@ export default function AdaugaAnunt() {
           placeholder="Preț (€)"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="text"
+          placeholder="Categorie (ex: apartament, casă...)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="text"
+          placeholder="Telefon (ex: 07XXXXXXXX)"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full border rounded px-3 py-2"
         />
 
         <textarea
           placeholder="Descriere"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 border rounded"
-          rows="5"
-          required
+          className="w-full border rounded px-3 py-2"
+          rows="4"
         ></textarea>
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full p-2 border rounded"
-        >
-          <option value="apartamente">Apartamente</option>
-          <option value="case">Case</option>
-          <option value="terenuri">Terenuri</option>
-          <option value="garsoniere">Garsoniere</option>
-          <option value="garaje">Garaje</option>
-          <option value="spații comerciale">Spații comerciale</option>
-        </select>
 
         <input
           type="file"
           multiple
-          onChange={handleImageUpload}
-          className="w-full p-2 border rounded"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="w-full"
         />
-
-        {/* Preview poze */}
-        <div className="flex flex-wrap gap-2">
-          {images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Preview ${idx}`}
-              className="w-24 h-24 object-cover rounded"
-            />
-          ))}
-        </div>
 
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          disabled={loading}
+          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
         >
-          Adaugă anunț
+          {loading ? "Se adaugă..." : "Adaugă Anunț"}
         </button>
       </form>
     </div>
