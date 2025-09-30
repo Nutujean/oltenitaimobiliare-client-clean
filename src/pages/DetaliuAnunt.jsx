@@ -1,208 +1,97 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [listing, setListing] = useState(null);
-  const [currentImage, setCurrentImage] = useState(0);
-  const [showPhone, setShowPhone] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const isLoggedIn = !!localStorage.getItem("token");
+  const [anunt, setAnunt] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const fetchListing = async () => {
+    const fetchAnunt = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`);
         const data = await res.json();
-        setListing(data);
+        setAnunt(data);
       } catch (error) {
         console.error("Eroare la încărcarea anunțului:", error);
       }
     };
+    fetchAnunt();
+  }, [id]);
 
-    const fetchFavorites = async () => {
-      if (!isLoggedIn) return;
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        const data = await res.json();
-        setFavorites(data.map((fav) => fav._id));
-      } catch (error) {
-        console.error("Eroare la favorite:", error);
-      }
-    };
-
-    fetchListing();
-    fetchFavorites();
-  }, [id, isLoggedIn]);
-
-  const toggleFavorite = async (listingId) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/favorites/${listingId}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const data = await res.json();
-      setFavorites(data);
-    } catch (error) {
-      console.error("Eroare la toggle favorite:", error);
-    }
+  const handlePrev = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? anunt.images.length - 1 : prev - 1
+    );
   };
 
-  if (!listing) return <p className="text-center py-8">Se încarcă...</p>;
-
-  const images =
-    listing.images && listing.images.length > 0
-      ? listing.images
-      : [listing.imageUrl || "https://via.placeholder.com/600x400?text=Imagine"];
-
-  const nextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % images.length);
+  const handleNext = () => {
+    setCurrentIndex((prev) =>
+      prev === anunt.images.length - 1 ? 0 : prev + 1
+    );
   };
 
-  const prevImage = () => {
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
-  };
+  if (!anunt) return <p className="text-center mt-8">Se încarcă...</p>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Buton Înapoi */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-900 transition"
+        className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
       >
         ← Înapoi
       </button>
 
-      {/* Titlu + ❤️ */}
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl font-bold">{listing.title}</h1>
-        {isLoggedIn && (
-          <button
-            onClick={() => toggleFavorite(listing._id)}
-            className="text-3xl"
-          >
-            {favorites.includes(listing._id) ? "❤️" : "🤍"}
-          </button>
-        )}
-      </div>
+      <h1 className="text-3xl font-bold mb-4">{anunt.title}</h1>
+      <p className="text-xl text-blue-600 font-semibold mb-6">{anunt.price} €</p>
 
-      {/* Categoria */}
-      {listing.category && (
-        <p className="text-gray-500 mb-4">
-          Categoria:{" "}
-          <Link
-            to={`/anunturi?categorie=${listing.category}`}
-            className="font-semibold capitalize text-blue-600 hover:underline"
-          >
-            {listing.category}
-          </Link>
-        </p>
-      )}
+      {/* Carusel imagini */}
+      {anunt.images && anunt.images.length > 0 && (
+        <div className="relative w-full h-96 overflow-hidden rounded-lg shadow">
+          <img
+            src={anunt.images[currentIndex]}
+            alt="imagine anunt"
+            className="w-full h-full object-cover transition-transform duration-500"
+          />
 
-      {/* Galerie imagini */}
-      <div className="relative mb-6">
-        {listing.status === "rezervat" && (
-          <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
-            Rezervat
-          </div>
-        )}
-        <img
-          src={images[currentImage]}
-          alt={`Imagine ${currentImage + 1}`}
-          className="w-full h-80 object-cover rounded-lg"
-        />
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={prevImage}
-              className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white px-2 py-1 rounded hover:bg-opacity-90"
-            >
-              ‹
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white px-2 py-1 rounded hover:bg-opacity-90"
-            >
-              ›
-            </button>
-          </>
-        )}
-      </div>
+          {/* Butoane navigare */}
+          {anunt.images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white text-2xl px-3 py-1 rounded-full"
+              >
+                ‹
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white text-2xl px-3 py-1 rounded-full"
+              >
+                ›
+              </button>
+            </>
+          )}
 
-      {/* Detalii */}
-      <p className="text-gray-700 mb-4">{listing.description}</p>
-      <p className="text-xl font-semibold mb-2">{listing.price} €</p>
-      {listing.status && (
-        <p className="mb-6">
-          Status:{" "}
-          <span
-            className={`font-bold ${
-              listing.status === "rezervat" ? "text-yellow-600" : "text-green-600"
-            }`}
-          >
-            {listing.status}
-          </span>
-        </p>
-      )}
-
-      {/* Contact vânzător */}
-      <div className="mb-6">
-        <button
-          onClick={() => setShowPhone(!showPhone)}
-          className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          {showPhone ? "Ascunde telefonul" : "Contactează vânzătorul"}
-        </button>
-        {showPhone && (
-          <p className="mt-3 text-lg font-semibold text-gray-800">
-            📞 Telefon: {listing.phone || "07xx xxx xxx"}
-          </p>
-        )}
-      </div>
-
-      {/* Acțiuni doar pt user logat */}
-      {isLoggedIn && (
-        <div className="flex space-x-4 mt-6">
-          <Link to={`/editeaza-anunt/${listing._id}`}>
-            <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-              Editează
-            </button>
-          </Link>
-          <button
-            onClick={async () => {
-              if (window.confirm("Sigur vrei să ștergi acest anunț?")) {
-                await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-                  method: "DELETE",
-                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-                });
-                navigate("/");
-              }
-            }}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-          >
-            Șterge
-          </button>
-          <button
-            onClick={async () => {
-              await fetch(`${import.meta.env.VITE_API_URL}/listings/${id}`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({ status: "rezervat" }),
-              });
-              setListing((prev) => ({ ...prev, status: "rezervat" }));
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Marchează ca rezervat
-          </button>
+          {/* Indicatori */}
+          {anunt.images.length > 1 && (
+            <div className="absolute bottom-2 w-full flex justify-center space-x-2">
+              {anunt.images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-3 h-3 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
+
+      <p className="mt-6 text-gray-700">{anunt.description}</p>
+      <p className="mt-4 text-sm text-gray-500">Categorie: {anunt.category}</p>
+      <p className="mt-2 text-sm text-gray-500">Status: {anunt.status}</p>
     </div>
   );
 }
