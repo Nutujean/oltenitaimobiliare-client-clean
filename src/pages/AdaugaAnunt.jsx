@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function AdaugaAnunt() {
   const navigate = useNavigate();
@@ -81,6 +82,25 @@ export default function AdaugaAnunt() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      {/* SEO meta tags */}
+      <Helmet>
+        <title>Adaugă anunț - Oltenița Imobiliare</title>
+        <meta
+          name="description"
+          content="Publică gratuit anunțul tău imobiliar pe Oltenița Imobiliare."
+        />
+        <meta property="og:title" content="Adaugă anunț - Oltenița Imobiliare" />
+        <meta
+          property="og:description"
+          content="Încarcă titlu, descriere, preț și imagini pentru anunțul tău imobiliar."
+        />
+        <meta
+          property="og:image"
+          content="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80"
+        />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       <h1 className="text-3xl font-bold mb-6">Adaugă un anunț</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -138,7 +158,12 @@ export default function AdaugaAnunt() {
         {formData.images.length > 0 && (
           <div className="grid grid-cols-3 gap-2 mt-4">
             {formData.images.map((img, i) => (
-              <img key={i} src={img} alt="preview" className="w-full h-24 object-cover rounded" />
+              <img
+                key={i}
+                src={img}
+                alt="preview"
+                className="w-full h-24 object-cover rounded"
+              />
             ))}
           </div>
         )}
