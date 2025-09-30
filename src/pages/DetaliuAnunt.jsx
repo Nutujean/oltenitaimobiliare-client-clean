@@ -6,6 +6,7 @@ export default function DetaliuAnunt() {
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
+  const [showPhone, setShowPhone] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -54,7 +55,6 @@ export default function DetaliuAnunt() {
 
   if (!listing) return <p className="text-center py-8">Se încarcă...</p>;
 
-  // Lista de imagini: slider dacă sunt mai multe
   const images =
     listing.images && listing.images.length > 0
       ? listing.images
@@ -81,7 +81,7 @@ export default function DetaliuAnunt() {
       {/* Titlu */}
       <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
 
-      {/* Categoria cu link */}
+      {/* Categoria */}
       {listing.category && (
         <p className="text-gray-500 mb-4">
           Categoria:{" "}
@@ -97,16 +97,15 @@ export default function DetaliuAnunt() {
       {/* Galerie imagini */}
       <div className="relative mb-6">
         {listing.status === "rezervat" && (
-          <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">
+          <div className="absolute top-4 -left-10 bg-yellow-500 text-white text-xs font-bold px-12 py-1 transform -rotate-45 shadow-md">
             Rezervat
-          </span>
+          </div>
         )}
         <img
           src={images[currentImage]}
           alt={`Imagine ${currentImage + 1}`}
           className="w-full h-80 object-cover rounded-lg"
         />
-
         {images.length > 1 && (
           <>
             <button
@@ -141,43 +140,19 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* Distribuire anunț */}
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-2">Distribuie anunțul:</h3>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href={`https://wa.me/?text=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            WhatsApp
-          </a>
-          <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Facebook
-          </a>
-          <a
-            href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 bg-sky-500 text-white rounded hover:bg-sky-600"
-          >
-            Telegram
-          </a>
-          <a
-            href={`https://www.instagram.com/?url=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600"
-          >
-            Instagram
-          </a>
-        </div>
+      {/* Contact vânzător */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowPhone(!showPhone)}
+          className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        >
+          {showPhone ? "Ascunde telefonul" : "Contactează vânzătorul"}
+        </button>
+        {showPhone && (
+          <p className="mt-3 text-lg font-semibold text-gray-800">
+            📞 Telefon: {listing.phone || "07xx xxx xxx"}
+          </p>
+        )}
       </div>
 
       {/* Acțiuni - doar pentru user logat */}
@@ -188,19 +163,17 @@ export default function DetaliuAnunt() {
               Editează
             </button>
           </Link>
-
           <button
             onClick={handleDelete}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
             Șterge
           </button>
-
           <button
             onClick={handleReserve}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
-            Rezervat
+            Marchează ca rezervat
           </button>
         </div>
       )}
