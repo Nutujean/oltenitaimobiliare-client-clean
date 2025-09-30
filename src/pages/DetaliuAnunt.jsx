@@ -6,6 +6,7 @@ export default function DetaliuAnunt() {
   const navigate = useNavigate();
   const [anunt, setAnunt] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [zoom, setZoom] = useState(false);
 
   useEffect(() => {
     const fetchAnunt = async () => {
@@ -52,7 +53,8 @@ export default function DetaliuAnunt() {
           <img
             src={anunt.images[currentIndex]}
             alt="imagine anunt"
-            className="w-full h-full object-cover transition-transform duration-500"
+            onClick={() => setZoom(true)}
+            className="w-full h-full object-cover cursor-zoom-in transition-transform duration-500"
           />
 
           {/* Butoane navigare */}
@@ -85,6 +87,40 @@ export default function DetaliuAnunt() {
                 />
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ZOOM fullscreen */}
+      {zoom && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <button
+            onClick={() => setZoom(false)}
+            className="absolute top-4 right-4 text-white text-3xl"
+          >
+            ✕
+          </button>
+          <img
+            src={anunt.images[currentIndex]}
+            alt="zoom"
+            className="max-w-full max-h-full object-contain"
+          />
+          {/* Navigare și în fullscreen */}
+          {anunt.images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className="absolute left-4 text-white text-4xl"
+              >
+                ‹
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-4 text-white text-4xl"
+              >
+                ›
+              </button>
+            </>
           )}
         </div>
       )}
