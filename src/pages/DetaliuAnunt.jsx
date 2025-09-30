@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -37,6 +38,22 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* SEO meta tags */}
+      <Helmet>
+        <title>{anunt.title} - Oltenița Imobiliare</title>
+        <meta name="description" content={anunt.description?.slice(0, 150)} />
+        <meta property="og:title" content={anunt.title} />
+        <meta property="og:description" content={anunt.description?.slice(0, 150)} />
+        <meta
+          property="og:image"
+          content={
+            anunt.images?.[0] ||
+            "https://via.placeholder.com/600x400?text=Oltenita+Imobiliare"
+          }
+        />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       <button
         onClick={() => navigate(-1)}
         className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
@@ -45,9 +62,10 @@ export default function DetaliuAnunt() {
       </button>
 
       <h1 className="text-3xl font-bold mb-4">{anunt.title}</h1>
-      <p className="text-xl text-blue-600 font-semibold mb-6">{anunt.price} €</p>
-
-      {/* Carusel imagini */}
+      <p className="text-xl text-blue-600 font-semibold mb-6">
+       Preț: {anunt.price} €
+      </p>
+       {/* Carusel imagini */}
       {anunt.images && anunt.images.length > 0 && (
         <div className="relative w-full h-96 overflow-hidden rounded-lg shadow">
           <img
@@ -56,8 +74,6 @@ export default function DetaliuAnunt() {
             onClick={() => setZoom(true)}
             className="w-full h-full object-cover cursor-zoom-in transition-transform duration-500"
           />
-
-          {/* Butoane navigare */}
           {anunt.images.length > 1 && (
             <>
               <button
@@ -74,8 +90,6 @@ export default function DetaliuAnunt() {
               </button>
             </>
           )}
-
-          {/* Indicatori */}
           {anunt.images.length > 1 && (
             <div className="absolute bottom-2 w-full flex justify-center space-x-2">
               {anunt.images.map((_, idx) => (
@@ -91,7 +105,7 @@ export default function DetaliuAnunt() {
         </div>
       )}
 
-      {/* ZOOM fullscreen */}
+      {/* Fullscreen zoom */}
       {zoom && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
           <button
@@ -105,7 +119,6 @@ export default function DetaliuAnunt() {
             alt="zoom"
             className="max-w-full max-h-full object-contain"
           />
-          {/* Navigare și în fullscreen */}
           {anunt.images.length > 1 && (
             <>
               <button
