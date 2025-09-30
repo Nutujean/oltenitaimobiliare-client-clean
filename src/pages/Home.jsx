@@ -29,8 +29,7 @@ export default function Home() {
       <section
         className="h-[500px] bg-cover bg-center flex items-center justify-center text-white"
         style={{
-          backgroundImage:
-            "url('/hero.jpg')", // asigură-te că ai pus un hero.jpg în public/
+          backgroundImage: "url('/hero.jpg')", // pune hero.jpg în public/
         }}
       >
         <div className="bg-black bg-opacity-50 p-6 rounded-lg text-center">
