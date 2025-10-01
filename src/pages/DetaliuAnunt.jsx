@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
+// Swiper
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Keyboard } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/navigation";
+
 import API_URL from "../api";
 
 export default function DetaliuAnunt() {
@@ -12,38 +17,22 @@ export default function DetaliuAnunt() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        console.log("👉 API_URL importat =", API_URL);
-        console.log("👉 ID anunț =", id);
-
         const url = `${API_URL}/listings/${id}`;
-        console.log("👉 Cerere finală =", url);
-
         const res = await fetch(url);
-        console.log("👉 Status =", res.status);
-
         if (!res.ok) throw new Error(`Eroare la încărcarea anunțului (status ${res.status})`);
-
         const data = await res.json();
-        console.log("👉 Răspuns primit =", data);
-
         setListing(data);
       } catch (err) {
         console.error("❌ Eroare DetaliuAnunt:", err);
         setError(err.message);
       }
     };
-
     fetchListing();
   }, [id]);
 
   if (error) {
-    return (
-      <p className="text-center py-10 text-red-600">
-        ❌ {error}
-      </p>
-    );
+    return <p className="text-center py-10 text-red-600">❌ {error}</p>;
   }
-
   if (!listing) {
     return <p className="text-center py-10">Se încarcă...</p>;
   }
@@ -51,17 +40,26 @@ export default function DetaliuAnunt() {
   const imagesToShow =
     listing.images && listing.images.length > 0
       ? listing.images
-      : [listing.imageUrl];
+      : [listing.imageUrl || "/no-image.jpg"];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <Swiper spaceBetween={10} slidesPerView={1}>
+      {/* 🔹 Slider cu săgeți stânga/dreapta */}
+      <Swiper
+        modules={[Navigation, Keyboard]}
+        navigation
+        keyboard
+        spaceBetween={10}
+        slidesPerView={1}
+        loop={imagesToShow.length > 1}
+        className="mb-6"
+      >
         {imagesToShow.map((img, i) => (
           <SwiperSlide key={i}>
             <img
-              src={img || "https://via.placeholder.com/600x400?text=Fără+imagine"}
+              src={img || "/no-image.jpg"}
               alt={listing.title}
-              className="w-full h-80 object-cover rounded mb-6"
+              className="w-full h-80 object-cover rounded"
             />
           </SwiperSlide>
         ))}
@@ -89,11 +87,8 @@ export default function DetaliuAnunt() {
       )}
 
       <p className="text-sm text-gray-500 capitalize">
-        Categorie: {listing.category || "Nespecificat"}
       </p>
-      <p className="text-sm text-gray-500">
-        Status: {listing.status || "disponibil"}
-      </p>
+      <p className="text-sm text-gray-500">Status: {listing.status || "disponibil"}</p>
     </div>
   );
 }

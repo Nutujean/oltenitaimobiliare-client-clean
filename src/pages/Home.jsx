@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Keyboard } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://oltenitaimobiliare-backend.onrender.com/api";
@@ -52,7 +57,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
+          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, case, garsoniere, terenuri, spatii comerciale în zona ta</p>
         </div>
       </section>
 
@@ -108,24 +113,57 @@ export default function Home() {
           <p className="text-gray-500">Nu există anunțuri momentan.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((listing) => (
-              <Link
-                key={listing._id}
-                to={`/anunt/${listing._id}`}
-                className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition"
-              >
-                <img
-                  src={getImageUrl(listing)}
-                  alt={listing.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-bold line-clamp-1">{listing.title}</h3>
-                  <p className="text-gray-600">{listing.price} €</p>
-                  <p className="text-sm text-gray-500 line-clamp-1">{listing.location}</p>
-                </div>
-              </Link>
-            ))}
+            {listings.map((listing) => {
+              const imgs =
+                listing.images && listing.images.length > 0
+                  ? listing.images
+                  : [listing.imageUrl || "/no-image.jpg"];
+
+              const hasMultiple = imgs.length > 1;
+
+              return (
+                <Link
+                  key={listing._id}
+                  to={`/anunt/${listing._id}`}
+                  className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition"
+                >
+                  {/* 🔹 dacă are mai multe poze → slider cu săgeți; altfel imagine simplă */}
+                  {hasMultiple ? (
+                    <Swiper
+                      modules={[Navigation, Keyboard]}
+                      navigation
+                      keyboard
+                      spaceBetween={8}
+                      slidesPerView={1}
+                      loop
+                      className="w-full h-48"
+                    >
+                      {imgs.map((src, i) => (
+                        <SwiperSlide key={i}>
+                          <img
+                            src={src || "/no-image.jpg"}
+                            alt={listing.title}
+                            className="w-full h-48 object-cover"
+                          />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  ) : (
+                    <img
+                      src={getImageUrl(listing)}
+                      alt={listing.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
+
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold line-clamp-1">{listing.title}</h3>
+                    <p className="text-gray-600">{listing.price} €</p>
+                    <p className="text-sm text-gray-500 line-clamp-1">{listing.location}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>
