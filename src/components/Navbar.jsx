@@ -35,23 +35,22 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo + Acasă */}
         <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-          <img src="/logo.svg" alt="Oltenița Imobiliare" className="h-8 w-8" onError={(e)=>{e.currentTarget.style.display='none'}}/>
+          <img
+            src="/logo.svg"
+            alt="Oltenița Imobiliare"
+            className="h-8 w-8"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
           <span className="text-xl font-bold">Oltenița Imobiliare</span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Desktop nav – minimal */}
         <nav className="hidden md:flex items-center gap-2">
           <NavItem to="/">Acasă</NavItem>
-          <NavItem to="/despre">Despre</NavItem>
-          <NavItem to="/contact">Contact</NavItem>
-
-          <span className="mx-2 h-6 w-px bg-gray-200" />
-
-          <NavItem to="/categorie/apartamente">Apartamente</NavItem>
-          <NavItem to="/categorie/case">Case</NavItem>
-          <NavItem to="/categorie/terenuri">Terenuri</NavItem>
 
           <span className="mx-2 h-6 w-px bg-gray-200" />
 
@@ -106,19 +105,13 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu – minimal */}
       {open && (
         <div className="md:hidden border-t bg-white">
           <div className="px-4 py-3 flex flex-col">
-            <NavItem to="/" onClick={() => setOpen(false)}>Acasă</NavItem>
-            <NavItem to="/despre" onClick={() => setOpen(false)}>Despre</NavItem>
-            <NavItem to="/contact" onClick={() => setOpen(false)}>Contact</NavItem>
-
-            <div className="my-2 h-px bg-gray-200" />
-
-            <NavItem to="/categorie/apartamente" onClick={() => setOpen(false)}>Apartamente</NavItem>
-            <NavItem to="/categorie/case" onClick={() => setOpen(false)}>Case</NavItem>
-            <NavItem to="/categorie/terenuri" onClick={() => setOpen(false)}>Terenuri</NavItem>
+            <NavItem to="/" onClick={() => setOpen(false)}>
+              Acasă
+            </NavItem>
 
             <div className="my-2 h-px bg-gray-200" />
 
