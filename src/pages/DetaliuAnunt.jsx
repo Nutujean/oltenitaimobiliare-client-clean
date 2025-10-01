@@ -11,13 +11,9 @@ import API_URL from "../api";
 
 function normalizeForWhatsApp(raw) {
   if (!raw) return "";
-  // păstrăm doar cifre
   let digits = String(raw).replace(/\D+/g, "");
-  // dacă începe cu 00 -> scoatem prefixul de internațional
   if (digits.startsWith("00")) digits = digits.slice(2);
-  // dacă începe cu 0 (ex. 07xx...) -> prefix România 40
-  if (digits.startsWith("0")) digits = "40" + digits.slice(1);
-  // dacă începe cu 40 e deja ok; dacă începe cu 4 sau altceva, îl lăsăm așa
+  if (digits.startsWith("0")) digits = "40" + digits.slice(1); // 07xx -> 407xx
   return digits;
 }
 
@@ -49,12 +45,8 @@ export default function DetaliuAnunt() {
 
   const waNumber = useMemo(() => normalizeForWhatsApp(contactPhone), [contactPhone]);
 
-  if (error) {
-    return <p className="text-center py-10 text-red-600">❌ {error}</p>;
-  }
-  if (!listing) {
-    return <p className="text-center py-10">Se încarcă...</p>;
-  }
+  if (error) return <p className="text-center py-10 text-red-600">❌ {error}</p>;
+  if (!listing) return <p className="text-center py-10">Se încarcă...</p>;
 
   const imagesToShow =
     listing.images && listing.images.length > 0
@@ -65,7 +57,6 @@ export default function DetaliuAnunt() {
     <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Col stânga: imagini + descriere */}
       <div className="lg:col-span-2">
-        {/* 🔹 Slider cu săgeți stânga/dreapta */}
         <Swiper
           modules={[Navigation, Keyboard]}
           navigation
@@ -101,9 +92,7 @@ export default function DetaliuAnunt() {
         <p className="text-sm text-gray-500 capitalize">
           Categorie: {listing.category || "Nespecificat"}
         </p>
-        <p className="text-sm text-gray-500">
-          Status: {listing.status || "disponibil"}
-        </p>
+        <p className="text-sm text-gray-500">Status: {listing.status || "disponibil"}</p>
       </div>
 
       {/* Col dreapta: card contact */}
