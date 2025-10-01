@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-// ✅ URL API fix: luăm direct din .env
+// ✅ URL API (din .env sau fallback)
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://oltenitaimobiliare-backend.onrender.com/api";
@@ -10,7 +10,7 @@ export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
 
-  // ✅ Funcție pentru imagine (acceptă images[] și imageUrl)
+  // ✅ Alegem imaginea corectă din anunț
   const getImageUrl = (listing) => {
     if (listing.images && listing.images.length > 0) {
       return listing.images[0];
@@ -38,13 +38,14 @@ export default function Home() {
       });
   }, []);
 
+  // ✅ Categorii - folosim poze din client/public
   const categories = [
-    { name: "Apartamente", path: "/apartamente", image: "/images/categorii/apartamente.jpg" },
-    { name: "Case", path: "/case", image: "/images/categorii/case.jpg" },
-    { name: "Terenuri", path: "/terenuri", image: "/images/categorii/terenuri.jpg" },
-    { name: "Garsoniere", path: "/garsoniere", image: "/images/categorii/garsoniere.jpg" },
-    { name: "Garaje", path: "/garaje", image: "/images/categorii/garaje.jpg" },
-    { name: "Spațiu comercial", path: "/spatiu-comercial", image: "/images/categorii/spatiu-comercial.jpg" },
+    { name: "Apartamente", path: "/apartamente", image: "/apartamente.jpg" },
+    { name: "Case", path: "/case", image: "/case.jpg" },
+    { name: "Terenuri", path: "/terenuri", image: "/terenuri.jpg" },
+    { name: "Garsoniere", path: "/garsoniere", image: "/garsoniere.jpg" },
+    { name: "Garaje", path: "/garaje", image: "/garaje.jpg" },
+    { name: "Spațiu comercial", path: "/spatiu-comercial", image: "/spatiu-comercial.jpg" },
   ];
 
   return (
@@ -52,7 +53,7 @@ export default function Home() {
       {/* HERO */}
       <section
         className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
-        style={{ backgroundImage: "url('/images/hero.jpg')" }}
+        style={{ backgroundImage: "url('/fundal.jpg')" }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
@@ -81,7 +82,7 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Eroare vizibilă (dacă e cazul) */}
+      {/* Eroare vizibilă */}
       {error && (
         <div className="max-w-5xl mx-auto mt-6 px-6">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
