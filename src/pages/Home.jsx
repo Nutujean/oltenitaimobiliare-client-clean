@@ -10,11 +10,15 @@ export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
 
-  // ✅ Construim URL corect pentru poze
-  const getImageUrl = (src) => {
-    if (!src) return "https://via.placeholder.com/400x250?text=Fara+imagine";
-    if (src.startsWith("http")) return src;
-    return `${new URL(API_URL).origin}${src.startsWith("/") ? src : "/" + src}`;
+  // ✅ Funcție pentru imagine (acceptă images[] și imageUrl)
+  const getImageUrl = (listing) => {
+    if (listing.images && listing.images.length > 0) {
+      return listing.images[0];
+    }
+    if (listing.imageUrl) {
+      return listing.imageUrl;
+    }
+    return "https://via.placeholder.com/400x250?text=Fara+imagine";
   };
 
   useEffect(() => {
@@ -53,15 +57,26 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
+          <p className="text-lg">
+            Cumpără, vinde sau închiriază locuințe în zona ta
+          </p>
         </div>
       </section>
 
       {/* Căutare + Adaugă Anunț */}
       <section className="-mt-8 px-6 max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-center bg-white shadow rounded-xl py-4 relative z-10">
-        <input type="text" placeholder="Caută după titlu sau locație..." className="flex-1 border rounded-lg px-4 py-2 w-full" />
-        <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Caută</button>
-        <Link to="/adauga-anunt" className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+        <input
+          type="text"
+          placeholder="Caută după titlu sau locație..."
+          className="flex-1 border rounded-lg px-4 py-2 w-full"
+        />
+        <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+          Caută
+        </button>
+        <Link
+          to="/adauga-anunt"
+          className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+        >
           + Adaugă anunț
         </Link>
       </section>
@@ -93,7 +108,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Anunțuri */}
+      {/* Anunțuri recente */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
         {listings.length === 0 && !error ? (
@@ -101,9 +116,13 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {listings.map((listing) => (
-              <div key={listing._id} className="bg-white shadow-md rounded-xl overflow-hidden">
+              <Link
+                key={listing._id}
+                to={`/anunt/${listing._id}`}
+                className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition"
+              >
                 <img
-                  src={getImageUrl(listing.images?.[0])}
+                  src={getImageUrl(listing)}
                   alt={listing.title}
                   className="w-full h-48 object-cover"
                 />
@@ -112,7 +131,7 @@ export default function Home() {
                   <p className="text-gray-600">{listing.price} €</p>
                   <p className="text-sm text-gray-500">{listing.location}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
