@@ -1,116 +1,116 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import API_URL from "../api";
+
+// ✅ URL API fix: luăm direct din .env
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://oltenitaimobiliare-backend.onrender.com/api";
 
 export default function Home() {
   const [listings, setListings] = useState([]);
+  const [error, setError] = useState("");
+
+  // ✅ Construim URL corect pentru poze
+  const getImageUrl = (src) => {
+    if (!src) return "https://via.placeholder.com/400x250?text=Fara+imagine";
+    if (src.startsWith("http")) return src;
+    return `${new URL(API_URL).origin}${src.startsWith("/") ? src : "/" + src}`;
+  };
 
   useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const res = await fetch(`${API_URL}/listings`);
-        if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor");
-
-        const data = await res.json();
-        setListings(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("❌ Eroare la fetch listings:", err);
-        setListings([]);
-      }
-    };
-
-    fetchListings();
+    console.log("[HOME] API_URL =", API_URL);
+    fetch(`${API_URL}/listings`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) setListings(data);
+        else setError("Răspuns invalid de la API.");
+      })
+      .catch((e) => {
+        console.error("Eroare la fetch listings:", e);
+        setError(e.message || "Eroare necunoscută");
+      });
   }, []);
 
-  return (
-    <div>
-      <Helmet>
-        <title>Oltenița Imobiliare - Cumpără, vinde sau închiriază</title>
-        <meta
-          name="description"
-          content="Cumpără, vinde sau închiriază apartamente, case, terenuri și alte proprietăți în zona Oltenița."
-        />
-      </Helmet>
+  const categories = [
+    { name: "Apartamente", path: "/apartamente", image: "/images/categorii/apartamente.jpg" },
+    { name: "Case", path: "/case", image: "/images/categorii/case.jpg" },
+    { name: "Terenuri", path: "/terenuri", image: "/images/categorii/terenuri.jpg" },
+    { name: "Garsoniere", path: "/garsoniere", image: "/images/categorii/garsoniere.jpg" },
+    { name: "Garaje", path: "/garaje", image: "/images/categorii/garaje.jpg" },
+    { name: "Spațiu comercial", path: "/spatiu-comercial", image: "/images/categorii/spatiu-comercial.jpg" },
+  ];
 
-      {/* Hero */}
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* HERO */}
       <section
-        className="h-[500px] bg-cover bg-center flex items-center justify-center text-white"
-        style={{ backgroundImage: "url('/hero.jpg')" }}
+        className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
+        style={{ backgroundImage: "url('/images/hero.jpg')" }}
       >
-        <div className="bg-black bg-opacity-50 p-6 rounded-lg text-center">
-          <h1 className="text-4xl font-bold mb-4">
-            Bine ai venit la Oltenița Imobiliare
-          </h1>
-          <p className="mb-4">
-            Caută, vinde sau închiriază proprietăți în zona ta
-          </p>
-          <Link
-            to="/adauga-anunt"
-            className="bg-green-600 px-6 py-3 rounded-lg font-bold hover:bg-green-700"
-          >
-            + Adaugă un anunț
-          </Link>
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="relative z-10 text-center px-4">
+          <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
+          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
         </div>
       </section>
 
-      {/* Anunțuri recente */}
-      <section className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
-        {listings.length === 0 ? (
-          <p className="text-gray-600">Momentan nu sunt anunțuri disponibile.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {listings.map((listing) => (
-              <div
-                key={listing._id}
-                className="border rounded-lg shadow bg-white overflow-hidden hover:shadow-lg transition"
-              >
-                {/* Slider pentru imagini */}
-                <Swiper spaceBetween={10} slidesPerView={1}>
-                  {(listing.images && listing.images.length > 0
-                    ? listing.images
-                    : [listing.imageUrl]
-                  ).map((img, i) => (
-                    <SwiperSlide key={i}>
-                      <img
-                        src={
-                          img ||
-                          "https://via.placeholder.com/400x250?text=Fără+imagine"
-                        }
-                        alt={listing.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+      {/* Căutare + Adaugă Anunț */}
+      <section className="-mt-8 px-6 max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-center bg-white shadow rounded-xl py-4 relative z-10">
+        <input type="text" placeholder="Caută după titlu sau locație..." className="flex-1 border rounded-lg px-4 py-2 w-full" />
+        <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Caută</button>
+        <Link to="/adauga-anunt" className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+          + Adaugă anunț
+        </Link>
+      </section>
 
-                <div className="p-4 space-y-2">
-                  <h2 className="text-lg font-bold">{listing.title}</h2>
-                  <p className="text-gray-600">
-                    <strong>Preț:</strong> {listing.price} €
-                  </p>
-                  <p className="text-sm text-gray-500 capitalize">
-                    {listing.category}
-                  </p>
-                  {listing.location && (
-                    <p className="text-sm text-gray-500">
-                      📍 {listing.location}
-                    </p>
-                  )}
-                  {listing.phone && (
-                    <p className="text-sm text-gray-500">
-                      📞{" "}
-                      <a
-                        href={`tel:${listing.phone}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {listing.phone}
-                      </a>
-                    </p>
-                  )}
+      {/* Eroare vizibilă (dacă e cazul) */}
+      {error && (
+        <div className="max-w-5xl mx-auto mt-6 px-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <strong>Eroare la încărcarea anunțurilor:</strong> {error}
+          </div>
+        </div>
+      )}
+
+      {/* Categorii */}
+      <section className="py-12 px-6 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {categories.map((cat) => (
+            <Link key={cat.name} to={cat.path} className="relative group">
+              <div
+                className="h-40 rounded-xl shadow-md bg-cover bg-center flex items-center justify-center"
+                style={{ backgroundImage: `url(${cat.image})` }}
+              >
+                <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition"></div>
+                <h3 className="text-white text-xl font-bold z-10">{cat.name}</h3>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Anunțuri */}
+      <section className="py-12 px-6 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
+        {listings.length === 0 && !error ? (
+          <p className="text-gray-500">Nu există anunțuri momentan.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {listings.map((listing) => (
+              <div key={listing._id} className="bg-white shadow-md rounded-xl overflow-hidden">
+                <img
+                  src={getImageUrl(listing.images?.[0])}
+                  alt={listing.title}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-bold">{listing.title}</h3>
+                  <p className="text-gray-600">{listing.price} €</p>
+                  <p className="text-sm text-gray-500">{listing.location}</p>
                 </div>
               </div>
             ))}
