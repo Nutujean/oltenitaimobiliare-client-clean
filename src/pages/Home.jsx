@@ -6,6 +6,8 @@ import { Navigation, Keyboard } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
+import SearchBar from "../components/SearchBar";
+
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://oltenitaimobiliare-backend.onrender.com/api";
@@ -13,6 +15,8 @@ const API_URL =
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({}); // { q, location, price }
 
   const getImageUrl = (listing) => {
     if (listing.images && listing.images.length > 0) return listing.images[0];
@@ -20,24 +24,39 @@ export default function Home() {
     return "/no-image.jpg";
   };
 
-  useEffect(() => {
-    console.log("[HOME] API_URL =", API_URL);
-    fetch(`${API_URL}/listings`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data)) setListings(data);
-        else setError("Răspuns invalid de la API.");
-      })
-      .catch((e) => {
-        console.error("Eroare la fetch listings:", e);
-        setError(e.message || "Eroare necunoscută");
-      });
-  }, []);
+  const fetchListings = async (filters = {}) => {
+    try {
+      setLoading(true);
+      setError("");
 
-  // ✅ categorii cu slug-uri pentru rute
+      const params = new URLSearchParams();
+      if (filters.q) params.set("q", filters.q);
+      if (filters.location) params.set("location", filters.location);
+      if (filters.price) params.set("price", String(filters.price));
+
+      const url =
+        params.toString().length > 0
+          ? `${API_URL}/listings?${params.toString()}`
+          : `${API_URL}/listings`;
+
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      setListings(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Eroare la fetch listings:", e);
+      setError(e.message || "Eroare necunoscută");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings(activeFilters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(activeFilters)]);
+
+  // categorii cu slug-uri pentru rute
   const categories = [
     { name: "Apartamente", slug: "apartamente", image: "/apartamente.jpg" },
     { name: "Case", slug: "case", image: "/case.jpg" },
@@ -57,27 +76,12 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, case, garsoniere, terenuri, spatii comerciale în zona ta</p>
+          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, case, garsoniere,terenuri, spatii comerciale, garaje în zona ta</p>
         </div>
       </section>
 
-      {/* Căutare + Adaugă Anunț */}
-      <section className="-mt-8 px-6 max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-center bg-white shadow rounded-xl py-4 relative z-10">
-        <input
-          type="text"
-          placeholder="Caută după titlu sau locație..."
-          className="flex-1 border rounded-lg px-4 py-2 w-full"
-        />
-        <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
-          Caută
-        </button>
-        <Link
-          to="/adauga-anunt"
-          className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-        >
-          + Adaugă anunț
-        </Link>
-      </section>
+      {/* 🔎 Bara de căutare compusă */}
+      <SearchBar onSearch={(filters) => setActiveFilters(filters)} />
 
       {/* Eroare vizibilă */}
       {error && (
@@ -106,11 +110,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Anunțuri recente */}
+      {/* Anunțuri (filtrate/recente) */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
-        {listings.length === 0 && !error ? (
-          <p className="text-gray-500">Nu există anunțuri momentan.</p>
+        <h2 className="text-2xl font-bold mb-6">
+          {Object.keys(activeFilters).length ? "Rezultate căutare" : "Anunțuri recente"}
+        </h2>
+
+        {loading ? (
+          <p className="text-gray-500">Se încarcă...</p>
+        ) : listings.length === 0 ? (
+          <p className="text-gray-500">Nu s-au găsit anunțuri.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {listings.map((listing) => {
@@ -118,7 +127,6 @@ export default function Home() {
                 listing.images && listing.images.length > 0
                   ? listing.images
                   : [listing.imageUrl || "/no-image.jpg"];
-
               const hasMultiple = imgs.length > 1;
 
               return (
@@ -127,7 +135,6 @@ export default function Home() {
                   to={`/anunt/${listing._id}`}
                   className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition"
                 >
-                  {/* 🔹 dacă are mai multe poze → slider cu săgeți; altfel imagine simplă */}
                   {hasMultiple ? (
                     <Swiper
                       modules={[Navigation, Keyboard]}
@@ -155,7 +162,6 @@ export default function Home() {
                       className="w-full h-48 object-cover"
                     />
                   )}
-
                   <div className="p-4">
                     <h3 className="text-lg font-bold line-clamp-1">{listing.title}</h3>
                     <p className="text-gray-600">{listing.price} €</p>
