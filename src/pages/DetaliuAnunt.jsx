@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 // Swiper
@@ -8,6 +8,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 import API_URL from "../api";
+
+function normalizeForWhatsApp(raw) {
+  if (!raw) return "";
+  // păstrăm doar cifre
+  let digits = String(raw).replace(/\D+/g, "");
+  // dacă începe cu 00 -> scoatem prefixul de internațional
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  // dacă începe cu 0 (ex. 07xx...) -> prefix România 40
+  if (digits.startsWith("0")) digits = "40" + digits.slice(1);
+  // dacă începe cu 40 e deja ok; dacă începe cu 4 sau altceva, îl lăsăm așa
+  return digits;
+}
 
 export default function DetaliuAnunt() {
   const { id } = useParams();
@@ -30,6 +42,13 @@ export default function DetaliuAnunt() {
     fetchListing();
   }, [id]);
 
+  const contactPhone = useMemo(() => {
+    if (!listing) return "";
+    return listing.contactPhone || listing.phone || (listing.owner && listing.owner.phone) || "";
+  }, [listing]);
+
+  const waNumber = useMemo(() => normalizeForWhatsApp(contactPhone), [contactPhone]);
+
   if (error) {
     return <p className="text-center py-10 text-red-600">❌ {error}</p>;
   }
@@ -43,52 +62,95 @@ export default function DetaliuAnunt() {
       : [listing.imageUrl || "/no-image.jpg"];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* 🔹 Slider cu săgeți stânga/dreapta */}
-      <Swiper
-        modules={[Navigation, Keyboard]}
-        navigation
-        keyboard
-        spaceBetween={10}
-        slidesPerView={1}
-        loop={imagesToShow.length > 1}
-        className="mb-6"
-      >
-        {imagesToShow.map((img, i) => (
-          <SwiperSlide key={i}>
-            <img
-              src={img || "/no-image.jpg"}
-              alt={listing.title}
-              className="w-full h-80 object-cover rounded"
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Col stânga: imagini + descriere */}
+      <div className="lg:col-span-2">
+        {/* 🔹 Slider cu săgeți stânga/dreapta */}
+        <Swiper
+          modules={[Navigation, Keyboard]}
+          navigation
+          keyboard
+          spaceBetween={10}
+          slidesPerView={1}
+          loop={imagesToShow.length > 1}
+          className="mb-6"
+        >
+          {imagesToShow.map((img, i) => (
+            <SwiperSlide key={i}>
+              <img
+                src={img || "/no-image.jpg"}
+                alt={listing.title}
+                className="w-full h-80 object-cover rounded"
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-      <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
-      <p className="text-xl text-green-700 font-semibold mb-2">
-        <strong>Preț:</strong> {listing.price} €
-      </p>
-      <p className="text-gray-700 mb-4">{listing.description}</p>
-
-      {listing.location && (
-        <p className="text-gray-600 mb-2">
-          <strong>Locație:</strong> {listing.location}
+        <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
+        <p className="text-xl text-green-700 font-semibold mb-2">
+          <strong>Preț:</strong> {listing.price} €
         </p>
-      )}
+        <p className="text-gray-700 mb-4 whitespace-pre-line">{listing.description}</p>
 
-      {listing.phone && (
-        <p className="text-gray-600 mb-2">
-          <strong>Telefon:</strong>{" "}
-          <a href={`tel:${listing.phone}`} className="text-blue-600 hover:underline">
-            {listing.phone}
-          </a>
+        {listing.location && (
+          <p className="text-gray-600 mb-2">
+            <strong>Locație:</strong> {listing.location}
+          </p>
+        )}
+
+        <p className="text-sm text-gray-500 capitalize">
+          Categorie: {listing.category || "Nespecificat"}
         </p>
-      )}
+        <p className="text-sm text-gray-500">
+          Status: {listing.status || "disponibil"}
+        </p>
+      </div>
 
-      <p className="text-sm text-gray-500 capitalize">
-      </p>
-      <p className="text-sm text-gray-500">Status: {listing.status || "disponibil"}</p>
+      {/* Col dreapta: card contact */}
+      <aside className="lg:col-span-1">
+        <div className="bg-white shadow rounded-xl p-5 sticky top-6">
+          <h3 className="text-lg font-bold mb-3">Contact proprietar</h3>
+
+          {listing.owner?.name && (
+            <p className="text-gray-700 mb-2">
+              <strong>Nume:</strong> {listing.owner.name}
+            </p>
+          )}
+
+          {contactPhone ? (
+            <>
+              <p className="text-gray-700 mb-4">
+                <strong>Telefon:</strong>{" "}
+                <a href={`tel:${contactPhone}`} className="text-blue-600 hover:underline">
+                  {contactPhone}
+                </a>
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href={`tel:${contactPhone}`}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-blue-700 transition"
+                >
+                  📞 Sună
+                </a>
+
+                {waNumber && (
+                  <a
+                    href={`https://wa.me/${waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-green-700 transition"
+                  >
+                    💬 WhatsApp
+                  </a>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-500">Telefon indisponibil pentru acest anunț.</p>
+          )}
+        </div>
+      </aside>
     </div>
   );
 }
