@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-// ✅ URL API (din .env sau fallback)
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://oltenitaimobiliare-backend.onrender.com/api";
@@ -10,15 +9,10 @@ export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
 
-  // ✅ Alegem imaginea corectă din anunț
   const getImageUrl = (listing) => {
-    if (listing.images && listing.images.length > 0) {
-      return listing.images[0];
-    }
-    if (listing.imageUrl) {
-      return listing.imageUrl;
-    }
-    return "https://via.placeholder.com/400x250?text=Fara+imagine";
+    if (listing.images && listing.images.length > 0) return listing.images[0];
+    if (listing.imageUrl) return listing.imageUrl;
+    return "/no-image.jpg";
   };
 
   useEffect(() => {
@@ -38,14 +32,14 @@ export default function Home() {
       });
   }, []);
 
-  // ✅ Categorii - folosim poze din client/public
+  // ✅ categorii cu slug-uri pentru rute
   const categories = [
-    { name: "Apartamente", path: "/apartamente", image: "/apartamente.jpg" },
-    { name: "Case", path: "/case", image: "/case.jpg" },
-    { name: "Terenuri", path: "/terenuri", image: "/terenuri.jpg" },
-    { name: "Garsoniere", path: "/garsoniere", image: "/garsoniere.jpg" },
-    { name: "Garaje", path: "/garaje", image: "/garaje.jpg" },
-    { name: "Spațiu comercial", path: "/spatiu-comercial", image: "/spatiu-comercial.jpg" },
+    { name: "Apartamente", slug: "apartamente", image: "/apartamente.jpg" },
+    { name: "Case", slug: "case", image: "/case.jpg" },
+    { name: "Terenuri", slug: "terenuri", image: "/terenuri.jpg" },
+    { name: "Garsoniere", slug: "garsoniere", image: "/garsoniere.jpg" },
+    { name: "Garaje", slug: "garaje", image: "/garaje.jpg" },
+    { name: "Spațiu comercial", slug: "spatiu-comercial", image: "/spatiu-comercial.jpg" },
   ];
 
   return (
@@ -58,9 +52,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">
-            Cumpără, vinde sau închiriază locuințe în zona ta
-          </p>
+          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
         </div>
       </section>
 
@@ -96,7 +88,7 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {categories.map((cat) => (
-            <Link key={cat.name} to={cat.path} className="relative group">
+            <Link key={cat.slug} to={`/categorie/${cat.slug}`} className="relative group">
               <div
                 className="h-40 rounded-xl shadow-md bg-cover bg-center flex items-center justify-center"
                 style={{ backgroundImage: `url(${cat.image})` }}
@@ -128,9 +120,9 @@ export default function Home() {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h3 className="text-lg font-bold">{listing.title}</h3>
+                  <h3 className="text-lg font-bold line-clamp-1">{listing.title}</h3>
                   <p className="text-gray-600">{listing.price} €</p>
-                  <p className="text-sm text-gray-500">{listing.location}</p>
+                  <p className="text-sm text-gray-500 line-clamp-1">{listing.location}</p>
                 </div>
               </Link>
             ))}

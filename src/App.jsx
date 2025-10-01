@@ -19,6 +19,7 @@ import AdaugaAnunt from "./pages/AdaugaAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
 
+import Categories from "./pages/Categories"; // <— ✨ NOU
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -34,7 +35,6 @@ function App() {
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
-          <Route path="/categorie/:categorie" element={<Categories />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -45,6 +45,9 @@ function App() {
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
+
+          {/* ✨ Ruta pentru categorii */}
+          <Route path="/categorie/:categorie" element={<Categories />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

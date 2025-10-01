@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import API_URL from "../api";
 
-// mapăm slug-urile din URL la denumirile exact cum sunt în DB
-const SLUG_TO_CATEGORY: Record<string, string> = {
+// map slug din URL -> denumire exactă din DB
+const SLUG_TO_CATEGORY = {
   "apartamente": "Apartamente",
   "case": "Case",
   "terenuri": "Terenuri",
@@ -14,12 +14,14 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
 
 export default function Categories() {
   const { categorie: slug } = useParams();
-  const categoryName = useMemo(
-    () => SLUG_TO_CATEGORY[slug?.toLowerCase() || ""] || (slug || ""),
-    [slug]
-  );
 
-  const [listings, setListings] = useState<any[]>([]);
+  const categoryName = useMemo(() => {
+    if (!slug) return "";
+    const key = String(slug).toLowerCase();
+    return SLUG_TO_CATEGORY[key] || slug;
+  }, [slug]);
+
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -66,9 +68,9 @@ export default function Categories() {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h3 className="font-semibold text-lg">{l.title}</h3>
+                  <h3 className="font-semibold text-lg line-clamp-1">{l.title}</h3>
                   <p className="text-blue-600 font-bold mt-1">{l.price} €</p>
-                  <p className="text-sm text-gray-500 mt-1">{l.location}</p>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-1">{l.location}</p>
                 </div>
               </Link>
             ))}
