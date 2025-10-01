@@ -34,6 +34,7 @@ function App() {
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
+          <Route path="/categorie/:categorie" element={<Categories />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
