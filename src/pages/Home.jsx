@@ -17,6 +17,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState({}); // { q, location, price }
+  const [sort, setSort] = useState("latest"); // latest | price_asc | price_desc
 
   const getImageUrl = (listing) => {
     if (listing.images && listing.images.length > 0) return listing.images[0];
@@ -24,7 +25,7 @@ export default function Home() {
     return "/no-image.jpg";
   };
 
-  const fetchListings = async (filters = {}) => {
+  const fetchListings = async (filters = {}, sortKey = "latest") => {
     try {
       setLoading(true);
       setError("");
@@ -33,6 +34,7 @@ export default function Home() {
       if (filters.q) params.set("q", filters.q);
       if (filters.location) params.set("location", filters.location);
       if (filters.price) params.set("price", String(filters.price));
+      if (sortKey) params.set("sort", sortKey);
 
       const url =
         params.toString().length > 0
@@ -52,11 +54,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchListings(activeFilters);
+    fetchListings(activeFilters, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(activeFilters)]);
+  }, [JSON.stringify(activeFilters), sort]);
 
-  // categorii cu slug-uri pentru rute
   const categories = [
     { name: "Apartamente", slug: "apartamente", image: "/apartamente.jpg" },
     { name: "Case", slug: "case", image: "/case.jpg" },
@@ -76,7 +77,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, case, garsoniere,terenuri, spatii comerciale, garaje în zona ta</p>
+          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, garsoniere, case, spatiii comerciale, terenuri, garaje  în zona ta</p>
         </div>
       </section>
 
@@ -110,11 +111,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Anunțuri (filtrate/recente) */}
+      {/* Anunțuri (filtrate/recente) + Sort */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6">
-          {Object.keys(activeFilters).length ? "Rezultate căutare" : "Anunțuri recente"}
-        </h2>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h2 className="text-2xl font-bold">
+            {Object.keys(activeFilters).length ? "Rezultate căutare" : "Anunțuri recente"}
+          </h2>
+
+          {/* 🔽 Select sortare */}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="border rounded-lg px-3 py-2 bg-white"
+            aria-label="Sortare anunțuri"
+          >
+            <option value="latest">Cele mai noi</option>
+            <option value="price_asc">Preț crescător</option>
+            <option value="price_desc">Preț descrescător</option>
+          </select>
+        </div>
 
         {loading ? (
           <p className="text-gray-500">Se încarcă...</p>
