@@ -16,8 +16,7 @@ export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeFilters, setActiveFilters] = useState({}); // { q, location, price }
-  const [sort, setSort] = useState("latest"); // latest | price_asc | price_desc
+  const [filters, setFilters] = useState({ q: "", category: "", location: "", sort: "latest" });
 
   const getImageUrl = (listing) => {
     if (listing.images && listing.images.length > 0) return listing.images[0];
@@ -25,21 +24,20 @@ export default function Home() {
     return "/no-image.jpg";
   };
 
-  const fetchListings = async (filters = {}, sortKey = "latest") => {
+  const fetchListings = async (f = {}) => {
     try {
       setLoading(true);
       setError("");
 
       const params = new URLSearchParams();
-      if (filters.q) params.set("q", filters.q);
-      if (filters.location) params.set("location", filters.location);
-      if (filters.price) params.set("price", String(filters.price));
-      if (sortKey) params.set("sort", sortKey);
+      if (f.q) params.set("q", f.q);
+      if (f.category) params.set("category", f.category);
+      if (f.location) params.set("location", f.location);
+      if (f.sort) params.set("sort", f.sort);
 
-      const url =
-        params.toString().length > 0
-          ? `${API_URL}/listings?${params.toString()}`
-          : `${API_URL}/listings`;
+      const url = params.toString()
+        ? `${API_URL}/listings?${params.toString()}`
+        : `${API_URL}/listings`;
 
       const r = await fetch(url);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -54,10 +52,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchListings(activeFilters, sort);
+    fetchListings(filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(activeFilters), sort]);
+  }, [JSON.stringify(filters)]);
 
+  // Categorii (carduri)
   const categories = [
     { name: "Apartamente", slug: "apartamente", image: "/apartamente.jpg" },
     { name: "Case", slug: "case", image: "/case.jpg" },
@@ -77,12 +76,12 @@ export default function Home() {
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază apartamente, garsoniere, case, spatiii comerciale, terenuri, garaje  în zona ta</p>
+          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
         </div>
       </section>
 
-      {/* 🔎 Bara de căutare compusă */}
-      <SearchBar onSearch={(filters) => setActiveFilters(filters)} />
+      {/* 🔎 Bara de căutare compusă (caută + categorie + locație + ordonare + adaugă anunț) */}
+      <SearchBar onSearch={(f) => setFilters(f)} initial={filters} />
 
       {/* Eroare vizibilă */}
       {error && (
@@ -93,7 +92,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Categorii */}
+      {/* Categorii populare */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -111,24 +110,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Anunțuri (filtrate/recente) + Sort */}
+      {/* Anunțuri (filtrate sau recente) */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6 gap-4">
           <h2 className="text-2xl font-bold">
-            {Object.keys(activeFilters).length ? "Rezultate căutare" : "Anunțuri recente"}
+            {filters.q || filters.category || filters.location ? "Rezultate căutare" : "Anunțuri recente"}
           </h2>
-
-          {/* 🔽 Select sortare */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="border rounded-lg px-3 py-2 bg-white"
-            aria-label="Sortare anunțuri"
-          >
-            <option value="latest">Cele mai noi</option>
-            <option value="price_asc">Preț crescător</option>
-            <option value="price_desc">Preț descrescător</option>
-          </select>
+          {/* etichetă sort curentă */}
+          <span className="text-sm text-gray-500">
+            Ordonare: {
+              { latest: "Recent", oldest: "Cel mai vechi", price_asc: "Cel mai ieftin", price_desc: "Cel mai scump" }[filters.sort]
+            }
+          </span>
         </div>
 
         {loading ? (
