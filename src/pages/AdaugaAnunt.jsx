@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
-import ImageReorder from "../components/ImageReorder";
+import ImageReorder from "../components/ImageReorder.jsx";
 
 const CATEGORIES = [
   "Apartamente",
