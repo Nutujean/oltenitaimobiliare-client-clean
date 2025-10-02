@@ -1,76 +1,86 @@
 import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
+import { Link } from "react-router-dom";
+import API_URL from "../api";
+import { getFavIds, toggleFav } from "../utils/favorites";
+
+const PLACEHOLDER = "https://via.placeholder.com/800x450?text=Fara+imagine";
 
 export default function Favorite() {
-  const [favorites, setFavorites] = useState([]);
+  const [ids, setIds] = useState(getFavIds());
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("favorites");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
-        } else {
-          setFavorites([]);
+    (async () => {
+      setLoading(true);
+      try {
+        if (ids.length === 0) {
+          setItems([]);
+          return;
         }
+        const reqs = ids.map((id) =>
+          fetch(`${API_URL}/listings/by-id/${id}`).then(async (r) =>
+            r.ok ? await r.json() : null
+          )
+        );
+        const results = await Promise.all(reqs);
+        setItems(results.filter(Boolean));
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.warn("❌ Eroare la citirea din localStorage:", err);
-      setFavorites([]);
-    }
-  }, []);
+    })();
+  }, [ids]);
+
+  const onToggle = (id) => {
+    const next = toggleFav(id);
+    setIds(next);
+    setItems((prev) => prev.filter((x) => next.includes(x._id)));
+  };
+
+  const getImage = (l) =>
+    Array.isArray(l.images) && l.images.length > 0
+      ? l.images[0]
+      : l.imageUrl || PLACEHOLDER;
+
+  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Favorite</h1>
-      {favorites.length === 0 ? (
-        <p>Nu ai adăugat încă anunțuri la favorite.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {favorites.map((fav, idx) => (
-            <div
-              key={idx}
-              className="border rounded-lg shadow p-4 bg-white hover:shadow-lg transition"
-            >
-              <Swiper spaceBetween={10} slidesPerView={1}>
-                {(fav.images && fav.images.length > 0
-                  ? fav.images
-                  : [fav.imageUrl]
-                ).map((img, i) => (
-                  <SwiperSlide key={i}>
-                    <img
-                      src={
-                        img ||
-                        "https://via.placeholder.com/400x250?text=Fără+imagine"
-                      }
-                      alt={fav.title}
-                      className="w-full h-40 object-cover rounded mb-3"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+      <h1 className="text-2xl font-bold mb-4">Favorite</h1>
 
-              <h2 className="text-lg font-bold">{fav.title}</h2>
-              <p className="text-gray-600">
-                <strong>Preț:</strong> {fav.price} €
-              </p>
-              <p className="text-sm text-gray-500 capitalize">{fav.category}</p>
-              {fav.location && (
-                <p className="text-sm text-gray-500">📍 {fav.location}</p>
-              )}
-              {fav.phone && (
-                <p className="text-sm text-gray-500">
-                  📞{" "}
-                  <a
-                    href={`tel:${fav.phone}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {fav.phone}
-                  </a>
-                </p>
-              )}
+      {items.length === 0 ? (
+        <p className="text-gray-600">
+          Nu ai anunțuri favorite încă. Adaugă de pe paginile de anunțuri (butonul ❤️).
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {items.map((l) => (
+            <div key={l._id} className="bg-white shadow-md rounded-xl overflow-hidden relative">
+              <button
+                onClick={() => onToggle(l._id)}
+                className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full px-2 py-1 shadow text-red-600"
+                title="Elimină din favorite"
+              >
+                ❤️
+              </button>
+
+              <Link to={`/anunt/${l._id}`}>
+                <img
+                  src={getImage(l)}
+                  alt={l.title}
+                  className="w-full h-44 object-cover"
+                  onError={(e) => (e.currentTarget.src = PLACEHOLDER)}
+                />
+              </Link>
+              <div className="p-4">
+                <Link to={`/anunt/${l._id}`} className="block font-semibold line-clamp-2">
+                  {l.title}
+                </Link>
+                <div className="text-sm text-gray-600 mt-1 flex gap-3">
+                  <span>{l.price} €</span>
+                  <span>{l.location}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
