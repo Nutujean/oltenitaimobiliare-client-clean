@@ -18,8 +18,8 @@ import Favorite from "./pages/Favorite";
 import AdaugaAnunt from "./pages/AdaugaAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
-
 import Categories from "./pages/Categories"; // <— ✨ NOU
+
 import NotFound from "./pages/NotFound";
 
 function App() {

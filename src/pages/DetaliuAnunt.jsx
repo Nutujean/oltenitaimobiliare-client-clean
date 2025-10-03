@@ -1,244 +1,229 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 import API_URL from "../api";
-import { getFavIds, isFav, toggleFav } from "../utils/favorites";
+import { isFav, toggleFav } from "../utils/favorites";
 import slugify from "../utils/slugify.js";
 
-const CATEGORIES = [
-  "Apartamente",
-  "Case",
-  "Terenuri",
-  "Garsoniere",
-  "Garaje",
-  "Spațiu comercial",
-];
+function formatPhoneForWa(raw) {
+  if (!raw) return "";
+  const digits = ("" + raw).replace(/\D+/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0")) return "40" + digits.slice(1);
+  if (digits.startsWith("40")) return digits;
+  if (digits.startsWith("0040")) return digits.slice(2);
+  return digits;
+}
 
-const LOCATII = [
-  "Oltenita","Chirnogi","Ulmeni","Mitreni","Clatesti","Spantov","Cascioarele",
-  "Soldanu","Negoiesti","Valea Rosie","Radovanu","Chiselet","Manastirea","Budesti",
-];
+export default function DetaliuAnunt() {
+  const { id: rawId } = useParams();
+  // acceptă /anunt/<slug>-<id> SAU /anunt/<id>
+  const id = (rawId || "").match(/[0-9a-fA-F]{24}$/)?.[0] || rawId;
 
-const SORTS = [
-  { value: "latest", label: "Recent" },
-  { value: "oldest", label: "Cel mai vechi" },
-  { value: "price_asc", label: "Cel mai ieftin" },
-  { value: "price_desc", label: "Cel mai scump" },
-];
-
-export default function Home() {
-  const [listings, setListings] = useState([]);
-  const [error, setError] = useState("");
-
-  const [favIds, setFavIds] = useState(getFavIds());
-
-  const locationHook = useLocation();
+  const [listing, setListing] = useState(null);
+  const [err, setErr] = useState("");
+  const [fav, setFav] = useState(isFav(id));
+  const [me, setMe] = useState(null);
   const navigate = useNavigate();
-  const params = new URLSearchParams(locationHook.search);
-  const [q, setQ] = useState(params.get("q") || "");
-  const [category, setCategory] = useState(params.get("category") || "");
-  const [city, setCity] = useState(params.get("location") || "");
-  const [sort, setSort] = useState(params.get("sort") || "latest");
+  const location = useLocation();
+  const token = localStorage.getItem("token");
 
-  const getImageUrl = (l) => {
-    if (Array.isArray(l.images) && l.images.length > 0) return l.images[0];
-    if (l.imageUrl) return l.imageUrl;
-    return "https://via.placeholder.com/400x250?text=Fara+imagine";
-  };
-
-  const fetchListings = async () => {
+  // “Înapoi” spre listă/căutare; fallback Acasă
+  const fromState = location.state?.from || null;
+  const goBack = () => {
+    if (fromState) return navigate(fromState);
     try {
-      setError("");
-      const sp = new URLSearchParams();
-      if (q) sp.set("q", q);
-      if (category) sp.set("category", category);
-      if (city) sp.set("location", city);
-      if (sort) sp.set("sort", sort);
-      const url = `${API_URL}/listings${sp.toString() ? "?" + sp.toString() : ""}`;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const data = await r.json();
-      setListings(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error(e);
-      setError(e.message || "Eroare necunoscută");
-    }
+      const ref = document.referrer || "";
+      const sameOrigin = ref && new URL(ref).origin === window.location.origin;
+      if (sameOrigin) return navigate(-1);
+    } catch {}
+    navigate("/");
   };
 
   useEffect(() => {
-    const p = new URLSearchParams(locationHook.search);
-    setQ(p.get("q") || "");
-    setCategory(p.get("category") || "");
-    setCity(p.get("location") || "");
-    setSort(p.get("sort") || "latest");
-    fetchListings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationHook.search]);
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/listings/${id}`);
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
+        const data = await res.json();
+        if (alive) setListing(data);
+      } catch (e) {
+        console.error("❌ Eroare:", e);
+        setErr(e.message || "Eroare necunoscută");
+      }
+    })();
+    return () => { alive = false; };
+  }, [id]);
 
-  const doSearch = () => {
-    const sp = new URLSearchParams();
-    if (q) sp.set("q", q);
-    if (category) sp.set("category", category);
-    if (city) sp.set("location", city);
-    if (sort) sp.set("sort", sort);
-    navigate({ pathname: "/", search: sp.toString() });
+  // user curent (pt. acțiuni proprietar)
+  useEffect(() => {
+    (async () => {
+      if (!token) return;
+      try {
+        const r = await fetch(`${API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!r.ok) return;
+        const u = await r.json();
+        setMe(u);
+      } catch {}
+    })();
+  }, [token]);
+
+  const onToggleFav = () => {
+    toggleFav(id);
+    setFav(isFav(id));
   };
 
-  const categoriesCards = [
-    { name: "Apartamente", path: "/categorie/apartamente", image: "/apartamente.jpg" },
-    { name: "Case", path: "/categorie/case", image: "/case.jpg" },
-    { name: "Terenuri", path: "/categorie/terenuri", image: "/terenuri.jpg" },
-    { name: "Garsoniere", path: "/categorie/garsoniere", image: "/garsoniere.jpg" },
-    { name: "Garaje", path: "/categorie/garaje", image: "/garaje.jpg" },
-    { name: "Spațiu comercial", path: "/categorie/spatiu-comercial", image: "/spatiu-comercial.jpg" },
-  ];
-
-  const onToggleFav = (e, id) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const next = toggleFav(id);
-    setFavIds(next);
+  const handleDelete = async () => {
+    if (!confirm("Sigur vrei să ștergi acest anunț?")) return;
+    try {
+      const r = await fetch(`${API_URL}/listings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || "Eroare la ștergere");
+      navigate("/anunturile-mele");
+    } catch (e) {
+      alert(e.message || "Eroare");
+    }
   };
+
+  if (err) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <button onClick={goBack} className="mb-4 inline-flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          ← Înapoi
+        </button>
+        <p className="text-red-600">❌ {err}</p>
+      </div>
+    );
+  }
+
+  if (!listing) return <p className="text-center py-10">Se încarcă...</p>;
+
+  const imagesToShow =
+    Array.isArray(listing.images) && listing.images.length > 0
+      ? listing.images
+      : listing.imageUrl
+      ? [listing.imageUrl]
+      : [];
+
+  const contactPhone = listing.contactPhone || listing.phone || "";
+  const waNumber = formatPhoneForWa(contactPhone);
+
+  const isOwner =
+    !!me &&
+    ((listing.user && String(listing.user) === String(me._id)) ||
+      (listing.userEmail &&
+        me.email &&
+        String(listing.userEmail).toLowerCase() === String(me.email).toLowerCase()));
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* HERO */}
-      <section
-        className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
-        style={{ backgroundImage: "url('/fundal.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
-        </div>
-      </section>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Slider + buton Înapoi peste slider; forțăm culoarea săgeților */}
+      <div className="relative">
+        {imagesToShow.length > 0 && (
+          <Swiper
+            modules={[Navigation]}
+            navigation
+            spaceBetween={10}
+            slidesPerView={1}
+            style={{ "--swiper-navigation-color": "#111", "--swiper-pagination-color": "#111" }}
+          >
+            {imagesToShow.map((img, i) => (
+              <SwiperSlide key={i}>
+                <img
+                  src={img || "https://via.placeholder.com/800x450?text=Fara+imagine"}
+                  alt={listing.title}
+                  className="w-full h-80 object-cover rounded mb-6"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
 
-      {/* BARĂ DE CĂUTARE */}
-      <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <input
-            type="text"
-            placeholder="Cuvinte cheie (ex: 2 camere)"
-            className="border rounded-lg px-3 py-2 w-full"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <select
-            className="border rounded-lg px-3 py-2 bg-white"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Toate categoriile</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            className="border rounded-lg px-3 py-2 bg-white"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          >
-            <option value="">Toate locațiile</option>
-            {LOCATII.map((loc) => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
-          <select
-            className="border rounded-lg px-3 py-2 bg-white"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
-          <div className="flex gap-3">
-            <button
-              onClick={doSearch}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 w-full md:w-auto"
-            >
-              Caută
-            </button>
-            <Link
-              to="/adauga-anunt"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 w-full md:w-auto text-center"
-            >
-              + Adaugă anunț
+        <button
+          onClick={goBack}
+          className="absolute top-2 left-2 bg-white/90 hover:bg-white text-gray-800 px-3 py-1 rounded-full shadow"
+          aria-label="Înapoi"
+        >
+          ← Înapoi
+        </button>
+      </div>
+
+      {/* bară Înapoi + breadcrumb categorie */}
+      <div className="flex items-center gap-2 mb-3">
+        <button onClick={goBack} className="inline-flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          ← Înapoi
+        </button>
+        {listing.category && (
+          <>
+            <span className="text-gray-300">/</span>
+            <Link to={`/categorie/${slugify(listing.category)}`} className="text-sm text-gray-600 hover:text-blue-600">
+              {listing.category}
             </Link>
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      </div>
 
-      {/* EROARE */}
-      {error && (
-        <div className="max-w-6xl mx-auto mt-6 px-6">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            <strong>Eroare la încărcarea anunțurilor:</strong> {error}
-          </div>
+      <div className="flex items-start gap-3 mb-3">
+        <h1 className="text-3xl font-bold flex-1">{listing.title}</h1>
+        <button
+          onClick={onToggleFav}
+          className={`rounded-full px-3 py-1 shadow ${fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"} hover:bg-white`}
+          title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+        >
+          {fav ? "❤️" : "🤍"}
+        </button>
+      </div>
+
+      {isOwner && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Link to={`/editeaza-anunt/${id}`} state={{ from: fromState || "/" }} className="border px-3 py-2 rounded hover:bg-gray-50">
+            ✏️ Editează
+          </Link>
+          <button onClick={handleDelete} className="border px-3 py-2 rounded text-red-600 hover:bg-red-50">
+            🗑️ Șterge
+          </button>
+          <Link to="/anunturile-mele" className="border px-3 py-2 rounded hover:bg-gray-50">
+            📂 Anunțurile mele
+          </Link>
         </div>
       )}
 
-      {/* CATEGORII */}
-      <section className="py-12 px-6 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {categoriesCards.map((cat) => (
-            <Link key={cat.name} to={cat.path} className="relative group">
-              <div
-                className="h-40 rounded-xl shadow-md bg-cover bg-center flex items-center justify-center"
-                style={{ backgroundImage: `url(${cat.image})` }}
-              >
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
-                <h3 className="text-white text-xl font-bold z-10">{cat.name}</h3>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* LISTĂ ANUNȚURI */}
-      <section className="py-4 px-6 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Anunțuri</h2>
-        {listings.length === 0 && !error ? (
-          <p className="text-gray-500">Nu există anunțuri pentru filtrele selectate.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((l) => {
-              const fav = isFav(l._id);
-              return (
-                <Link
-                  key={l._id}
-                  to={`/anunt/${slugify(l.title)}-${l._id}`}
-                  state={{ from: locationHook.pathname + locationHook.search }}
-                  className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
-                >
-                  {/* buton Heart */}
-                  <button
-                    onClick={(e) => onToggleFav(e, l._id)}
-                    className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
-                      fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
-                    } hover:bg-white`}
-                    title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
-                  >
-                    {fav ? "❤️" : "🤍"}
-                  </button>
-
-                  <img
-                    src={getImageUrl(l)}
-                    alt={l.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
-                    <p className="text-gray-600">{l.price} €</p>
-                    <p className="text-sm text-gray-500">{l.location}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <span className="text-xl text-green-700 font-semibold">{listing.price} €</span>
+        {listing.location && (
+          <span className="text-gray-600"><strong>Locație:</strong> {listing.location}</span>
         )}
-      </section>
+      </div>
+
+      <p className="text-gray-700 mb-6 whitespace-pre-line">{listing.description}</p>
+
+      {/* Card contact */}
+      <div className="bg-white border rounded-xl p-4 shadow-sm mb-6">
+        <h3 className="font-semibold mb-2">Contact proprietar</h3>
+        {contactPhone ? (
+          <div className="flex flex-wrap gap-3">
+            <a href={`tel:${contactPhone}`} className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📞 Sună</a>
+            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">💬 WhatsApp</a>
+            <span className="text-gray-600 self-center">({contactPhone})</span>
+          </div>
+        ) : (
+          <p className="text-gray-500">Proprietarul nu și-a publicat telefonul.</p>
+        )}
+      </div>
+
+      <div className="text-sm text-gray-500 flex gap-4">
+        <span>Categorie: {listing.category || "Nespecificat"}</span>
+        <span>Status: {listing.status || "disponibil"}</span>
+      </div>
     </div>
   );
 }
