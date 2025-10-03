@@ -25,10 +25,13 @@ const SORTS = [
   { value: "price_desc", label: "Cel mai scump" },
 ];
 
+const PAGE_STEP = 9; // câte carduri mai arătăm la fiecare "Încarcă mai multe"
+
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
   const [favIds, setFavIds] = useState(getFavIds());
+  const [visibleCount, setVisibleCount] = useState(PAGE_STEP);
 
   const locationHook = useLocation();
   const navigate = useNavigate();
@@ -57,6 +60,7 @@ export default function Home() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
       setListings(Array.isArray(data) ? data : []);
+      setVisibleCount(PAGE_STEP); // resetăm paginarea la fiecare fetch
     } catch (e) {
       console.error(e);
       setError(e.message || "Eroare necunoscută");
@@ -97,6 +101,9 @@ export default function Home() {
     const next = toggleFav(id);
     setFavIds(next);
   };
+
+  const visible = listings.slice(0, visibleCount);
+  const canLoadMore = visibleCount < listings.length;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -177,7 +184,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* CATEGORII – navigare programatică (fără <Link/>) */}
+      {/* CATEGORII – navigare programatică */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -204,46 +211,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* LISTĂ ANUNȚURI */}
+      {/* LISTĂ ANUNȚURI + PAGINARE */}
       <section className="py-4 px-6 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Anunțuri</h2>
-        {listings.length === 0 && !error ? (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Anunțuri</h2>
+          <span className="text-sm text-gray-500">
+            Afișate {Math.min(visible.length, listings.length)} din {listings.length}
+          </span>
+        </div>
+
+        {visible.length === 0 && !error ? (
           <p className="text-gray-500">Nu există anunțuri pentru filtrele selectate.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((l) => {
-              const fav = isFav(l._id);
-              return (
-                <Link
-                  key={l._id}
-                  to={`/anunt/${slugify(l.title)}-${l._id}`}
-                  state={{ from: locationHook.pathname + locationHook.search }}
-                  className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
-                >
-                  <button
-                    onClick={(e) => onToggleFav(e, l._id)}
-                    className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
-                      fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
-                    } hover:bg-white`}
-                    title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {visible.map((l) => {
+                const fav = isFav(l._id);
+                return (
+                  <Link
+                    key={l._id}
+                    to={`/anunt/${slugify(l.title)}-${l._id}`}
+                    state={{ from: locationHook.pathname + locationHook.search }}
+                    className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
                   >
-                    {fav ? "❤️" : "🤍"}
-                  </button>
+                    {/* favorite */}
+                    <button
+                      onClick={(e) => onToggleFav(e, l._id)}
+                      className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
+                        fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
+                      } hover:bg-white`}
+                      title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+                    >
+                      {fav ? "❤️" : "🤍"}
+                    </button>
 
-                  <img
-                    src={getImageUrl(l)}
-                    alt={l.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
-                    <p className="text-gray-600">{l.price} €</p>
-                    <p className="text-sm text-gray-500">{l.location}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                    <img
+                      src={getImageUrl(l)}
+                      alt={l.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
+                      <p className="text-gray-600">{l.price} €</p>
+                      <p className="text-sm text-gray-500">{l.location}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {canLoadMore && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setVisibleCount((c) => c + PAGE_STEP)}
+                  className="px-5 py-2 rounded-lg border bg-white hover:bg-gray-50"
+                >
+                  Încarcă mai multe
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
