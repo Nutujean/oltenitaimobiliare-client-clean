@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import API_URL from "../api";
+import { getFavIds, isFav, toggleFav } from "../utils/favorites";
+import slugify from "../utils/slugify.js";
 
 const CATEGORIES = [
   "Apartamente",
@@ -12,37 +14,25 @@ const CATEGORIES = [
 ];
 
 const LOCATII = [
-  "Oltenita",
-  "Chirnogi",
-  "Ulmeni",
-  "Mitreni",
-  "Clatesti",
-  "Spantov",
-  "Cascioarele",
-  "Soldanu",
-  "Negoiesti",
-  "Valea Rosie",
-  "Radovanu",
-  "Chiselet",
-  "Manastirea",
-  "Budesti",
+  "Oltenita","Chirnogi","Ulmeni","Mitreni","Clatesti","Spantov","Cascioarele",
+  "Soldanu","Negoiesti","Valea Rosie","Radovanu","Chiselet","Manastirea","Budesti",
 ];
 
 const SORTS = [
   { value: "latest", label: "Recent" },
-  { value: "oldest", label: "Vechi" },
-  { value: "price_asc", label: "Ieftin" },
-  { value: "price_desc", label: "Scump" },
+  { value: "oldest", label: "Cel mai vechi" },
+  { value: "price_asc", label: "Cel mai ieftin" },
+  { value: "price_desc", label: "Cel mai scump" },
 ];
 
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
+  const [favIds, setFavIds] = useState(getFavIds());
 
-  // starea barei de căutare
-  const location = useLocation();
+  const locationHook = useLocation();
   const navigate = useNavigate();
-  const params = new URLSearchParams(location.search);
+  const params = new URLSearchParams(locationHook.search);
   const [q, setQ] = useState(params.get("q") || "");
   const [category, setCategory] = useState(params.get("category") || "");
   const [city, setCity] = useState(params.get("location") || "");
@@ -52,9 +42,8 @@ export default function Home() {
     if (Array.isArray(l.images) && l.images.length > 0) return l.images[0];
     if (l.imageUrl) return l.imageUrl;
     return "https://via.placeholder.com/400x250?text=Fara+imagine";
-    };
+  };
 
-  // fetch listări cu params din URL
   const fetchListings = async () => {
     try {
       setError("");
@@ -74,20 +63,16 @@ export default function Home() {
     }
   };
 
-  // la mount + când se schimbă query-ul din URL
   useEffect(() => {
-    // sincronizează state cu URL (dacă userul a intrat cu link filtrat)
-    const p = new URLSearchParams(location.search);
+    const p = new URLSearchParams(locationHook.search);
     setQ(p.get("q") || "");
     setCategory(p.get("category") || "");
     setCity(p.get("location") || "");
     setSort(p.get("sort") || "latest");
-    // apoi fetch
     fetchListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
+  }, [locationHook.search]);
 
-  // trimite filtrele în URL și face fetch
   const doSearch = () => {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
@@ -105,6 +90,13 @@ export default function Home() {
     { name: "Garaje", path: "/categorie/garaje", image: "/garaje.jpg" },
     { name: "Spațiu comercial", path: "/categorie/spatiu-comercial", image: "/spatiu-comercial.jpg" },
   ];
+
+  const onToggleFav = (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = toggleFav(id);
+    setFavIds(next);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -185,12 +177,21 @@ export default function Home() {
         </div>
       )}
 
-      {/* CATEGORII */}
+      {/* CATEGORII – navigare programatică (fără <Link/>) */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {categoriesCards.map((cat) => (
-            <Link key={cat.name} to={cat.path} className="relative group">
+            <div
+              key={cat.name}
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate(cat.path)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") navigate(cat.path);
+              }}
+              className="relative group cursor-pointer"
+            >
               <div
                 className="h-40 rounded-xl shadow-md bg-cover bg-center flex items-center justify-center"
                 style={{ backgroundImage: `url(${cat.image})` }}
@@ -198,7 +199,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
                 <h3 className="text-white text-xl font-bold z-10">{cat.name}</h3>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </section>
@@ -210,20 +211,38 @@ export default function Home() {
           <p className="text-gray-500">Nu există anunțuri pentru filtrele selectate.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((l) => (
-              <Link
-                key={l._id}
-                to={`/anunt/${l._id}`}
-                className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition"
-              >
-                <img src={getImageUrl(l)} alt={l.title} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <h3 className="text-lg font-bold">{l.title}</h3>
-                  <p className="text-gray-600">{l.price} €</p>
-                  <p className="text-sm text-gray-500">{l.location}</p>
-                </div>
-              </Link>
-            ))}
+            {listings.map((l) => {
+              const fav = isFav(l._id);
+              return (
+                <Link
+                  key={l._id}
+                  to={`/anunt/${slugify(l.title)}-${l._id}`}
+                  state={{ from: locationHook.pathname + locationHook.search }}
+                  className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
+                >
+                  <button
+                    onClick={(e) => onToggleFav(e, l._id)}
+                    className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
+                      fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
+                    } hover:bg-white`}
+                    title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+                  >
+                    {fav ? "❤️" : "🤍"}
+                  </button>
+
+                  <img
+                    src={getImageUrl(l)}
+                    alt={l.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
+                    <p className="text-gray-600">{l.price} €</p>
+                    <p className="text-sm text-gray-500">{l.location}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

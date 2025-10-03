@@ -47,7 +47,7 @@ function App() {
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
 
           {/* ✨ Ruta pentru categorii */}
-          <Route path="/categorie/:categorie" element={<Categories />} />
+          <Route path="/categorie/:slug" element={<Categories />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

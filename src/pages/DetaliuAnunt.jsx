@@ -20,7 +20,6 @@ function formatPhoneForWa(raw) {
 
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
-  // acceptă /anunt/<slug>-<id> SAU /anunt/<id>
   const id = (rawId || "").match(/[0-9a-fA-F]{24}$/)?.[0] || rawId;
 
   const [listing, setListing] = useState(null);
@@ -31,7 +30,6 @@ export default function DetaliuAnunt() {
   const location = useLocation();
   const token = localStorage.getItem("token");
 
-  // “Înapoi” spre listă/căutare; fallback Acasă
   const fromState = location.state?.from || null;
   const goBack = () => {
     if (fromState) return navigate(fromState);
@@ -59,7 +57,6 @@ export default function DetaliuAnunt() {
     return () => { alive = false; };
   }, [id]);
 
-  // user curent (pt. acțiuni proprietar)
   useEffect(() => {
     (async () => {
       if (!token) return;
@@ -126,7 +123,7 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Slider + buton Înapoi peste slider; forțăm culoarea săgeților */}
+      {/* Slider cu săgeți vizibile + buton Înapoi peste slider */}
       <div className="relative">
         {imagesToShow.length > 0 && (
           <Swiper
@@ -211,19 +208,4 @@ export default function DetaliuAnunt() {
         <h3 className="font-semibold mb-2">Contact proprietar</h3>
         {contactPhone ? (
           <div className="flex flex-wrap gap-3">
-            <a href={`tel:${contactPhone}`} className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📞 Sună</a>
-            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">💬 WhatsApp</a>
-            <span className="text-gray-600 self-center">({contactPhone})</span>
-          </div>
-        ) : (
-          <p className="text-gray-500">Proprietarul nu și-a publicat telefonul.</p>
-        )}
-      </div>
-
-      <div className="text-sm text-gray-500 flex gap-4">
-        <span>Categorie: {listing.category || "Nespecificat"}</span>
-        <span>Status: {listing.status || "disponibil"}</span>
-      </div>
-    </div>
-  );
-}
+            <a href={`tel:${contactPhone}`} className="inline-f
