@@ -25,13 +25,16 @@ const SORTS = [
   { value: "price_desc", label: "Cel mai scump" },
 ];
 
-const PAGE_STEP = 9; // câte carduri mai arătăm la fiecare "Încarcă mai multe"
+const PAGE_STEP = 9;
 
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
   const [favIds, setFavIds] = useState(getFavIds());
   const [visibleCount, setVisibleCount] = useState(PAGE_STEP);
+
+  // pentru panoul de filtre pe mobil
+  const [showFilters, setShowFilters] = useState(false);
 
   const locationHook = useLocation();
   const navigate = useNavigate();
@@ -60,7 +63,7 @@ export default function Home() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
       setListings(Array.isArray(data) ? data : []);
-      setVisibleCount(PAGE_STEP); // resetăm paginarea la fiecare fetch
+      setVisibleCount(PAGE_STEP);
     } catch (e) {
       console.error(e);
       setError(e.message || "Eroare necunoscută");
@@ -119,8 +122,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BARĂ DE CĂUTARE */}
-      <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10">
+      {/* BARĂ DE CĂUTARE (desktop + tablet) */}
+      <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10 hidden md:block">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <input
             type="text"
@@ -174,6 +177,105 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAB Filtre (mobil) */}
+      <button
+        onClick={() => setShowFilters(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 bg-white border shadow-lg rounded-full px-4 py-2"
+        aria-label="Deschide filtre"
+      >
+        ⚙️ Filtre
+      </button>
+
+      {/* Panou Filtre mobil (bottom sheet) */}
+      {showFilters && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowFilters(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-lg">Filtre</h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Închide"
+              >
+                ✖
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              <input
+                type="text"
+                placeholder="Cuvinte cheie"
+                className="border rounded-lg px-3 py-2 w-full"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <select
+                className="border rounded-lg px-3 py-2 bg-white"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Toate categoriile</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <select
+                className="border rounded-lg px-3 py-2 bg-white"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              >
+                <option value="">Toate locațiile</option>
+                {LOCATII.map((loc) => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+              <select
+                className="border rounded-lg px-3 py-2 bg-white"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setQ(""); setCategory(""); setCity(""); setSort("latest");
+                }}
+                className="flex-1 border px-4 py-2 rounded-lg"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => {
+                  setShowFilters(false);
+                  doSearch();
+                }}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Aplică
+              </button>
+            </div>
+
+            <Link
+              to="/adauga-anunt"
+              className="mt-3 block text-center bg-green-600 text-white px-4 py-2 rounded-lg"
+              onClick={() => setShowFilters(false)}
+            >
+              + Adaugă anunț
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* EROARE */}
       {error && (
@@ -234,7 +336,6 @@ export default function Home() {
                     state={{ from: locationHook.pathname + locationHook.search }}
                     className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
                   >
-                    {/* favorite */}
                     <button
                       onClick={(e) => onToggleFav(e, l._id)}
                       className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
