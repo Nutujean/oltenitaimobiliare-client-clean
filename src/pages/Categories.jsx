@@ -1,82 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
 import API_URL from "../api";
+import slugify from "../utils/slugify.js";
 
-// map slug din URL -> denumire exactă din DB
 const SLUG_TO_CATEGORY = {
-  "apartamente": "Apartamente",
-  "case": "Case",
-  "terenuri": "Terenuri",
-  "garsoniere": "Garsoniere",
-  "garaje": "Garaje",
+  apartamente: "Apartamente",
+  case: "Case",
+  terenuri: "Terenuri",
+  garsoniere: "Garsoniere",
+  garaje: "Garaje",
   "spatiu-comercial": "Spațiu comercial",
 };
 
 export default function Categories() {
-  const { categorie: slug } = useParams();
-
-  const categoryName = useMemo(() => {
-    if (!slug) return "";
-    const key = String(slug).toLowerCase();
-    return SLUG_TO_CATEGORY[key] || slug;
-  }, [slug]);
-
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { slug } = useParams();
+  const location = useLocation();
+  const categoryName = SLUG_TO_CATEGORY[slug] || "";
+  const [items, setItems] = useState([]);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    setErr("");
-
-    const url = `${API_URL}/listings?category=${encodeURIComponent(categoryName)}`;
-    console.log("[CATEGORIES] fetch:", url);
-
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => setListings(Array.isArray(data) ? data : []))
-      .catch((e) => setErr(e.message || "Eroare necunoscută"))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        setErr("");
+        const sp = new URLSearchParams();
+        if (categoryName) sp.set("category", categoryName);
+        const r = await fetch(`${API_URL}/listings?${sp.toString()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        setItems(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setErr(e.message || "Eroare la încărcare");
+      }
+    })();
   }, [categoryName]);
 
-  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
-  if (err) return <p className="text-center py-10 text-red-600">Eroare: {err}</p>;
+  const getImage = (l) =>
+    Array.isArray(l.images) && l.images.length > 0
+      ? l.images[0]
+      : l.imageUrl || "https://via.placeholder.com/400x250?text=Fara+imagine";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">{categoryName}</h1>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">{categoryName || "Categorie"}</h1>
 
-        {listings.length === 0 ? (
-          <div className="bg-white border rounded-xl p-6 text-gray-600">
-            Nu există anunțuri pentru această categorie.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((l) => (
-              <Link
-                key={l._id}
-                to={`/anunt/${l._id}`}
-                className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition"
-              >
-                <img
-                  src={l.images?.[0] || l.imageUrl || "/no-image.jpg"}
-                  alt={l.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg line-clamp-1">{l.title}</h3>
-                  <p className="text-blue-600 font-bold mt-1">{l.price} €</p>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-1">{l.location}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      {err && (
+        <div className="mb-4 bg-red-50 text-red-700 border border-red-200 px-3 py-2 rounded">
+          {err}
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <p className="text-gray-600">Nu s-au găsit anunțuri.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {items.map((l) => (
+            <Link
+              key={l._id}
+              to={`/anunt/${slugify(l.title)}-${l._id}`}
+              state={{ from: location.pathname + location.search }}
+              className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
+            >
+              <img
+                src={getImage(l)}
+                alt={l.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
+                <p className="text-gray-600">{l.price} €</p>
+                <p className="text-sm text-gray-500">{l.location}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

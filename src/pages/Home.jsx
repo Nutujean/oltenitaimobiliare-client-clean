@@ -30,9 +30,9 @@ const LOCATII = [
 
 const SORTS = [
   { value: "latest", label: "Recent" },
-  { value: "oldest", label: "Cel mai vechi" },
-  { value: "price_asc", label: "Cel mai ieftin" },
-  { value: "price_desc", label: "Cel mai scump" },
+  { value: "oldest", label: "Vechi" },
+  { value: "price_asc", label: "Ieftin" },
+  { value: "price_desc", label: "Scump" },
 ];
 
 export default function Home() {

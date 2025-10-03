@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import API_URL from "../api";
 import { getFavIds, toggleFav } from "../utils/favorites";
+import slugify from "../utils/slugify.js";
 
 const PLACEHOLDER = "https://via.placeholder.com/800x450?text=Fara+imagine";
 
@@ -9,6 +10,7 @@ export default function Favorite() {
   const [ids, setIds] = useState(getFavIds());
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     (async () => {
@@ -64,7 +66,10 @@ export default function Favorite() {
                 ❤️
               </button>
 
-              <Link to={`/anunt/${l._id}`}>
+              <Link
+                to={`/anunt/${slugify(l.title)}-${l._id}`}
+                state={{ from: location.pathname + location.search }}
+              >
                 <img
                   src={getImage(l)}
                   alt={l.title}
@@ -73,7 +78,11 @@ export default function Favorite() {
                 />
               </Link>
               <div className="p-4">
-                <Link to={`/anunt/${l._id}`} className="block font-semibold line-clamp-2">
+                <Link
+                  to={`/anunt/${slugify(l.title)}-${l._id}`}
+                  state={{ from: location.pathname + location.search }}
+                  className="block font-semibold line-clamp-2"
+                >
                   {l.title}
                 </Link>
                 <div className="text-sm text-gray-600 mt-1 flex gap-3">
