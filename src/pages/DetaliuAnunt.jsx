@@ -18,6 +18,71 @@ function formatPhoneForWa(raw) {
   return digits;
 }
 
+function openCenteredPopup(url, title = "Share", w = 600, h = 600) {
+  const y = window.top.outerHeight / 2 + window.top.screenY - h / 2;
+  const x = window.top.outerWidth / 2 + window.top.screenX - w / 2;
+  window.open(
+    url,
+    title,
+    `toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=${w},height=${h},top=${y},left=${x}`
+  );
+}
+
+function ShareMenu({ title, url, onClose }) {
+  const text = title ? `${title} – ${url}` : url;
+
+  const shareWhatsApp = () =>
+    openCenteredPopup(`https://wa.me/?text=${encodeURIComponent(text)}`, "WhatsApp", 520, 700);
+
+  const shareFacebook = () =>
+    openCenteredPopup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "Facebook", 700, 600);
+
+  const shareTelegram = () =>
+    openCenteredPopup(
+      `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title || "")}`,
+      "Telegram",
+      700,
+      600
+    );
+
+  // Instagram nu are endpoint web oficial pt. share link; facem: copiem linkul și deschidem Instagram.
+  const shareInstagram = async () => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(url);
+      openCenteredPopup(`https://www.instagram.com/`, "Instagram", 1100, 800);
+      alert("Link copiat. Deschis Instagram — lipește linkul într-un DM/story.");
+    } catch {
+      openCenteredPopup(`https://www.instagram.com/`, "Instagram", 1100, 800);
+    }
+  };
+
+  const copyLink = async () => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        alert("Link copiat în clipboard ✅");
+      } else {
+        throw new Error();
+      }
+    } catch {
+      prompt("Copiază linkul:", url);
+    }
+  };
+
+  return (
+    <div className="absolute right-0 top-10 bg-white border rounded-xl shadow-lg z-50 w-56">
+      <button onClick={shareWhatsApp} className="w-full text-left px-4 py-2 hover:bg-gray-50">💬 WhatsApp</button>
+      <button onClick={shareFacebook} className="w-full text-left px-4 py-2 hover:bg-gray-50">📘 Facebook</button>
+      <button onClick={shareTelegram} className="w-full text-left px-4 py-2 hover:bg-gray-50">✈️ Telegram</button>
+      <button onClick={shareInstagram} className="w-full text-left px-4 py-2 hover:bg-gray-50">📸 Instagram*</button>
+      <div className="border-t my-1" />
+      <button onClick={copyLink} className="w-full text-left px-4 py-2 hover:bg-gray-50">🔗 Copiază link</button>
+      <div className="text-[11px] text-gray-400 px-4 pb-2 pt-1">* Instagram nu permite share direct al linkului din web — copiem linkul și deschidem Instagram.</div>
+      <button onClick={onClose} className="w-full text-center text-sm text-gray-500 py-1 hover:bg-gray-50">Închide</button>
+    </div>
+  );
+}
+
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
   // acceptă /anunt/<slug>-<id> SAU /anunt/<id>
@@ -28,6 +93,9 @@ export default function DetaliuAnunt() {
   const [err, setErr] = useState("");
   const [fav, setFav] = useState(isFav(id));
   const [me, setMe] = useState(null);
+  const [shareOpenTop, setShareOpenTop] = useState(false);
+  const [shareOpenBar, setShareOpenBar] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
@@ -42,29 +110,6 @@ export default function DetaliuAnunt() {
       if (sameOrigin) return navigate(-1);
     } catch {}
     navigate("/");
-  };
-
-  // Share (Web Share API + fallback copy link)
-  const shareListing = async () => {
-    const shareUrl = window.location.href;
-    const title = listing?.title || "Anunț imobiliar";
-    const text = `${title} – ${listing?.price ? `${listing.price} €` : ""}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text, url: shareUrl });
-      } catch {
-        /* anulare - ignorăm */
-      }
-    } else if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("Link copiat în clipboard ✅");
-      } catch {
-        alert("Nu am putut copia linkul. Îl poți selecta din bara de adrese.");
-      }
-    } else {
-      alert("Distribuirea nu e disponibilă. Copiază linkul din bara de adrese.");
-    }
   };
 
   useEffect(() => {
@@ -161,6 +206,8 @@ export default function DetaliuAnunt() {
 
   const contactPhone = listing.contactPhone || listing.phone || "";
   const waNumber = formatPhoneForWa(contactPhone);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareTitle = listing.title;
 
   const isOwner =
     !!me &&
@@ -218,16 +265,26 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-3 mb-3 relative">
         <h1 className="text-3xl font-bold flex-1">{listing.title}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           <button
-            onClick={shareListing}
+            onClick={() => {
+              setShareOpenTop((v) => !v);
+              setShareOpenBar(false);
+            }}
             className="rounded-full px-3 py-1 shadow bg-white/90 text-gray-700 hover:bg-white"
             title="Distribuie"
           >
             🔗
           </button>
+          {shareOpenTop && (
+            <ShareMenu
+              title={shareTitle}
+              url={shareUrl}
+              onClose={() => setShareOpenTop(false)}
+            />
+          )}
           <button
             onClick={onToggleFav}
             className={`rounded-full px-3 py-1 shadow ${fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"} hover:bg-white`}
@@ -279,16 +336,50 @@ export default function DetaliuAnunt() {
             <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">
               💬 WhatsApp
             </a>
-            <button onClick={shareListing} className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50">
-              🔗 Distribuie
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShareOpenTop(false);
+                  setShareOpenBar((v) => !v);
+                }}
+                className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50"
+              >
+                🔗 Distribuie
+              </button>
+              {shareOpenBar && (
+                <div className="absolute z-50">
+                  <ShareMenu
+                    title={shareTitle}
+                    url={shareUrl}
+                    onClose={() => setShareOpenBar(false)}
+                  />
+                </div>
+              )}
+            </div>
             <span className="text-gray-600 self-center">({contactPhone})</span>
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <button onClick={shareListing} className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50">
-              🔗 Distribuie
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShareOpenTop(false);
+                  setShareOpenBar((v) => !v);
+                }}
+                className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50"
+              >
+                🔗 Distribuie
+              </button>
+              {shareOpenBar && (
+                <div className="absolute z-50">
+                  <ShareMenu
+                    title={shareTitle}
+                    url={shareUrl}
+                    onClose={() => setShareOpenBar(false)}
+                  />
+                </div>
+              )}
+            </div>
             <p className="text-gray-500">Proprietarul nu și-a publicat telefonul.</p>
           </div>
         )}
@@ -325,7 +416,7 @@ export default function DetaliuAnunt() {
 
       {/* 🔻 Bara de acțiuni sticky (mobil) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow z-40">
-        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-2">
+        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-2 relative">
           <button onClick={goBack} className="flex-1 border px-3 py-2 rounded-lg text-gray-700">
             ← Înapoi
           </button>
@@ -339,9 +430,26 @@ export default function DetaliuAnunt() {
               </a>
             </>
           )}
-          <button onClick={shareListing} className="border px-3 py-2 rounded-lg text-gray-700">
-            🔗
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShareOpenTop(false);
+                setShareOpenBar((v) => !v);
+              }}
+              className="border px-3 py-2 rounded-lg text-gray-700"
+            >
+              🔗
+            </button>
+            {shareOpenBar && (
+              <div className="absolute right-0 bottom-12">
+                <ShareMenu
+                  title={shareTitle}
+                  url={shareUrl}
+                  onClose={() => setShareOpenBar(false)}
+                />
+              </div>
+            )}
+          </div>
           <button
             onClick={onToggleFav}
             className={`border px-3 py-2 rounded-lg ${fav ? "text-red-600" : "text-gray-700"}`}
