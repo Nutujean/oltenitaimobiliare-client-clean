@@ -1,34 +1,37 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import API_URL from "../api";
+import { isFav, toggleFav } from "../utils/favorites";
 
 function formatPhoneForWa(raw) {
   if (!raw) return "";
   const digits = ("" + raw).replace(/\D+/g, "");
   if (!digits) return "";
-  // dacă începe cu 0 -> înlocuim 0 cu 40 (România)
   if (digits.startsWith("0")) return "40" + digits.slice(1);
-  // dacă începe deja cu 40 -> păstrăm
   if (digits.startsWith("40")) return digits;
-  // dacă începe cu 0040 -> tăiem 00
   if (digits.startsWith("0040")) return digits.slice(2);
-  // dacă începe cu +40 (a fost înlăturat plusul la /D/) -> era 40 deja
   return digits;
 }
 
 export default function DetaliuAnunt() {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  const id = (rawId || "").match(/[0-9a-fA-F]{24}$/)?.[0] || rawId; // acceptă /slug-<id> sau doar <id>
   const [listing, setListing] = useState(null);
   const [err, setErr] = useState("");
+  const [fav, setFav] = useState(isFav(id));
+  const [me, setMe] = useState(null); // { _id, email, ...}
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
+        // 1) anunț
         const res = await fetch(`${API_URL}/listings/${id}`);
         if (!res.ok) throw new Error("Eroare la încărcarea anunțului");
         const data = await res.json();
@@ -42,6 +45,41 @@ export default function DetaliuAnunt() {
       isMounted = false;
     };
   }, [id]);
+
+  // ia user-ul curent dacă ești logat (pt. a decide proprietarul)
+  useEffect(() => {
+    (async () => {
+      if (!token) return;
+      try {
+        const r = await fetch(`${API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!r.ok) return;
+        const u = await r.json();
+        setMe(u);
+      } catch {}
+    })();
+  }, [token]);
+
+  const onToggleFav = () => {
+    toggleFav(id);
+    setFav(isFav(id));
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Sigur vrei să ștergi acest anunț?")) return;
+    try {
+      const r = await fetch(`${API_URL}/listings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || "Eroare la ștergere");
+      navigate("/anunturile-mele");
+    } catch (e) {
+      alert(e.message || "Eroare");
+    }
+  };
 
   if (err) {
     return (
@@ -65,6 +103,14 @@ export default function DetaliuAnunt() {
   const contactPhone = listing.contactPhone || listing.phone || "";
   const waNumber = formatPhoneForWa(contactPhone);
 
+  // ești proprietar dacă se potrivește userId sau email
+  const isOwner =
+    !!me &&
+    ((listing.user && String(listing.user) === String(me._id)) ||
+      (listing.userEmail &&
+        me.email &&
+        String(listing.userEmail).toLowerCase() === String(me.email).toLowerCase()));
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Slider cu săgeți */}
@@ -82,7 +128,45 @@ export default function DetaliuAnunt() {
         </Swiper>
       )}
 
-      <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
+      <div className="flex items-start gap-3 mb-3">
+        <h1 className="text-3xl font-bold flex-1">{listing.title}</h1>
+
+        {/* Favorite */}
+        <button
+          onClick={onToggleFav}
+          className={`rounded-full px-3 py-1 shadow ${
+            fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
+          } hover:bg-white`}
+          title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+        >
+          {fav ? "❤️" : "🤍"}
+        </button>
+      </div>
+
+      {/* Acțiuni proprietar */}
+      {isOwner && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Link
+            to={`/editeaza-anunt/${id}`}
+            className="border px-3 py-2 rounded hover:bg-gray-50"
+          >
+            ✏️ Editează
+          </Link>
+          <button
+            onClick={handleDelete}
+            className="border px-3 py-2 rounded text-red-600 hover:bg-red-50"
+          >
+            🗑️ Șterge
+          </button>
+          <Link
+            to="/anunturile-mele"
+            className="border px-3 py-2 rounded hover:bg-gray-50"
+          >
+            📂 Anunțurile mele
+          </Link>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <span className="text-xl text-green-700 font-semibold">{listing.price} €</span>
         {listing.location && (

@@ -61,7 +61,18 @@ export default function Navbar() {
             + Adaugă anunț
           </Link>
 
-          {!isAuth ? (
+          {isAuth ? (
+            <>
+              <NavItem to="/anunturile-mele">Anunțurile mele</NavItem>
+              <NavItem to="/profil">Profil</NavItem>
+              <button
+                onClick={logout}
+                className="ml-1 border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-md"
+              >
+                Delogare
+              </button>
+            </>
+          ) : (
             <>
               <Link
                 to="/login"
@@ -75,16 +86,6 @@ export default function Navbar() {
               >
                 Înregistrare
               </Link>
-            </>
-          ) : (
-            <>
-              <NavItem to="/profil">Profil</NavItem>
-              <button
-                onClick={logout}
-                className="ml-1 border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-md"
-              >
-                Delogare
-              </button>
             </>
           )}
         </nav>
@@ -123,7 +124,30 @@ export default function Navbar() {
               + Adaugă anunț
             </Link>
 
-            {!isAuth ? (
+            {isAuth ? (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Link
+                  to="/anunturile-mele"
+                  onClick={() => setOpen(false)}
+                  className="border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg text-center"
+                >
+                  Anunțurile mele
+                </Link>
+                <Link
+                  to="/profil"
+                  onClick={() => setOpen(false)}
+                  className="border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg text-center"
+                >
+                  Profil
+                </Link>
+                <button
+                  onClick={logout}
+                  className="col-span-2 bg-gray-800 hover:bg-gray-900 text-white px-3 py-2 rounded-lg text-center"
+                >
+                  Delogare
+                </button>
+              </div>
+            ) : (
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
                   to="/login"
@@ -139,22 +163,6 @@ export default function Navbar() {
                 >
                   Înregistrare
                 </Link>
-              </div>
-            ) : (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Link
-                  to="/profil"
-                  onClick={() => setOpen(false)}
-                  className="border border-gray-300 hover:border-gray-400 px-3 py-2 rounded-lg text-center"
-                >
-                  Profil
-                </Link>
-                <button
-                  onClick={logout}
-                  className="bg-gray-800 hover:bg-gray-900 text-white px-3 py-2 rounded-lg text-center"
-                >
-                  Delogare
-                </button>
               </div>
             )}
           </div>
