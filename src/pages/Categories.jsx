@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 import slugify from "../utils/slugify.js";
 
@@ -14,10 +14,27 @@ const SLUG_TO_CATEGORY = {
 
 export default function Categories() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const location = useLocation();
+
   const categoryName = SLUG_TO_CATEGORY[slug] || "";
   const [items, setItems] = useState([]);
   const [err, setErr] = useState("");
+
+  // Buton Înapoi: încearcă history, apoi fallback "/"
+  const goBack = () => {
+    try {
+      const ref = document.referrer || "";
+      const sameOrigin = ref && new URL(ref).origin === window.location.origin;
+      if (location.state?.from) {
+        return navigate(location.state.from);
+      }
+      if (sameOrigin) {
+        return navigate(-1);
+      }
+    } catch (_) {}
+    navigate("/");
+  };
 
   useEffect(() => {
     (async () => {
@@ -42,7 +59,18 @@ export default function Categories() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">{categoryName || "Categorie"}</h1>
+      {/* Bara superioară cu Înapoi + titlu categorie */}
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          onClick={goBack}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded border hover:bg-gray-50 text-gray-700"
+        >
+          ← Înapoi
+        </button>
+        <h1 className="text-2xl font-bold">
+          {categoryName || "Categorie"}
+        </h1>
+      </div>
 
       {err && (
         <div className="mb-4 bg-red-50 text-red-700 border border-red-200 px-3 py-2 rounded">
