@@ -1,175 +1,84 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
-import ImageReorder from "../components/ImageReorder.jsx";
+import ImageReorder from "../components/ImageReorder";
 
-const CATEGORIES = [
-  "Apartamente",
-  "Case",
-  "Terenuri",
-  "Garsoniere",
-  "Garaje",
-  "Spațiu comercial",
-];
+const MAX_IMAGES = 15;
 
-const LOCATII = [
-  "Oltenita",
-  "Chirnogi",
-  "Ulmeni",
-  "Mitreni",
-  "Clatesti",
-  "Spantov",
-  "Cascioarele",
-  "Soldanu",
-  "Negoiesti",
-  "Valea Rosie",
-  "Radovanu",
-  "Chiselet",
-  "Manastirea",
-  "Budesti",
-];
-
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CATEGORIES = ["Apartamente","Case","Terenuri","Garsoniere","Garaje","Spațiu comercial"];
+const LOCATII = ["Oltenita","Chirnogi","Ulmeni","Mitreni","Clatesti","Spantov","Cascioarele","Soldanu","Negoiesti","Valea Rosie","Radovanu","Chiselet","Manastirea","Budesti"];
 
 export default function AdaugaAnunt() {
   const navigate = useNavigate();
-
-  // form state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
-  const [phone, setPhone] = useState("");
-
-  // images
-  const [images, setImages] = useState([]); // array de URL-uri Cloudinary
-  const [uploading, setUploading] = useState(false);
-
-  // ui
   const [error, setError] = useState("");
-  const [okMsg, setOkMsg] = useState("");
+  const [imgInput, setImgInput] = useState("");
 
-  const token = localStorage.getItem("token");
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+    location: "",
+    images: [],
+    contactPhone: "",
+    status: "disponibil",
+    transactionType: "vanzare", // 👈 nou
+  });
 
-  async function uploadToCloudinary(file) {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      throw new Error("Cloudinary nu este configurat (VITE_CLOUDINARY_* lipsesc).");
-    }
-    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", UPLOAD_PRESET);
-    const r = await fetch(url, { method: "POST", body: fd });
-    if (!r.ok) throw new Error("Upload eșuat");
-    const data = await r.json();
-    return data.secure_url;
-  }
-
-  const onSelectFiles = async (e) => {
-    try {
-      setError("");
-      const files = Array.from(e.target.files || []);
-      if (files.length === 0) return;
-      setUploading(true);
-      const uploadedUrls = [];
-      for (const f of files) {
-        const url = await uploadToCloudinary(f);
-        uploadedUrls.push(url);
+  const addImageUrl = () => {
+    const url = imgInput.trim();
+    if (!url) return;
+    setForm((prev) => {
+      const current = Array.isArray(prev.images) ? prev.images : [];
+      if (current.length >= MAX_IMAGES) {
+        alert(`Poți adăuga maximum ${MAX_IMAGES} imagini.`);
+        return prev;
       }
-      setImages((prev) => [...prev, ...uploadedUrls]);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Eroare la upload.");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
+      return { ...prev, images: [...current, url].slice(0, MAX_IMAGES) };
+    });
+    setImgInput("");
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    const token = localStorage.getItem("token");
+
+    const payload = {
+      ...form,
+      price: Number(form.price) || 0,
+      images: (form.images || []).filter(Boolean).slice(0, MAX_IMAGES),
+      transactionType: form.transactionType || "vanzare",
+    };
+
     try {
-      setError("");
-      setOkMsg("");
-
-      if (!token) {
-        setError("Trebuie să fii autentificat pentru a adăuga un anunț.");
-        return;
-      }
-      if (!title.trim()) {
-        setError("Titlul este obligatoriu.");
-        return;
-      }
-      const priceNumber = Number(price);
-      if (Number.isNaN(priceNumber) || priceNumber < 0) {
-        setError("Preț invalid.");
-        return;
-      }
-      if (!category) {
-        setError("Selectează o categorie.");
-        return;
-      }
-      if (!location) {
-        setError("Selectează o locație.");
-        return;
-      }
-
-      const payload = {
-        title: title.trim(),
-        description,
-        price: priceNumber,
-        category,
-        location,
-        images,
-        imageUrl: images[0] || "",  // coperta = prima imagine
-        status: "disponibil",
-        phone: phone ? String(phone) : undefined, // opțional
-      };
-
       const r = await fetch(`${API_URL}/listings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || "Eroare la crearea anunțului");
 
-      if (r.status === 401) {
-        setError("Nu ești autentificat. Te rugăm să te loghezi.");
-        return;
-      }
-
-      const data = await r.json();
-      if (!r.ok) {
-        // backend-ul nostru trimite {error, details?}
-        const details = data?.details ? ` (${JSON.stringify(data.details)})` : "";
-        throw new Error((data?.error || "Eroare la crearea anunțului") + details);
-      }
-
-      setOkMsg("Anunț creat cu succes!");
-      // du-te la detalii anunț
-      navigate(`/anunt/${data._id}`);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Eroare necunoscută");
+      navigate(`/anunt/${data._id}`, { replace: true });
+    } catch (e) {
+      setError(e.message || "Eroare necunoscută");
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Adaugă anunț</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Adaugă anunț</h1>
+        <Link to="/anunturile-mele" className="text-blue-600 hover:underline">Anunțurile mele</Link>
+      </div>
 
       {error && (
         <div className="mb-4 bg-red-50 text-red-700 border border-red-200 px-3 py-2 rounded">
           {error}
-        </div>
-      )}
-      {okMsg && (
-        <div className="mb-4 bg-green-50 text-green-700 border border-green-200 px-3 py-2 rounded">
-          {okMsg}
         </div>
       )}
 
@@ -179,9 +88,8 @@ export default function AdaugaAnunt() {
           <input
             type="text"
             className="w-full border rounded px-3 py-2"
-            placeholder="Ex: Teren intravilan 500 mp"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
             required
           />
         </div>
@@ -190,34 +98,62 @@ export default function AdaugaAnunt() {
           <label className="block text-sm font-medium mb-1">Descriere</label>
           <textarea
             className="w-full border rounded px-3 py-2 min-h-[120px]"
-            placeholder="Detalii despre proprietate..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            required
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Preț (€)</label>
             <input
               type="number"
               min="0"
               className="w-full border rounded px-3 py-2"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              value={form.price}
+              onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
               required
             />
           </div>
 
           <div>
+            <label className="block text-sm font-medium mb-1">Tip tranzacție</label>
+            <div className="flex items-center gap-4">
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="transactionType"
+                  value="vanzare"
+                  checked={(form.transactionType || "vanzare") === "vanzare"}
+                  onChange={(e) => setForm((p) => ({ ...p, transactionType: e.target.value }))}
+                />
+                <span>De vânzare</span>
+              </label>
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="transactionType"
+                  value="inchiriere"
+                  checked={form.transactionType === "inchiriere"}
+                  onChange={(e) => setForm((p) => ({ ...p, transactionType: e.target.value }))}
+                />
+                <span>De închiriat</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
             <label className="block text-sm font-medium mb-1">Categorie</label>
             <select
               className="w-full border rounded px-3 py-2 bg-white"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={form.category}
+              onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
               required
             >
-              <option value="">Alege categoria</option>
+              <option value="">Alege...</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
@@ -228,56 +164,63 @@ export default function AdaugaAnunt() {
             <label className="block text-sm font-medium mb-1">Locație</label>
             <select
               className="w-full border rounded px-3 py-2 bg-white"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={form.location}
+              onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
               required
             >
-              <option value="">Alege locația</option>
-              {LOCATII.map((l) => (
-                <option key={l} value={l}>{l}</option>
+              <option value="">Alege...</option>
+              {LOCATII.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Telefon (opțional) */}
         <div>
-          <label className="block text-sm font-medium mb-1">Telefon (opțional)</label>
+          <label className="block text-sm font-medium mb-1">Telefon contact</label>
           <input
             type="tel"
             className="w-full border rounded px-3 py-2"
-            placeholder="07xx xxx xxx"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={form.contactPhone}
+            onChange={(e) => setForm((p) => ({ ...p, contactPhone: e.target.value }))}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Dacă nu completezi, vom încerca să folosim telefonul din profilul tău.
-          </p>
         </div>
 
-        {/* Upload imagini */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Imagini</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={onSelectFiles}
-            className="block"
-          />
-          {uploading && <p className="text-sm text-gray-600 mt-2">Se încarcă imaginile...</p>}
+        {/* Imagini */}
+        <div className="border rounded-lg p-4">
+          <div className="flex items-end gap-2 mb-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">URL imagine (Cloudinary)</label>
+              <input
+                type="url"
+                className="w-full border rounded px-3 py-2"
+                placeholder="https://res.cloudinary.com/.../image/upload/..."
+                value={imgInput}
+                onChange={(e) => setImgInput(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={addImageUrl}
+              disabled={(form.images?.length || 0) >= MAX_IMAGES}
+              className={`px-4 py-2 rounded ${ (form.images?.length || 0) >= MAX_IMAGES ? "bg-gray-300 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+            >
+              Adaugă
+            </button>
+          </div>
 
-          <ImageReorder images={images} setImages={setImages} title="Ordine imagini" />
+          <ImageReorder
+            images={form.images || []}
+            setImages={(imgs) => setForm((prev) => ({ ...prev, images: imgs.slice(0, MAX_IMAGES) }))}
+            max={MAX_IMAGES}
+          />
         </div>
 
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={uploading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            {uploading ? "Așteaptă upload..." : "Publică anunțul"}
+        <div className="flex items-center gap-3">
+          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Salvează anunțul
           </button>
+          <Link to="/" className="px-4 py-2 rounded border hover:bg-gray-50">Renunță</Link>
         </div>
       </form>
     </div>
