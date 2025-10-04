@@ -20,7 +20,7 @@ export default function EditareAnunt() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    price: "",
+    price: "", // string, acceptă virgulă
     category: "",
     location: "",
     images: [],
@@ -29,7 +29,6 @@ export default function EditareAnunt() {
     transactionType: "vanzare",
   });
 
-  // load listing
   useEffect(() => {
     (async () => {
       try {
@@ -39,7 +38,7 @@ export default function EditareAnunt() {
         setForm({
           title: data.title || "",
           description: data.description || "",
-          price: data.price ?? "",
+          price: (data.price ?? "").toString().replace(".", ","), // afișăm cu virgulă pt UX local
           category: data.category || "",
           location: data.location || "",
           images: Array.isArray(data.images) ? data.images.slice(0, MAX_IMAGES) : (data.imageUrl ? [data.imageUrl] : []),
@@ -69,14 +68,26 @@ export default function EditareAnunt() {
     setImgInput("");
   };
 
+  const parsePriceToNumber = (val) => {
+    const s = String(val ?? "").trim().replace(/\s+/g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
     const token = localStorage.getItem("token");
 
+    const priceNum = parsePriceToNumber(form.price);
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setError("Preț invalid. Exemplu: 2,5 sau 2.5");
+      return;
+    }
+
     const payload = {
       ...form,
-      price: Number(form.price) || 0,
+      price: priceNum,
       images: (form.images || []).filter(Boolean).slice(0, MAX_IMAGES),
       transactionType: form.transactionType || "vanzare",
     };
@@ -100,6 +111,12 @@ export default function EditareAnunt() {
   };
 
   if (loading) return <p className="text-center py-10">Se încarcă...</p>;
+
+  // permite doar cifre, punct, virgulă
+  const onPriceChange = (val) => {
+    const cleaned = val.replace(/[^\d.,]/g, "");
+    setForm((p) => ({ ...p, price: cleaned }));
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -140,13 +157,15 @@ export default function EditareAnunt() {
           <div>
             <label className="block text-sm font-medium mb-1">Preț (€)</label>
             <input
-              type="number"
-              min="0"
+              type="text"
+              inputMode="decimal"
+              placeholder="ex: 2,5"
               className="w-full border rounded px-3 py-2"
               value={form.price}
-              onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+              onChange={(e) => onPriceChange(e.target.value)}
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Acceptă punct sau virgulă (ex: 2,5 sau 2.5)</p>
           </div>
 
           <div>

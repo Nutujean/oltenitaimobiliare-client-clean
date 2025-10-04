@@ -16,13 +16,14 @@ export default function AdaugaAnunt() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    // ținem prețul ca string ca să accepte virgulă
     price: "",
     category: "",
     location: "",
     images: [],
     contactPhone: "",
     status: "disponibil",
-    transactionType: "vanzare", // 👈 nou
+    transactionType: "vanzare",
   });
 
   const addImageUrl = () => {
@@ -39,14 +40,27 @@ export default function AdaugaAnunt() {
     setImgInput("");
   };
 
+  // conversie sigură: "2,5" => 2.5
+  const parsePriceToNumber = (val) => {
+    const s = String(val ?? "").trim().replace(/\s+/g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
     const token = localStorage.getItem("token");
 
+    const priceNum = parsePriceToNumber(form.price);
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setError("Preț invalid. Exemplu: 2,5 sau 2.5");
+      return;
+    }
+
     const payload = {
       ...form,
-      price: Number(form.price) || 0,
+      price: priceNum,
       images: (form.images || []).filter(Boolean).slice(0, MAX_IMAGES),
       transactionType: form.transactionType || "vanzare",
     };
@@ -67,6 +81,12 @@ export default function AdaugaAnunt() {
     } catch (e) {
       setError(e.message || "Eroare necunoscută");
     }
+  };
+
+  // permite doar cifre, punct, virgulă (nu blocăm lipirea, dar curățăm ușor)
+  const onPriceChange = (val) => {
+    const cleaned = val.replace(/[^\d.,]/g, "");
+    setForm((p) => ({ ...p, price: cleaned }));
   };
 
   return (
@@ -108,13 +128,15 @@ export default function AdaugaAnunt() {
           <div>
             <label className="block text-sm font-medium mb-1">Preț (€)</label>
             <input
-              type="number"
-              min="0"
+              type="text"
+              inputMode="decimal"
+              placeholder="ex: 2,5"
               className="w-full border rounded px-3 py-2"
               value={form.price}
-              onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+              onChange={(e) => onPriceChange(e.target.value)}
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Acceptă punct sau virgulă (ex: 2,5 sau 2.5)</p>
           </div>
 
           <div>
