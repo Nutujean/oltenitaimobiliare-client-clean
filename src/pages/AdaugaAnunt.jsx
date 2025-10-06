@@ -25,11 +25,11 @@ export default function AdaugaAnunt() {
   const [phone, setPhone] = useState("");
 
   // 🔹 câmpuri noi
+  const [dealType, setDealType] = useState("vanzare"); // vanzare | inchiriere
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
 
-  // simplu: lipim URL-urile imaginilor (Cloudinary) pe linii separate
   const [imagesText, setImagesText] = useState("");
 
   const [err, setErr] = useState("");
@@ -65,7 +65,9 @@ export default function AdaugaAnunt() {
         category,
         phone: phone.trim(),
         images: imgs,
-        // 🔹 numeric sanitize & includem doar dacă au valoare
+
+        // 🔹 noi
+        dealType, // "vanzare" | "inchiriere"
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
         floor: floor !== "" ? Number(floor) : undefined,
         surface: surface !== "" ? Number(String(surface).replace(",", ".")) : undefined,
@@ -87,7 +89,6 @@ export default function AdaugaAnunt() {
       }
 
       setOk("Anunț creat cu succes!");
-      // mergem la anunțurile mele
       navigate("/anunturile-mele");
     } catch (e) {
       setErr(e.message);
@@ -127,7 +128,20 @@ export default function AdaugaAnunt() {
           />
         </div>
 
+        {/* tip + categorie + locație */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Tip ofertă</label>
+            <select
+              className="w-full border rounded px-3 py-2 bg-white"
+              value={dealType}
+              onChange={(e) => setDealType(e.target.value)}
+            >
+              <option value="vanzare">De vânzare</option>
+              <option value="inchiriere">De închiriere</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Categorie</label>
             <select
@@ -157,22 +171,22 @@ export default function AdaugaAnunt() {
               ))}
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Preț (€)</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              className="w-full border rounded px-3 py-2"
-              placeholder="ex: 60000 sau 2,5"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              onBlur={() => setPrice(toNumberOrEmpty(price))}
-            />
-          </div>
         </div>
 
-        {/* 🔹 doar pentru Apartamente / Garsoniere afișăm etaj/suprafață/camere */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Preț (€)</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="w-full border rounded px-3 py-2"
+            placeholder="ex: 60000 sau 2,5"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            onBlur={() => setPrice(toNumberOrEmpty(price))}
+          />
+        </div>
+
+        {/* doar Apartamente / Garsoniere: etaj/suprafață/camere */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

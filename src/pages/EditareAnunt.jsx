@@ -18,7 +18,7 @@ const LOCATII = [
 
 export default function EditareAnunt() {
   const { id: rawId } = useParams();
-  const id = (rawId || "").split("-").pop(); // în caz că URL are slug+id
+  const id = (rawId || "").split("-").pop();
   const [listing, setListing] = useState(null);
 
   // form state
@@ -30,7 +30,8 @@ export default function EditareAnunt() {
   const [phone, setPhone] = useState("");
   const [imagesText, setImagesText] = useState("");
 
-  // noi
+  // 🔹 noi
+  const [dealType, setDealType] = useState("vanzare");
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
@@ -67,6 +68,7 @@ export default function EditareAnunt() {
         setPhone(data.phone || "");
         setImagesText(Array.isArray(data.images) ? data.images.join("\n") : (data.imageUrl || ""));
 
+        setDealType(data.dealType || "vanzare");
         setFloor(Number.isFinite(data.floor) ? String(data.floor) : "");
         setSurface(Number.isFinite(data.surface) ? String(data.surface) : "");
         setRooms(Number.isFinite(data.rooms) ? String(data.rooms) : "");
@@ -101,6 +103,9 @@ export default function EditareAnunt() {
         category,
         phone: phone.trim(),
         images: imgs,
+
+        // 🔹 noi
+        dealType,
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
         floor: floor !== "" ? Number(floor) : undefined,
         surface: surface !== "" ? Number(String(surface).replace(",", ".")) : undefined,
@@ -166,7 +171,20 @@ export default function EditareAnunt() {
           />
         </div>
 
+        {/* tip + categorie + locație */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Tip ofertă</label>
+            <select
+              className="w-full border rounded px-3 py-2 bg-white"
+              value={dealType}
+              onChange={(e) => setDealType(e.target.value)}
+            >
+              <option value="vanzare">De vânzare</option>
+              <option value="inchiriere">De închiriere</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Categorie</label>
             <select
@@ -196,20 +214,21 @@ export default function EditareAnunt() {
               ))}
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Preț (€)</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              className="w-full border rounded px-3 py-2"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              onBlur={() => setPrice(toNumberOrEmpty(price))}
-            />
-          </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-1">Preț (€)</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="w-full border rounded px-3 py-2"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            onBlur={() => setPrice(toNumberOrEmpty(price))}
+          />
+        </div>
+
+        {/* doar Apartamente / Garsoniere */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

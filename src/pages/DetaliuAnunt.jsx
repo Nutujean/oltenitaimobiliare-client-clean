@@ -8,7 +8,7 @@ import API_URL from "../api";
 
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
-  const id = (rawId || "").split("-").pop(); // suportă /anunt/slug-titlu-<id>
+  const id = (rawId || "").split("-").pop();
   const [listing, setListing] = useState(null);
   const [err, setErr] = useState("");
   const navigate = useNavigate();
@@ -56,10 +56,13 @@ export default function DetaliuAnunt() {
       : ["https://via.placeholder.com/800x500?text=Fara+imagine"];
 
   const contactPhone = listing.phone || "";
+  const tipText =
+    listing.dealType === "inchiriere"
+      ? "De închiriere"
+      : "De vânzare";
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* back */}
       <div className="mb-4">
         <Link
           to={backTo}
@@ -69,7 +72,6 @@ export default function DetaliuAnunt() {
         </Link>
       </div>
 
-      {/* slider */}
       <Swiper modules={[Navigation]} navigation spaceBetween={10} slidesPerView={1}>
         {imagesToShow.map((img, i) => (
           <SwiperSlide key={i}>
@@ -82,7 +84,17 @@ export default function DetaliuAnunt() {
         ))}
       </Swiper>
 
-      <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-bold">{listing.title}</h1>
+        <span
+          className={`text-sm px-3 py-1 rounded-full ${
+            listing.dealType === "inchiriere" ? "bg-purple-100 text-purple-700" : "bg-green-100 text-green-700"
+          }`}
+          title="Tip ofertă"
+        >
+          {tipText}
+        </span>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3 text-gray-600 mb-4">
         {listing.location && <span>📍 {listing.location}</span>}
@@ -95,7 +107,6 @@ export default function DetaliuAnunt() {
         </p>
       )}
 
-      {/* box cu specificații */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {Number.isFinite(listing.surface) && (
           <div className="bg-gray-50 rounded p-3">
@@ -123,7 +134,6 @@ export default function DetaliuAnunt() {
 
       <p className="text-gray-800 whitespace-pre-line mb-6">{listing.description}</p>
 
-      {/* contact rapid */}
       {contactPhone && (
         <div className="mt-4">
           <a
