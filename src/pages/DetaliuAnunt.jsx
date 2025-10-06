@@ -16,22 +16,19 @@ export default function DetaliuAnunt() {
   const [err, setErr] = useState("");
   const [plan, setPlan] = useState("featured7");
 
-  // id real dacă ruta e /anunt/slug-<id>
+  // id real (acceptă /anunt/slug-<id> sau /anunt/<id>)
   const listingId = useMemo(() => {
     if (!id) return "";
     const parts = String(id).split("-");
     return parts[parts.length - 1];
   }, [id]);
 
+  // user & token din localStorage
   const me = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; }
   }, []);
   const token = useMemo(() => localStorage.getItem("token") || "", []);
   const myId = me?.id || me?._id;
-  const ownerId = listing?.user?._id || listing?.user;
-  const isOwner = myId && ownerId && String(myId) === String(ownerId);
-  const canSeePromote = !!me;      // arătăm cardul dacă ești autentificat(ă)
-  const canPromote = !!isOwner;    // dar activăm butonul doar pentru proprietar
 
   useEffect(() => {
     const run = async () => {
@@ -50,11 +47,15 @@ export default function DetaliuAnunt() {
 
   const imagesToShow =
     listing?.images?.length ? listing.images : (listing?.imageUrl ? [listing.imageUrl] : []);
+  const ownerId = listing?.user?._id || listing?.user;
+  const isOwner = myId && ownerId && String(myId) === String(ownerId);
   const contactPhone = listing?.phone || "";
+
+  const featuredActive =
+    listing?.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
   const startPromotion = async () => {
     if (!token) {
-      alert("Trebuie să fii autentificat(ă) pentru a promova anunțul.");
       nav(`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`);
       return;
     }
@@ -71,9 +72,6 @@ export default function DetaliuAnunt() {
       alert(e.message);
     }
   };
-
-  const featuredActive =
-    listing?.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
   if (err) {
     return (
@@ -193,50 +191,52 @@ export default function DetaliuAnunt() {
         </a>
       </div>
 
-      {/* promovare – vizibilă dacă ești logat(ă); activă doar pentru proprietar */}
-      {canSeePromote && (
-        <div className="border rounded-xl p-4 mb-8 bg-white shadow-sm">
-          <h3 className="font-semibold mb-3">Promovează anunțul</h3>
+      {/* PROMOVARE – acum este ÎNTOTDEAUNA vizibilă */}
+      <div className="border rounded-xl p-4 mb-8 bg-white shadow-sm">
+        <h3 className="font-semibold mb-3">Promovează anunțul</h3>
 
-          {featuredActive ? (
-            <p className="text-green-700">
-              Anunțul este deja promovat până la{" "}
-              <strong>{new Date(listing.featuredUntil).toLocaleString()}</strong>.
-            </p>
-          ) : (
-            <>
-              {!canPromote && (
-                <p className="text-sm text-amber-700 mb-2">
-                  Doar proprietarul anunțului poate finaliza plata de promovare (te-ai autentificat cu alt cont).
-                </p>
-              )}
-              <div className="flex flex-wrap items-center gap-3">
-                <select
-                  className="border rounded px-3 py-2 bg-white"
-                  value={plan}
-                  onChange={(e) => setPlan(e.target.value)}
-                  disabled={!canPromote}
-                >
-                  <option value="featured7">Promovare 7 zile (4.99 €)</option>
-                  <option value="featured30">Promovare 30 zile (14.99 €)</option>
-                </select>
-                <button
-                  onClick={startPromotion}
-                  disabled={!canPromote}
-                  className={`px-4 py-2 rounded text-white ${
-                    canPromote ? "bg-amber-600 hover:bg-amber-700" : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  Promovează acum
-                </button>
-              </div>
-            </>
-          )}
-          <p className="text-xs text-gray-500 mt-2">
-            Anunțurile promovate apar primele în listă și sunt marcate cu badge „Promovat”.
+        {featuredActive ? (
+          <p className="text-green-700">
+            Anunțul este deja promovat până la{" "}
+            <strong>{new Date(listing.featuredUntil).toLocaleString()}</strong>.
           </p>
-        </div>
-      )}
+        ) : !me ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-gray-700">Pentru a promova anunțul, autentifică-te în cont.</p>
+            <button
+              onClick={() => nav(`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Autentifică-te
+            </button>
+          </div>
+        ) : isOwner ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              className="border rounded px-3 py-2 bg-white"
+              value={plan}
+              onChange={(e) => setPlan(e.target.value)}
+            >
+              <option value="featured7">Promovare 7 zile (4.99 €)</option>
+              <option value="featured30">Promovare 30 zile (14.99 €)</option>
+            </select>
+            <button
+              onClick={startPromotion}
+              className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700"
+            >
+              Promovează acum
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-amber-700">
+            Ești autentificat(ă), dar nu cu contul proprietar al acestui anunț. Numai proprietarul poate iniția promovarea.
+          </p>
+        )}
+
+        <p className="text-xs text-gray-500 mt-2">
+          Anunțurile promovate apar primele în listă și sunt marcate cu badge „Promovat”.
+        </p>
+      </div>
 
       {/* link editare pentru proprietar */}
       {isOwner && (
