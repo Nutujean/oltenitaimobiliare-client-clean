@@ -16,9 +16,20 @@ export default function VerificaEmail() {
       return;
     }
 
-    const run = async () => {
+    const verify = async () => {
       try {
-        const res = await fetch(`${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`);
+        // 1) încercăm GET
+        let res = await fetch(
+          `${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`
+        );
+        if (!res.ok) {
+          // 2) fallback: POST (unele setup-uri preferă POST)
+          res = await fetch(`${API_URL}/auth/verify-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+        }
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data?.error || `Eroare HTTP ${res.status}`);
@@ -26,11 +37,13 @@ export default function VerificaEmail() {
         setStatus("success");
         setMessage("Email verificat cu succes! Te poți autentifica acum.");
       } catch (err) {
+        console.error("verify-email error:", err);
         setStatus("error");
         setMessage(err.message || "Eroare la verificarea emailului.");
       }
     };
-    run();
+
+    verify();
   }, [searchParams]);
 
   return (
