@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
-import ImageUploader from "../components/ImageUploader";
+import CloudinaryUploader from "../components/CloudinaryUploader";
 
 const CATEGORIES = [
   "Apartamente",
@@ -25,13 +25,14 @@ export default function AdaugaAnunt() {
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
 
+  // tip ofertă + specific apart/garsonieră
   const [dealType, setDealType] = useState("vanzare");
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
 
-  // stocăm URL-urile în text (compatibil cu backend-ul tău actual)
-  const [imagesText, setImagesText] = useState("");
+  // imagini ca URL-uri (populate prin uploader)
+  const [images, setImages] = useState([]);
 
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
@@ -54,19 +55,13 @@ export default function AdaugaAnunt() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Trebuie să fii autentificat.");
 
-      const imgs = imagesText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .slice(0, 15); // safety
-
       const payload = {
         title: title.trim(),
         description: description.trim(),
         location,
         category,
         phone: phone.trim(),
-        images: imgs,
+        images, // vin din uploader
 
         dealType,
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
@@ -129,7 +124,7 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* Tip + categorie + locație */}
+        {/* tip + categorie + locatie */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Tip ofertă</label>
@@ -187,7 +182,7 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* doar Apartamente / Garsoniere */}
+        {/* specific pentru apart/garsonieră */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -234,18 +229,8 @@ export default function AdaugaAnunt() {
         )}
 
         <div>
-          <label className="block text-sm font-medium mb-1">Imagini</label>
-          <ImageUploader imagesText={imagesText} setImagesText={setImagesText} max={15} />
-          <textarea
-            rows={4}
-            className="w-full border rounded px-3 py-2 mt-3"
-            placeholder="Link-urile sunt completate automat după upload. Poți reordona manual."
-            value={imagesText}
-            onChange={(e) => setImagesText(e.target.value)}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Max 15 imagini. Prima imagine devine coperta.
-          </p>
+          <label className="block text-sm font-medium mb-2">Imagini</label>
+          <CloudinaryUploader value={images} onChange={setImages} max={15} />
         </div>
 
         <div>
@@ -261,7 +246,7 @@ export default function AdaugaAnunt() {
         <div>
           <label className="block text-sm font-medium mb-1">Descriere</label>
           <textarea
-            rows={5}
+            rows={6}
             className="w-full border rounded px-3 py-2"
             value={description}
             onChange={(e) => setDescription(e.target.value)}

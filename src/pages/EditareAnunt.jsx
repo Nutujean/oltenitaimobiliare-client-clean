@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import API_URL from "../api";
+import CloudinaryUploader from "../components/CloudinaryUploader";
 
 const CATEGORIES = [
   "Apartamente",
@@ -21,20 +22,19 @@ export default function EditareAnunt() {
   const id = (rawId || "").split("-").pop();
   const [listing, setListing] = useState(null);
 
-  // form state
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
-  const [imagesText, setImagesText] = useState("");
 
-  // 🔹 noi
   const [dealType, setDealType] = useState("vanzare");
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
+
+  const [images, setImages] = useState([]);
 
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
@@ -66,12 +66,18 @@ export default function EditareAnunt() {
         setLocation(data.location || "");
         setDescription(data.description || "");
         setPhone(data.phone || "");
-        setImagesText(Array.isArray(data.images) ? data.images.join("\n") : (data.imageUrl || ""));
 
         setDealType(data.dealType || "vanzare");
         setFloor(Number.isFinite(data.floor) ? String(data.floor) : "");
         setSurface(Number.isFinite(data.surface) ? String(data.surface) : "");
         setRooms(Number.isFinite(data.rooms) ? String(data.rooms) : "");
+
+        const initialImages = Array.isArray(data.images) && data.images.length
+          ? data.images
+          : data.imageUrl
+          ? [data.imageUrl]
+          : [];
+        setImages(initialImages);
       } catch (e) {
         setErr(e.message);
       } finally {
@@ -91,20 +97,14 @@ export default function EditareAnunt() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Trebuie să fii autentificat.");
 
-      const imgs = imagesText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
       const payload = {
         title: title.trim(),
         description: description.trim(),
         location,
         category,
         phone: phone.trim(),
-        images: imgs,
+        images,
 
-        // 🔹 noi
         dealType,
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
         floor: floor !== "" ? Number(floor) : undefined,
@@ -171,7 +171,7 @@ export default function EditareAnunt() {
           />
         </div>
 
-        {/* tip + categorie + locație */}
+        {/* tip + categorie + locatie */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Tip ofertă</label>
@@ -228,7 +228,6 @@ export default function EditareAnunt() {
           />
         </div>
 
-        {/* doar Apartamente / Garsoniere */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -273,6 +272,11 @@ export default function EditareAnunt() {
         )}
 
         <div>
+          <label className="block text-sm font-medium mb-2">Imagini</label>
+          <CloudinaryUploader value={images} onChange={setImages} max={15} />
+        </div>
+
+        <div>
           <label className="block text-sm font-medium mb-1">Telefon</label>
           <input
             className="w-full border rounded px-3 py-2"
@@ -282,12 +286,12 @@ export default function EditareAnunt() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Imagini (URL pe linie)</label>
+          <label className="block text-sm font-medium mb-1">Descriere</label>
           <textarea
-            rows={5}
+            rows={6}
             className="w-full border rounded px-3 py-2"
-            value={imagesText}
-            onChange={(e) => setImagesText(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 
