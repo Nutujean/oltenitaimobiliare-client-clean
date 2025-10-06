@@ -1,98 +1,142 @@
-// src/pages/VerificaEmail.jsx
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function VerificaEmail() {
-  const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("loading"); // loading | success | error
-  const [message, setMessage] = useState("");
+  const loc = useLocation();
+  const params = new URLSearchParams(loc.search);
+  const initialToken = params.get("token") || "";
 
+  const [token, setToken] = useState(initialToken);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState(initialToken ? "loading" : "idle"); // idle | loading | success | error
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+
+  // dacă există ?token în URL -> verificăm automat
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (!token) {
-      setStatus("error");
-      setMessage("Lipsește token-ul de verificare din link.");
-      return;
-    }
-
     const verify = async () => {
+      if (!initialToken) return;
+      setErr(""); setMsg(""); setStatus("loading");
       try {
-        // 1) încercăm GET
-        let res = await fetch(
-          `${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`
-        );
-        if (!res.ok) {
-          // 2) fallback: POST (unele setup-uri preferă POST)
-          res = await fetch(`${API_URL}/auth/verify-email`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token }),
-          });
-        }
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data?.error || `Eroare HTTP ${res.status}`);
-        }
+        const r = await fetch(`${API_URL}/auth/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: initialToken }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.error || "Eroare la verificare");
         setStatus("success");
-        setMessage("Email verificat cu succes! Te poți autentifica acum.");
-      } catch (err) {
-        console.error("verify-email error:", err);
+        setMsg("Email confirmat cu succes. Te poți autentifica.");
+      } catch (e) {
         setStatus("error");
-        setMessage(err.message || "Eroare la verificarea emailului.");
+        setErr(e.message);
       }
     };
-
     verify();
-  }, [searchParams]);
+  }, [initialToken]);
+
+  const manualVerify = async (e) => {
+    e.preventDefault();
+    setErr(""); setMsg(""); setStatus("loading");
+    try {
+      const r = await fetch(`${API_URL}/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || "Eroare la verificare");
+      setStatus("success");
+      setMsg("Email confirmat cu succes. Te poți autentifica.");
+    } catch (e) {
+      setStatus("error");
+      setErr(e.message);
+    }
+  };
+
+  const resend = async () => {
+    setErr(""); setMsg("");
+    try {
+      const r = await fetch(`${API_URL}/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.error || "Eroare la retrimiterea emailului");
+      setMsg("Ți-am trimis din nou emailul de confirmare.");
+    } catch (e) {
+      setErr(e.message);
+    }
+  };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow p-6 text-center">
-        {status === "loading" && (
-          <>
-            <h1 className="text-xl font-semibold mb-2">Se verifică emailul...</h1>
-            <p className="text-gray-600">Te rugăm așteaptă câteva secunde.</p>
-          </>
-        )}
+    <div className="max-w-md mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold mb-6">Confirmare email</h1>
 
-        {status === "success" && (
-          <>
-            <h1 className="text-2xl font-bold text-green-700 mb-3">Gata! ✅</h1>
-            <p className="text-gray-700 mb-6">{message}</p>
-            <Link
-              to="/login"
-              className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700"
-            >
-              Mergi la autentificare
-            </Link>
-          </>
-        )}
+      {msg && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">{msg}</div>}
+      {err && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">{err}</div>}
 
-        {status === "error" && (
-          <>
-            <h1 className="text-2xl font-bold text-red-700 mb-3">Ups!</h1>
-            <p className="text-gray-700 mb-6">{message}</p>
-            <div className="flex gap-3 justify-center">
-              <Link
-                to="/login"
-                className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700"
-              >
-                Înapoi la login
-              </Link>
-              <Link
-                to="/"
-                className="inline-block bg-gray-100 text-gray-800 px-5 py-2 rounded-lg font-semibold hover:bg-gray-200"
-              >
-                Acasă
-              </Link>
+      {/* Dacă avem token în URL și e în lucru */}
+      {status === "loading" && <p>Se verifică tokenul...</p>}
+
+      {/* Succes */}
+      {status === "success" && (
+        <div className="space-y-4 bg-white rounded-xl shadow p-5">
+          <p>Contul tău a fost verificat.</p>
+          <Link
+            to="/login"
+            className="inline-block bg-blue-600 text-white px-5 py-2 rounded font-semibold hover:bg-blue-700"
+          >
+            Mergi la autentificare
+          </Link>
+        </div>
+      )}
+
+      {/* Form pentru verificare manuală, dacă nu a venit token în URL sau a eșuat */}
+      {(status === "idle" || status === "error") && (
+        <div className="space-y-6">
+          <form onSubmit={manualVerify} className="space-y-4 bg-white rounded-xl shadow p-5">
+            <div>
+              <label className="block text-sm font-medium mb-1">Token din email</label>
+              <input
+                className="w-full border rounded px-3 py-2"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Lipește aici tokenul"
+                required
+              />
             </div>
-            <p className="text-xs text-gray-500 mt-4">
-              Dacă token-ul a expirat, poți cere retrimiterea din pagina de Login.
-            </p>
-          </>
-        )}
-      </div>
+            <button
+              type="submit"
+              className="bg-emerald-600 text-white px-5 py-2 rounded font-semibold hover:bg-emerald-700 w-full"
+            >
+              Verifică tokenul
+            </button>
+          </form>
+
+          <div className="bg-white rounded-xl shadow p-5 space-y-3">
+            <p className="text-sm text-gray-700">Nu găsești emailul? Retrimitem linkul de confirmare.</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                className="flex-1 border rounded px-3 py-2"
+                placeholder="adresa ta de email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={resend}
+                className="bg-indigo-600 text-white px-4 py-2 rounded font-semibold hover:bg-indigo-700"
+              >
+                Retrimite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

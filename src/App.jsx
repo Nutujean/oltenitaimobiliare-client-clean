@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import VerificaEmail from "./pages/VerificaEmail";
 
 /* Utilizator */
 import Profil from "./pages/Profil";
@@ -50,6 +51,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/resetare-parola" element={<ResetPassword />} />
+          <Route path="/verifica-email" element={<VerificaEmail />} />
 
           {/* Utilizator */}
           <Route path="/profil" element={<Profil />} />
