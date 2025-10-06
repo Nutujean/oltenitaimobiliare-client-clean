@@ -1,71 +1,88 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import API_URL from "../api";
 
 export default function Login() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
+    setErr("");
+    setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+      const r = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email, password }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Eroare la login");
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        throw new Error(data?.error || "Eroare la autentificare");
       }
-
-      // salvăm token-ul și numele
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("name", data.name);
-
-      // redirect + refresh → Navbar se actualizează
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message);
+      // salvăm tokenul
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      // optional păstrăm user
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      navigate("/profil");
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Login</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-md mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold mb-6">Autentificare</h1>
+
+      {err && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {err}
+        </div>
+      )}
+
+      <form onSubmit={onSubmit} className="space-y-4">
         <input
           type="email"
-          name="email"
+          className="w-full border rounded px-3 py-2"
           placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
+
         <input
           type="password"
-          name="password"
+          className="w-full border rounded px-3 py-2"
           placeholder="Parolă"
-          value={formData.password}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
+
         <button
           type="submit"
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white rounded px-4 py-2 font-semibold hover:bg-blue-700 disabled:opacity-60"
         >
-          Login
+          {loading ? "Se autentifică..." : "Intră în cont"}
         </button>
       </form>
+
+      <p className="text-sm text-gray-600 mt-4">
+        Nu ai cont?{" "}
+        <Link to="/register" className="text-blue-600 hover:underline">
+          Creează cont
+        </Link>
+      </p>
     </div>
   );
 }
