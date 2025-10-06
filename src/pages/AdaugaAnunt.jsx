@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
+import ImageUploader from "../components/ImageUploader";
 
 const CATEGORIES = [
   "Apartamente",
@@ -24,12 +25,12 @@ export default function AdaugaAnunt() {
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
 
-  // 🔹 câmpuri noi
-  const [dealType, setDealType] = useState("vanzare"); // vanzare | inchiriere
+  const [dealType, setDealType] = useState("vanzare");
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
 
+  // stocăm URL-urile în text (compatibil cu backend-ul tău actual)
   const [imagesText, setImagesText] = useState("");
 
   const [err, setErr] = useState("");
@@ -56,7 +57,8 @@ export default function AdaugaAnunt() {
       const imgs = imagesText
         .split("\n")
         .map((s) => s.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, 15); // safety
 
       const payload = {
         title: title.trim(),
@@ -66,8 +68,7 @@ export default function AdaugaAnunt() {
         phone: phone.trim(),
         images: imgs,
 
-        // 🔹 noi
-        dealType, // "vanzare" | "inchiriere"
+        dealType,
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
         floor: floor !== "" ? Number(floor) : undefined,
         surface: surface !== "" ? Number(String(surface).replace(",", ".")) : undefined,
@@ -128,7 +129,7 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* tip + categorie + locație */}
+        {/* Tip + categorie + locație */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Tip ofertă</label>
@@ -186,7 +187,7 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* doar Apartamente / Garsoniere: etaj/suprafață/camere */}
+        {/* doar Apartamente / Garsoniere */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -233,6 +234,21 @@ export default function AdaugaAnunt() {
         )}
 
         <div>
+          <label className="block text-sm font-medium mb-1">Imagini</label>
+          <ImageUploader imagesText={imagesText} setImagesText={setImagesText} max={15} />
+          <textarea
+            rows={4}
+            className="w-full border rounded px-3 py-2 mt-3"
+            placeholder="Link-urile sunt completate automat după upload. Poți reordona manual."
+            value={imagesText}
+            onChange={(e) => setImagesText(e.target.value)}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Max 15 imagini. Prima imagine devine coperta.
+          </p>
+        </div>
+
+        <div>
           <label className="block text-sm font-medium mb-1">Telefon</label>
           <input
             className="w-full border rounded px-3 py-2"
@@ -243,18 +259,13 @@ export default function AdaugaAnunt() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Imagini (URL pe fiecare linie)</label>
+          <label className="block text-sm font-medium mb-1">Descriere</label>
           <textarea
             rows={5}
             className="w-full border rounded px-3 py-2"
-            placeholder="https://res.cloudinary.com/.../img1.jpg
-https://res.cloudinary.com/.../img2.jpg"
-            value={imagesText}
-            onChange={(e) => setImagesText(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Poți lipi linkuri Cloudinary; prima imagine devine coperta.
-          </p>
         </div>
 
         <button
