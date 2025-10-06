@@ -11,6 +11,7 @@ import Cookies from "./pages/Cookies";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerificaEmail from "./pages/VerificaEmail";
 import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
@@ -38,6 +39,7 @@ function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verifica-email" element={<VerificaEmail />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
