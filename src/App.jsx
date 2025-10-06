@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
+/* Pagini principale */
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import DespreNoi from "./pages/DespreNoi";
@@ -9,18 +10,24 @@ import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
 
+/* Autentificare */
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import VerificaEmail from "./pages/VerificaEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+/* Utilizator */
 import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
 
+/* Anunțuri */
 import AdaugaAnunt from "./pages/AdaugaAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
-import Categories from "./pages/Categories"; // <— ✨ NOU
+import Categories from "./pages/Categories";
 
+/* 404 */
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -30,27 +37,35 @@ function App() {
 
       <main className="flex-grow">
         <Routes>
+          {/* Public */}
           <Route path="/" element={<Home />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/despre" element={<DespreNoi />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
 
+          {/* Autentificare */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/verifica-email" element={<VerificaEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/resetare-parola" element={<ResetPassword />} />
+
+          {/* Utilizator */}
           <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
 
+          {/* Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
+          {/* Notă: :id poate fi „slug-si-ID”; în pagină extragi ID-ul cu split pe „-” */}
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
 
-          {/* ✨ Ruta pentru categorii */}
+          {/* Categorii (slug: apartamente, case, etc.) */}
           <Route path="/categorie/:slug" element={<Categories />} />
 
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
