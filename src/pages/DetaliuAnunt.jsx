@@ -86,8 +86,23 @@ export default function DetaliuAnunt() {
     return <p className="text-center py-10">Se încarcă...</p>;
   }
 
+  /* ---------- DEBUG BAR (vizibil mereu ca să știm starea) ---------- */
+  const debugInfo = {
+    myId: myId || null,
+    ownerId: ownerId || null,
+    isOwner: !!isOwner,
+    hasToken: !!token,
+    featuredUntil: listing?.featuredUntil || null,
+  };
+  console.log("[DETALIU DEBUG]", debugInfo);
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* DEBUG vizual */}
+      <div className="text-xs bg-yellow-50 border border-yellow-200 text-yellow-700 rounded px-3 py-2 mb-4">
+        DEBUG: {JSON.stringify(debugInfo)}
+      </div>
+
       {/* back */}
       <div className="mb-4">
         <button
@@ -156,42 +171,7 @@ export default function DetaliuAnunt() {
       {/* descriere */}
       <p className="text-gray-800 mb-6 whitespace-pre-line">{listing.description}</p>
 
-      {/* acțiuni contact & share */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {contactPhone && (
-          <a href={`tel:${contactPhone}`} className="inline-flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Sună: {contactPhone}
-          </a>
-        )}
-        <a
-          href={`https://wa.me/${(contactPhone || "").replace(/\D/g, "")}?text=${encodeURIComponent(
-            `Bună! Sunt interesat(ă) de anunțul: ${listing.title} - ${window.location.href}`
-          )}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
-        >
-          WhatsApp
-        </a>
-        <a
-          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Distribuie pe Facebook
-        </a>
-        <a
-          href={`https://threads.net/intent/post?text=${encodeURIComponent(`${listing.title} ${window.location.href}`)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center bg-black text-white px-4 py-2 rounded hover:opacity-90"
-        >
-          Distribuie pe Instagram Threads
-        </a>
-      </div>
-
-      {/* PROMOVARE – acum este ÎNTOTDEAUNA vizibilă */}
+      {/* PROMOVARE – MEREU VIZIBILĂ */}
       <div className="border rounded-xl p-4 mb-8 bg-white shadow-sm">
         <h3 className="font-semibold mb-3">Promovează anunțul</h3>
 
