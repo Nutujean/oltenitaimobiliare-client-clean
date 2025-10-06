@@ -25,7 +25,6 @@ const SORTS = [
   { value: "price_desc", label: "Cel mai scump" },
 ];
 
-// 🔹 opțiuni tip ofertă
 const DEAL_TYPES = [
   { value: "", label: "Toate tipurile" },
   { value: "vanzare", label: "De vânzare" },
@@ -35,18 +34,30 @@ const DEAL_TYPES = [
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
-
   const [favIds, setFavIds] = useState(getFavIds());
 
   const locationHook = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(locationHook.search);
 
+  // filtre existente
   const [q, setQ] = useState(params.get("q") || "");
   const [category, setCategory] = useState(params.get("category") || "");
   const [city, setCity] = useState(params.get("location") || "");
   const [sort, setSort] = useState(params.get("sort") || "latest");
-  const [dealType, setDealType] = useState(params.get("dealType") || ""); // 🔹 nou
+  const [dealType, setDealType] = useState(params.get("dealType") || "");
+
+  // 🔹 filtre noi
+  const [roomsMin, setRoomsMin] = useState(params.get("roomsMin") || "");
+  const [surfaceMin, setSurfaceMin] = useState(params.get("surfaceMin") || "");
+  const [priceMin, setPriceMin] = useState(params.get("priceMin") || "");
+  const [priceMax, setPriceMax] = useState(params.get("priceMax") || "");
+
+  const numOrEmpty = (v) => {
+    if (v === "" || v === null || v === undefined) return "";
+    const n = Number(String(v).replace(",", "."));
+    return Number.isFinite(n) ? String(n) : "";
+  };
 
   const getImageUrl = (l) => {
     if (Array.isArray(l.images) && l.images.length > 0) return l.images[0];
@@ -62,7 +73,11 @@ export default function Home() {
       if (category) sp.set("category", category);
       if (city) sp.set("location", city);
       if (sort) sp.set("sort", sort);
-      if (dealType) sp.set("dealType", dealType); // 🔹 nou
+      if (dealType) sp.set("dealType", dealType);
+      if (roomsMin) sp.set("roomsMin", roomsMin);
+      if (surfaceMin) sp.set("surfaceMin", surfaceMin);
+      if (priceMin) sp.set("priceMin", priceMin);
+      if (priceMax) sp.set("priceMax", priceMax);
 
       const url = `${API_URL}/listings${sp.toString() ? "?" + sp.toString() : ""}`;
       const r = await fetch(url);
@@ -81,7 +96,11 @@ export default function Home() {
     setCategory(p.get("category") || "");
     setCity(p.get("location") || "");
     setSort(p.get("sort") || "latest");
-    setDealType(p.get("dealType") || ""); // 🔹 nou
+    setDealType(p.get("dealType") || "");
+    setRoomsMin(p.get("roomsMin") || "");
+    setSurfaceMin(p.get("surfaceMin") || "");
+    setPriceMin(p.get("priceMin") || "");
+    setPriceMax(p.get("priceMax") || "");
     fetchListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationHook.search]);
@@ -92,7 +111,11 @@ export default function Home() {
     if (category) sp.set("category", category);
     if (city) sp.set("location", city);
     if (sort) sp.set("sort", sort);
-    if (dealType) sp.set("dealType", dealType); // 🔹 nou
+    if (dealType) sp.set("dealType", dealType);
+    if (roomsMin) sp.set("roomsMin", numOrEmpty(roomsMin));
+    if (surfaceMin) sp.set("surfaceMin", numOrEmpty(surfaceMin));
+    if (priceMin) sp.set("priceMin", numOrEmpty(priceMin));
+    if (priceMax) sp.set("priceMax", numOrEmpty(priceMax));
     navigate({ pathname: "/", search: sp.toString() });
   };
 
@@ -112,7 +135,6 @@ export default function Home() {
     setFavIds(next);
   };
 
-  // badge text + clasă în funcție de tip ofertă
   const dealBadge = (dt) => {
     if (dt === "inchiriere") return { text: "De închiriere", cls: "bg-purple-100 text-purple-700" };
     return { text: "De vânzare", cls: "bg-green-100 text-green-700" };
@@ -134,7 +156,7 @@ export default function Home() {
 
       {/* BARĂ DE CĂUTARE */}
       <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
           <input
             type="text"
             placeholder="Cuvinte cheie (ex: 2 camere)"
@@ -165,7 +187,6 @@ export default function Home() {
             ))}
           </select>
 
-          {/* 🔹 Tip ofertă */}
           <select
             className="border rounded-lg px-3 py-2 bg-white"
             value={dealType}
@@ -176,6 +197,51 @@ export default function Home() {
             ))}
           </select>
 
+          {/* 🔹 Camere min. */}
+          <input
+            type="number"
+            min="1"
+            placeholder="Camere min."
+            className="border rounded-lg px-3 py-2 w-full"
+            value={roomsMin}
+            onChange={(e) => setRoomsMin(e.target.value)}
+          />
+
+          {/* 🔹 Suprafață min. */}
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Suprafață min. (mp)"
+            className="border rounded-lg px-3 py-2 w-full"
+            value={surfaceMin}
+            onChange={(e) => setSurfaceMin(e.target.value)}
+          />
+
+          {/* 🔹 Preț min. */}
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Preț min."
+            className="border rounded-lg px-3 py-2 w-full"
+            value={priceMin}
+            onChange={(e) => setPriceMin(e.target.value)}
+          />
+
+          {/* 🔹 Preț max. */}
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Preț max."
+            className="border rounded-lg px-3 py-2 w-full"
+            value={priceMax}
+            onChange={(e) => setPriceMax(e.target.value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           <select
             className="border rounded-lg px-3 py-2 bg-white"
             value={sort}
@@ -186,20 +252,19 @@ export default function Home() {
             ))}
           </select>
 
-          <div className="flex gap-3">
-            <button
-              onClick={doSearch}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 w-full md:w-auto"
-            >
-              Caută
-            </button>
-            <Link
-              to="/adauga-anunt"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 w-full md:w-auto text-center"
-            >
-              + Adaugă anunț
-            </Link>
-          </div>
+          <button
+            onClick={doSearch}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 w-full"
+          >
+            Caută
+          </button>
+
+          <Link
+            to="/adauga-anunt"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 w-full text-center"
+          >
+            + Adaugă anunț
+          </Link>
         </div>
       </section>
 
@@ -246,7 +311,10 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {listings.map((l) => {
               const fav = isFav(l._id);
-              const badge = dealBadge(l.dealType);
+              const badge = l.dealType === "inchiriere"
+                ? { text: "De închiriere", cls: "bg-purple-100 text-purple-700" }
+                : { text: "De vânzare", cls: "bg-green-100 text-green-700" };
+
               return (
                 <Link
                   key={l._id}
@@ -254,12 +322,10 @@ export default function Home() {
                   state={{ from: locationHook.pathname + locationHook.search }}
                   className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
                 >
-                  {/* badge tip ofertă */}
                   <span className={`absolute left-2 top-2 text-xs px-2 py-1 rounded-full ${badge.cls}`}>
                     {badge.text}
                   </span>
 
-                  {/* buton Heart */}
                   <button
                     onClick={(e) => onToggleFav(e, l._id)}
                     className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
@@ -281,6 +347,15 @@ export default function Home() {
                       <p className="text-gray-700 font-semibold">{l.price} €</p>
                     )}
                     <p className="text-sm text-gray-500">{l.location}</p>
+
+                    {/* mini-specs */}
+                    {(Number.isFinite(l.rooms) || Number.isFinite(l.surface)) && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {Number.isFinite(l.rooms) ? `${l.rooms} cam.` : ""}
+                        {Number.isFinite(l.rooms) && Number.isFinite(l.surface) ? " • " : ""}
+                        {Number.isFinite(l.surface) ? `${l.surface} mp` : ""}
+                      </p>
+                    )}
                   </div>
                 </Link>
               );
