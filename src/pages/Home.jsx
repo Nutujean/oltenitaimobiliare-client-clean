@@ -25,24 +25,28 @@ const SORTS = [
   { value: "price_desc", label: "Cel mai scump" },
 ];
 
-const PAGE_STEP = 9;
+// 🔹 opțiuni tip ofertă
+const DEAL_TYPES = [
+  { value: "", label: "Toate tipurile" },
+  { value: "vanzare", label: "De vânzare" },
+  { value: "inchiriere", label: "De închiriere" },
+];
 
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [error, setError] = useState("");
-  const [favIds, setFavIds] = useState(getFavIds());
-  const [visibleCount, setVisibleCount] = useState(PAGE_STEP);
 
-  // pentru panoul de filtre pe mobil
-  const [showFilters, setShowFilters] = useState(false);
+  const [favIds, setFavIds] = useState(getFavIds());
 
   const locationHook = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(locationHook.search);
+
   const [q, setQ] = useState(params.get("q") || "");
   const [category, setCategory] = useState(params.get("category") || "");
   const [city, setCity] = useState(params.get("location") || "");
   const [sort, setSort] = useState(params.get("sort") || "latest");
+  const [dealType, setDealType] = useState(params.get("dealType") || ""); // 🔹 nou
 
   const getImageUrl = (l) => {
     if (Array.isArray(l.images) && l.images.length > 0) return l.images[0];
@@ -58,12 +62,13 @@ export default function Home() {
       if (category) sp.set("category", category);
       if (city) sp.set("location", city);
       if (sort) sp.set("sort", sort);
+      if (dealType) sp.set("dealType", dealType); // 🔹 nou
+
       const url = `${API_URL}/listings${sp.toString() ? "?" + sp.toString() : ""}`;
       const r = await fetch(url);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
       setListings(Array.isArray(data) ? data : []);
-      setVisibleCount(PAGE_STEP);
     } catch (e) {
       console.error(e);
       setError(e.message || "Eroare necunoscută");
@@ -76,6 +81,7 @@ export default function Home() {
     setCategory(p.get("category") || "");
     setCity(p.get("location") || "");
     setSort(p.get("sort") || "latest");
+    setDealType(p.get("dealType") || ""); // 🔹 nou
     fetchListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationHook.search]);
@@ -86,6 +92,7 @@ export default function Home() {
     if (category) sp.set("category", category);
     if (city) sp.set("location", city);
     if (sort) sp.set("sort", sort);
+    if (dealType) sp.set("dealType", dealType); // 🔹 nou
     navigate({ pathname: "/", search: sp.toString() });
   };
 
@@ -105,8 +112,11 @@ export default function Home() {
     setFavIds(next);
   };
 
-  const visible = listings.slice(0, visibleCount);
-  const canLoadMore = visibleCount < listings.length;
+  // badge text + clasă în funcție de tip ofertă
+  const dealBadge = (dt) => {
+    if (dt === "inchiriere") return { text: "De închiriere", cls: "bg-purple-100 text-purple-700" };
+    return { text: "De vânzare", cls: "bg-green-100 text-green-700" };
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -122,9 +132,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BARĂ DE CĂUTARE (desktop + tablet) */}
-      <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10 hidden md:block">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+      {/* BARĂ DE CĂUTARE */}
+      <section className="-mt-8 px-6 max-w-6xl mx-auto bg-white shadow rounded-xl py-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <input
             type="text"
             placeholder="Cuvinte cheie (ex: 2 camere)"
@@ -132,6 +142,7 @@ export default function Home() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+
           <select
             className="border rounded-lg px-3 py-2 bg-white"
             value={category}
@@ -142,6 +153,7 @@ export default function Home() {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+
           <select
             className="border rounded-lg px-3 py-2 bg-white"
             value={city}
@@ -152,6 +164,18 @@ export default function Home() {
               <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
+
+          {/* 🔹 Tip ofertă */}
+          <select
+            className="border rounded-lg px-3 py-2 bg-white"
+            value={dealType}
+            onChange={(e) => setDealType(e.target.value)}
+          >
+            {DEAL_TYPES.map((d) => (
+              <option key={d.value} value={d.value}>{d.label}</option>
+            ))}
+          </select>
+
           <select
             className="border rounded-lg px-3 py-2 bg-white"
             value={sort}
@@ -161,6 +185,7 @@ export default function Home() {
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
+
           <div className="flex gap-3">
             <button
               onClick={doSearch}
@@ -178,105 +203,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAB Filtre (mobil) */}
-      <button
-        onClick={() => setShowFilters(true)}
-        className="md:hidden fixed bottom-20 right-4 z-40 bg-white border shadow-lg rounded-full px-4 py-2"
-        aria-label="Deschide filtre"
-      >
-        ⚙️ Filtre
-      </button>
-
-      {/* Panou Filtre mobil (bottom sheet) */}
-      {showFilters && (
-        <div className="md:hidden fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowFilters(false)}
-            aria-hidden="true"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-lg">Filtre</h3>
-              <button
-                onClick={() => setShowFilters(false)}
-                className="text-gray-500 hover:text-gray-700"
-                aria-label="Închide"
-              >
-                ✖
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <input
-                type="text"
-                placeholder="Cuvinte cheie"
-                className="border rounded-lg px-3 py-2 w-full"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-              <select
-                className="border rounded-lg px-3 py-2 bg-white"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                <option value="">Toate categoriile</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <select
-                className="border rounded-lg px-3 py-2 bg-white"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              >
-                <option value="">Toate locațiile</option>
-                {LOCATII.map((loc) => (
-                  <option key={loc} value={loc}>{loc}</option>
-                ))}
-              </select>
-              <select
-                className="border rounded-lg px-3 py-2 bg-white"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => {
-                  setQ(""); setCategory(""); setCity(""); setSort("latest");
-                }}
-                className="flex-1 border px-4 py-2 rounded-lg"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => {
-                  setShowFilters(false);
-                  doSearch();
-                }}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg"
-              >
-                Aplică
-              </button>
-            </div>
-
-            <Link
-              to="/adauga-anunt"
-              className="mt-3 block text-center bg-green-600 text-white px-4 py-2 rounded-lg"
-              onClick={() => setShowFilters(false)}
-            >
-              + Adaugă anunț
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* EROARE */}
       {error && (
         <div className="max-w-6xl mx-auto mt-6 px-6">
@@ -286,21 +212,19 @@ export default function Home() {
         </div>
       )}
 
-      {/* CATEGORII – navigare programatică */}
+      {/* CATEGORII */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Categorii populare</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {categoriesCards.map((cat) => (
-            <div
-              key={cat.name}
-              role="link"
-              tabIndex={0}
-              onClick={() => navigate(cat.path)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") navigate(cat.path);
-              }}
-              className="relative group cursor-pointer"
-            >
+          {[
+            { name: "Apartamente", path: "/categorie/apartamente", image: "/apartamente.jpg" },
+            { name: "Case", path: "/categorie/case", image: "/case.jpg" },
+            { name: "Terenuri", path: "/categorie/terenuri", image: "/terenuri.jpg" },
+            { name: "Garsoniere", path: "/categorie/garsoniere", image: "/garsoniere.jpg" },
+            { name: "Garaje", path: "/categorie/garaje", image: "/garaje.jpg" },
+            { name: "Spațiu comercial", path: "/categorie/spatiu-comercial", image: "/spatiu-comercial.jpg" },
+          ].map((cat) => (
+            <Link key={cat.name} to={cat.path} className="relative group">
               <div
                 className="h-40 rounded-xl shadow-md bg-cover bg-center flex items-center justify-center"
                 style={{ backgroundImage: `url(${cat.image})` }}
@@ -308,70 +232,60 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
                 <h3 className="text-white text-xl font-bold z-10">{cat.name}</h3>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* LISTĂ ANUNȚURI + PAGINARE */}
+      {/* LISTĂ ANUNȚURI */}
       <section className="py-4 px-6 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Anunțuri</h2>
-          <span className="text-sm text-gray-500">
-            Afișate {Math.min(visible.length, listings.length)} din {listings.length}
-          </span>
-        </div>
-
-        {visible.length === 0 && !error ? (
+        <h2 className="text-2xl font-bold mb-4">Anunțuri</h2>
+        {listings.length === 0 && !error ? (
           <p className="text-gray-500">Nu există anunțuri pentru filtrele selectate.</p>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {visible.map((l) => {
-                const fav = isFav(l._id);
-                return (
-                  <Link
-                    key={l._id}
-                    to={`/anunt/${slugify(l.title)}-${l._id}`}
-                    state={{ from: locationHook.pathname + locationHook.search }}
-                    className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
-                  >
-                    <button
-                      onClick={(e) => onToggleFav(e, l._id)}
-                      className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
-                        fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
-                      } hover:bg-white`}
-                      title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
-                    >
-                      {fav ? "❤️" : "🤍"}
-                    </button>
-
-                    <img
-                      src={getImageUrl(l)}
-                      alt={l.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
-                      <p className="text-gray-600">{l.price} €</p>
-                      <p className="text-sm text-gray-500">{l.location}</p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {canLoadMore && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => setVisibleCount((c) => c + PAGE_STEP)}
-                  className="px-5 py-2 rounded-lg border bg-white hover:bg-gray-50"
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {listings.map((l) => {
+              const fav = isFav(l._id);
+              const badge = dealBadge(l.dealType);
+              return (
+                <Link
+                  key={l._id}
+                  to={`/anunt/${slugify(l.title)}-${l._id}`}
+                  state={{ from: locationHook.pathname + locationHook.search }}
+                  className="bg-white shadow-md rounded-xl overflow-hidden block hover:shadow-lg transition relative"
                 >
-                  Încarcă mai multe
-                </button>
-              </div>
-            )}
-          </>
+                  {/* badge tip ofertă */}
+                  <span className={`absolute left-2 top-2 text-xs px-2 py-1 rounded-full ${badge.cls}`}>
+                    {badge.text}
+                  </span>
+
+                  {/* buton Heart */}
+                  <button
+                    onClick={(e) => onToggleFav(e, l._id)}
+                    className={`absolute top-2 right-2 rounded-full px-2 py-1 shadow ${
+                      fav ? "bg-white text-red-600" : "bg-white/90 text-gray-700"
+                    } hover:bg-white`}
+                    title={fav ? "Șterge din favorite" : "Adaugă la favorite"}
+                  >
+                    {fav ? "❤️" : "🤍"}
+                  </button>
+
+                  <img
+                    src={getImageUrl(l)}
+                    alt={l.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold line-clamp-2">{l.title}</h3>
+                    {Number.isFinite(l.price) && (
+                      <p className="text-gray-700 font-semibold">{l.price} €</p>
+                    )}
+                    <p className="text-sm text-gray-500">{l.location}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         )}
       </section>
     </div>
