@@ -8,7 +8,9 @@ export default function Home() {
   useEffect(() => {
     async function fetchListings() {
       try {
-        const res = await fetch("https://oltenitaimobiliare-backend.onrender.com/api/listings");
+        const res = await fetch(
+          "https://oltenitaimobiliare-backend.onrender.com/api/listings"
+        );
         const data = await res.json();
         setListings(data);
       } catch (err) {
@@ -22,13 +24,10 @@ export default function Home() {
 
   return (
     <div className="pt-20">
-      {/* HERO cu imagine și overlay */}
+      {/* 🟦 HERO cu imagine și overlay */}
       <section
         className="relative bg-cover bg-center h-[480px] flex flex-col justify-center items-center text-white"
-        style={{
-          backgroundImage:
-            "url('https://oltenitaimobiliare.ro/images/hero-oltenita.jpg')",
-        }}
+        style={{ backgroundImage: "url('/images/hero-oltenita.jpg')" }}
       >
         <div className="absolute inset-0 bg-blue-900/60" />
         <div className="relative z-10 text-center px-4">
@@ -39,11 +38,11 @@ export default function Home() {
             Cumpără, vinde sau închiriază locuințe în zona ta
           </p>
 
-          {/* Bara complexă de căutare */}
+          {/* 🔍 Bara complexă de căutare */}
           <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Cuvinte cheie (ex: 2 camere)"
+              placeholder="Cuvinte cheie (ex: 2 camere, centru)"
               className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
             <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -90,19 +89,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CATEGORII POPULARE */}
+      {/* 🏡 Categorii populare */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
           Categorii populare
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {[
-            { name: "Apartamente", img: "https://oltenitaimobiliare.ro/images/cat-apartamente.jpg" },
-            { name: "Case", img: "https://oltenitaimobiliare.ro/images/cat-case.jpg" },
-            { name: "Terenuri", img: "https://oltenitaimobiliare.ro/images/cat-terenuri.jpg" },
-            { name: "Garsoniere", img: "https://oltenitaimobiliare.ro/images/cat-garsoniere.jpg" },
-            { name: "Garaje", img: "https://oltenitaimobiliare.ro/images/cat-garaje.jpg" },
-            { name: "Spațiu comercial", img: "https://oltenitaimobiliare.ro/images/cat-spatiu.jpg" },
+            { name: "Apartamente", img: "/images/cat-apartamente.jpg" },
+            { name: "Case", img: "/images/cat-case.jpg" },
+            { name: "Terenuri", img: "/images/cat-terenuri.jpg" },
+            { name: "Garsoniere", img: "/images/cat-garsoniere.jpg" },
+            { name: "Garaje", img: "/images/cat-garaje.jpg" },
+            { name: "Spațiu comercial", img: "/images/cat-spatiu.jpg" },
           ].map((cat, i) => (
             <div
               key={i}
@@ -121,7 +120,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ANUNȚURI RECENTE */}
+      {/* 🏠 Anunțuri recente */}
       <section className="max-w-7xl mx-auto px-4 pb-10">
         <h2 className="text-2xl font-bold text-blue-700 mb-6">
           Anunțuri recente
