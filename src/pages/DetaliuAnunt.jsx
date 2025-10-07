@@ -1,20 +1,21 @@
+// src/pages/DetaliuAnunt.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://oltenitaimobiliare-backend.onrender.com/api";
+import { API_URL } from "../config";
 
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
-  const id = rawId?.split("-").pop(); // extrage doar ObjectId-ul real
-
+  const id = rawId?.split("-").pop?.(); // acceptează slug-uri de tip title-id
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setError("ID invalid.");
+      setLoading(false);
+      return;
+    }
 
     const fetchListing = async () => {
       try {
@@ -23,7 +24,7 @@ export default function DetaliuAnunt() {
         const data = await res.json();
         setListing(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Eroare la încărcarea anunțului.");
       } finally {
         setLoading(false);
       }
@@ -57,59 +58,128 @@ export default function DetaliuAnunt() {
       </div>
     );
 
+  // helper share message
+  const pageUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = `${listing.title} — ${listing.price} € · ${listing.location}\nVezi anunțul: ${pageUrl}`;
+  const encodedText = encodeURIComponent(shareText);
+  const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    pageUrl
+  )}&quote=${encodeURIComponent(listing.title)}`;
+  // pentru WhatsApp: wa.me requires number in international format OR use text only
+  const whatsappNumber = listing.phone ? listing.phone.replace(/\s+/g, "") : "";
+  const waLink = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/^\+/, "")}?text=${encodedText}`
+    : `https://wa.me/?text=${encodedText}`; // fallback: doar mesaj
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: listing.title,
+          text: shareText,
+          url: pageUrl,
+        });
+      } catch (e) {
+        // user cancelled or error
+        console.info("Share cancelled or failed", e);
+      }
+    } else {
+      // fallback: copiem linkul în clipboard
+      try {
+        await navigator.clipboard.writeText(pageUrl);
+        alert("Link copiat în clipboard. Poți lipi și partaja manual.");
+      } catch {
+        alert("Partajare indisponibilă. Copiază manual URL-ul.");
+      }
+    }
+  };
+
   return (
-    <div className="max-w-5xl mx-auto p-4">
-      {/* Titlu + badge promovare */}
-      <div className="flex items-center gap-3 mb-3">
-        <h1 className="text-2xl font-bold">{listing.title}</h1>
-        {listing.featuredUntil && (
-          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
-            🌟 Anunț promovat
-          </span>
-        )}
-      </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
-      {/* Galerie imagini */}
       {listing.images?.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          {listing.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Imagine ${idx + 1}`}
-              className="rounded-xl shadow-md w-full h-64 object-cover"
-            />
-          ))}
-        </div>
+        <img
+          src={listing.images[0]}
+          alt={listing.title}
+          className="w-full h-80 object-cover rounded-lg mb-6"
+        />
       )}
 
-      {/* Detalii anunț */}
-      <div className="bg-white rounded-xl shadow p-5 mb-6">
-        <p><strong>Preț:</strong> {listing.price} €</p>
-        <p><strong>Tip:</strong> {listing.category}</p>
-        <p><strong>Localitate:</strong> {listing.location}</p>
-        <p className="mt-4 text-gray-800 whitespace-pre-line">
-          {listing.description}
-        </p>
-      </div>
-
-      {/* Info proprietar */}
-      {listing.user && (
-        <div className="bg-gray-50 rounded-xl p-4 border">
-          <h3 className="font-semibold mb-2">Detalii proprietar:</h3>
-          <p>{listing.user.name}</p>
-          <p className="text-gray-600">{listing.user.email}</p>
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex-1">
+          <p className="text-2xl font-semibold text-blue-600 mb-2">
+            {listing.price} €
+          </p>
+          <p className="mt-2 text-gray-700 whitespace-pre-line">{listing.description}</p>
+          <p className="text-gray-600 mt-4">Locație: {listing.location}</p>
+          <p className="text-gray-600">Categorie: {listing.category}</p>
         </div>
-      )}
 
-      {/* Buton înapoi */}
-      <div className="mt-6">
-        <Link
-          to="/"
-          className="text-blue-600 hover:underline font-medium"
-        >
-          ← Înapoi la anunțuri
-        </Link>
+        {/* CARD CONTACT + SHARE */}
+        <aside className="w-full md:w-80 bg-white border rounded-xl p-4 shadow">
+          <h3 className="font-semibold mb-2">Contact</h3>
+
+          {/* Telefon clicabil */}
+          {listing.phone ? (
+            <a
+              href={`tel:${listing.phone}`}
+              className="block text-lg text-blue-700 font-semibold mb-1 hover:underline"
+            >
+              {listing.phone}
+            </a>
+          ) : (
+            <p className="text-gray-500 mb-1">Telefon: necunoscut</p>
+          )}
+
+          {/* optional: nume (doar dacă vrei să afișezi numele, dar nu emailul) */}
+          {listing.user?.name && (
+            <p className="text-gray-700 text-sm mb-3">Proprietar: {listing.user.name}</p>
+          )}
+
+          {/* Share buttons */}
+          <div className="mt-3 border-t pt-3 flex flex-col gap-2">
+            <button
+              onClick={handleNativeShare}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium"
+            >
+              Distribuie (telefon)
+            </button>
+
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full inline-block text-center bg-green-500 text-white py-2 rounded-lg font-medium"
+            >
+              Trimite pe WhatsApp
+            </a>
+
+            <a
+              href={fbShareUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full inline-block text-center bg-blue-800 text-white py-2 rounded-lg font-medium"
+            >
+              Distribuie pe Facebook
+            </a>
+
+            {/* Copiere link */}
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(pageUrl);
+                  alert("Linkul anunțului a fost copiat în clipboard.");
+                } catch {
+                  alert("Nu s-a putut copia automat. Copiază manual URL-ul.");
+                }
+              }}
+              className="w-full border border-gray-200 py-2 rounded-lg font-medium"
+            >
+              Copiază link
+            </button>
+          </div>
+        </aside>
       </div>
     </div>
   );
