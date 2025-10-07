@@ -4,12 +4,28 @@ import { API_URL } from "../config";
 
 export default function Home() {
   const [listings, setListings] = useState([]);
+  const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/listings`)
-      .then((res) => res.json())
-      .then((data) => setListings(data.slice(0, 6)))
-      .catch((err) => console.error("Eroare la încărcare:", err));
+    const fetchListings = async () => {
+      try {
+        const res = await fetch(`${API_URL}/listings`);
+        const data = await res.json();
+
+        // Separăm promovatele (featuredUntil în viitor)
+        const now = Date.now();
+        const promoted = data.filter(
+          (l) =>
+            l.featuredUntil && new Date(l.featuredUntil).getTime() > now
+        );
+        setFeatured(promoted.slice(0, 6));
+        setListings(data.slice(0, 6));
+      } catch (err) {
+        console.error("Eroare la încărcare:", err);
+      }
+    };
+
+    fetchListings();
   }, []);
 
   return (
@@ -52,6 +68,18 @@ export default function Home() {
               <option>Chirnogi</option>
               <option>Ulmeni</option>
               <option>Mitreni</option>
+              <option>Spantov</option>
+              <option>Chiselet</option>
+              <option>Curcani</option>
+              <option>Budesti</option>
+              <option>Valea Rosie</option>
+              <option>Luica</option>
+              <option>Nana</option>
+              <option>Cascioarele</option>
+              <option>Radovanu</option>
+              <option>Manastirea</option>
+              <option>Soldanu</option>
+              <option>Negoiesti</option>
               <option>Clătești</option>
             </select>
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg">
@@ -91,6 +119,40 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ANUNȚURI PROMOVATE */}
+      {featured.length > 0 && (
+        <section className="bg-white py-10 border-t border-gray-100">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-2xl font-bold text-blue-700 mb-6">
+              ⭐ Anunțuri promovate
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {featured.map((l) => (
+                <Link
+                  key={l._id}
+                  to={`/anunt/${l._id}`}
+                  className="bg-yellow-50 shadow-md rounded-xl overflow-hidden hover:shadow-lg transition relative"
+                >
+                  <div className="absolute top-2 right-2 bg-yellow-400 text-xs font-semibold px-2 py-1 rounded-full text-white">
+                    ⭐ Promovat
+                  </div>
+                  <img
+                    src={l.images?.[0] || "/apartamente.jpg"}
+                    alt={l.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold line-clamp-2">{l.title}</h3>
+                    <p className="text-blue-600 font-bold">{l.price} €</p>
+                    <p className="text-gray-500 text-sm">{l.location}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ANUNȚURI RECENTE */}
       <section className="max-w-6xl mx-auto px-4 pb-16">
