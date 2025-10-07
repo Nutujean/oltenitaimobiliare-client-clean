@@ -1,160 +1,92 @@
+// server.js
+import stripeWebhook from "./routes/stripeWebhook.js";
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+mongoose.set("autoIndex", process.env.NODE_ENV !== "production");
 
-// ==================== CONFIGURARE ====================
+// rute existente
+import authRoutes from "./routes/authRoutes.js";
+import listingsRoutes from "./routes/listings.js";
+import usersRoutes from "./routes/users.js";
+// ✅ Stripe
+import stripeRoutes from "./routes/stripeRoutes.js";
+
+dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || "secretul_meu_super_secret";
 
-// pentru __dirname în ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/* ---------------- CORS SUPER-LAX (până terminăm integrarea) ---------------- */
+// 1) mic fallback ca să aibă CORS chiar și pe erori/404
+app.use((req, res, next) => {
+  const origin = req.headers.origin || "*";
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Vary", "Origin");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With"
+  );
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 
-app.use(cors());
+// 2) middleware-ul standard cors, după fallback (nu strică, ajută)
+app.use(
+  cors({
+    origin: (_origin, cb) => cb(null, true), // acceptă orice origin
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
+  })
+);
+
+/* ---------------- Parsere ---------------- */
+app.use("/api/stripe", stripeWebhook);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ==================== CONECTARE MONGODB ====================
-const MONGO = process.env.MONGO_URI;
-console.log("🔑 DEBUG MONGO_URI =", MONGO);
+/* ---------------- DB ---------------- */
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  process.env.MONGO_URI ||
+  "mongodb://127.0.0.1:27017/oltenitaimobiliare";
 
+console.log("ℹ️  Încerc conexiunea la MongoDB...");
 mongoose
-  .connect(MONGO, { dbName: "imobilia_market" })
-  .then(() => console.log("✅ Conectat la MongoDB Atlas"))
-  .catch((err) => console.error("❌ Eroare MongoDB:", err));
+  .connect(MONGODB_URI)
+  .then(() => console.log("✅ MongoDB conectat"))
+  .catch((err) => {
+    console.error("❌ Eroare MongoDB:", err);
+    process.exit(1);
+  });
 
-// ==================== SCHEME ====================
-const userSchema = new mongoose.Schema({
-  email: { type: String, unique: true },
-  parola: String,
+/* ---------------- Health ---------------- */
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
 });
 
-const anuntSchema = new mongoose.Schema({
-  titlu: String,
-  descriere: String,
-  pret: Number,
-  categorie: String,
-  imagini: [String],
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-});
+/* ---------------- Rute API ---------------- */
+app.use("/api/auth", authRoutes);
+app.use("/api/listings", listingsRoutes);
+app.use("/api/users", usersRoutes);
 
-const User = mongoose.model("User", userSchema);
-const Anunt = mongoose.model("Anunt", anuntSchema);
+// ✅ montează Stripe DUPĂ CORS
+app.use("/api/stripe", stripeRoutes);
+console.log("✔ Stripe routes mounted at /api/stripe");
 
-// ==================== MIDDLEWARE ====================
-function authMiddleware(req, res, next) {
-  const token = req.headers["authorization"];
-  if (!token) return res.status(401).json({ error: "Lipsește token" });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: "Token invalid" });
+/* ---------------- 404 API ---------------- */
+app.use((req, res) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "Ruta API inexistentă" });
   }
-}
-
-// ==================== UPLOAD ====================
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
-const upload = multer({ storage });
-
-// ==================== AUTENTIFICARE ====================
-app.post("/api/register", async (req, res) => {
-  try {
-    const { email, parola } = req.body;
-    const hashedPassword = await bcrypt.hash(parola, 10);
-    const user = new User({ email, parola: hashedPassword });
-    await user.save();
-    res.json({ message: "✅ Utilizator creat cu succes" });
-  } catch {
-    res.status(400).json({ error: "Eroare la înregistrare sau utilizatorul există deja" });
-  }
+  res.status(404).send("Not found");
 });
 
-app.post("/api/login", async (req, res) => {
-  try {
-    const { email, parola } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: "User not found" });
-
-    const isMatch = await bcrypt.compare(parola, user.parola);
-    if (!isMatch) return res.status(400).json({ error: "Invalid password" });
-
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token });
-  } catch {
-    res.status(500).json({ error: "Eroare server la login" });
-  }
-});
-
-// ==================== ANUNTURI ====================
-app.post("/api/anunturi", authMiddleware, upload.array("imagini", 15), async (req, res) => {
-  try {
-    const { titlu, descriere, pret, categorie } = req.body;
-    const imagini = req.files ? req.files.map((f) => `/uploads/${f.filename}`) : [];
-
-    const anunt = new Anunt({
-      titlu,
-      descriere,
-      pret,
-      categorie,
-      imagini,
-      userId: req.user.id,
-    });
-
-    await anunt.save();
-    res.json(anunt);
-  } catch (err) {
-    console.error("Eroare la crearea anunțului:", err);
-    res.status(400).json({ error: "Eroare la crearea anunțului" });
-  }
-});
-
-app.get("/api/anunturi", async (req, res) => {
-  try {
-    const anunturi = await Anunt.find();
-    res.json(anunturi);
-  } catch {
-    res.status(500).json({ error: "Eroare la încărcarea anunțurilor" });
-  }
-});
-
-app.get("/api/anunturi/:id", async (req, res) => {
-  try {
-    const anunt = await Anunt.findById(req.params.id);
-    if (!anunt) return res.status(404).json({ error: "Anunțul nu există" });
-    res.json(anunt);
-  } catch {
-    res.status(500).json({ error: "Eroare server" });
-  }
-});
-
-app.get("/api/anunturile-mele", authMiddleware, async (req, res) => {
-  try {
-    const anunturi = await Anunt.find({ userId: req.user.id });
-    res.json(anunturi);
-  } catch {
-    res.status(500).json({ error: "Eroare la încărcarea anunțurilor utilizatorului" });
-  }
-});
-
-// ==================== START ====================
+/* ---------------- Start ---------------- */
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server Imobilia Market pornit pe portul ${PORT}`);
+  console.log(`🚀 Server pornit pe portul ${PORT}`);
 });
