@@ -94,28 +94,63 @@ export default function Home() {
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
           Categorii populare
         </h2>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {[
-            { name: "Apartamente", img: "/images/cat-apartamente.jpg" },
-            { name: "Case", img: "/images/cat-case.jpg" },
-            { name: "Terenuri", img: "/images/cat-terenuri.jpg" },
-            { name: "Garsoniere", img: "/images/cat-garsoniere.jpg" },
-            { name: "Garaje", img: "/images/cat-garaje.jpg" },
-            { name: "Spațiu comercial", img: "/images/cat-spatiu.jpg" },
+            {
+              name: "Apartamente",
+              img: "/images/cat-apartamente.jpg",
+              desc: "Blocuri moderne și apartamente luminoase",
+              slug: "apartamente",
+            },
+            {
+              name: "Case",
+              img: "/images/cat-case.jpg",
+              desc: "Locuințe spațioase și curți private",
+              slug: "case",
+            },
+            {
+              name: "Terenuri",
+              img: "/images/cat-terenuri.jpg",
+              desc: "Terenuri pentru construcții sau agricultură",
+              slug: "terenuri",
+            },
+            {
+              name: "Garsoniere",
+              img: "/images/cat-garsoniere.jpg",
+              desc: "Spații mici, perfecte pentru o persoană",
+              slug: "garsoniere",
+            },
+            {
+              name: "Garaje",
+              img: "/images/cat-garaje.jpg",
+              desc: "Garaje individuale și boxe auto",
+              slug: "garaje",
+            },
+            {
+              name: "Spațiu comercial",
+              img: "/images/cat-spatiu.jpg",
+              desc: "Spații pentru afaceri și birouri",
+              slug: "spatiu-comercial",
+            },
           ].map((cat, i) => (
-            <div
+            <Link
               key={i}
-              className="relative rounded-xl overflow-hidden shadow hover:shadow-lg transition"
+              to={`/categorie/${cat.slug}`}
+              className="relative rounded-xl overflow-hidden shadow hover:shadow-2xl transition group"
             >
               <img
                 src={cat.img}
                 alt={cat.name}
-                className="w-full h-40 object-cover"
+                className="w-full h-40 object-cover group-hover:scale-110 group-hover:brightness-110 transition-all duration-500"
               />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <p className="text-white text-lg font-semibold">{cat.name}</p>
+              <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center p-2">
+                <p className="text-white text-lg font-semibold mb-1 drop-shadow">
+                  {cat.name}
+                </p>
+                <p className="text-gray-200 text-sm">{cat.desc}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
