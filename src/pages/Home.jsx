@@ -23,29 +23,29 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="pt-20">
-      {/* 🟦 HERO - imagine principală */}
+    <div className="bg-gray-50 min-h-screen">
+      {/* 🟦 HERO principal */}
       <section
-        className="relative bg-cover bg-center h-[480px] flex flex-col justify-center items-center text-white"
-        style={{ backgroundImage: "url('/images/hero-oltenita.jpg')" }}
+        className="relative bg-cover bg-center h-[520px] flex flex-col justify-center items-center text-white"
+        style={{ backgroundImage: "url('/images/hero.jpg')" }}
       >
         <div className="absolute inset-0 bg-blue-900/60" />
         <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-3 drop-shadow-lg">
             Oltenița Imobiliare
           </h1>
           <p className="text-lg sm:text-xl text-gray-200 mb-8">
-            Găsește casa visurilor tale în Oltenița și împrejurimi
+            Cumpără, vinde sau închiriază proprietăți în Oltenița și împrejurimi
           </p>
 
           {/* 🔍 Bara de căutare */}
           <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Ex: apartament 2 camere"
+              placeholder="Ex: apartament 2 camere, central"
               className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
-            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-600">
               <option>Toate categoriile</option>
               <option>Apartamente</option>
               <option>Case</option>
@@ -67,13 +67,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🏡 Categorii cu poze */}
+      {/* 🏡 Categorii cu poze reale */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
           Categorii populare
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
           {[
             {
               name: "Apartamente",
@@ -96,7 +96,7 @@ export default function Home() {
             {
               name: "Garsoniere",
               img: "/images/cat-garsoniere.jpg",
-              desc: "Spații mici, perfecte pentru o persoană",
+              desc: "Perfecte pentru o persoană",
               slug: "garsoniere",
             },
             {
@@ -111,19 +111,19 @@ export default function Home() {
               desc: "Spații pentru afaceri și birouri",
               slug: "spatiu-comercial",
             },
-          ].map((cat, i) => (
+          ].map((cat) => (
             <Link
-              key={i}
+              key={cat.slug}
               to={`/categorie/${cat.slug}`}
               className="relative rounded-xl overflow-hidden shadow hover:shadow-2xl transition group"
             >
               <img
                 src={cat.img}
                 alt={cat.name}
-                className="w-full h-40 object-cover group-hover:scale-110 group-hover:brightness-110 transition-all duration-500"
+                className="w-full h-44 object-cover group-hover:scale-110 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center p-2">
-                <p className="text-white text-lg font-semibold mb-1 drop-shadow">
+                <p className="text-white text-lg font-semibold mb-1">
                   {cat.name}
                 </p>
                 <p className="text-gray-200 text-sm">{cat.desc}</p>
@@ -135,7 +135,7 @@ export default function Home() {
 
       {/* 🏠 Anunțuri recente */}
       <section className="max-w-7xl mx-auto px-4 pb-10">
-        <h2 className="text-2xl font-bold text-blue-700 mb-6">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">
           Anunțuri recente
         </h2>
 
