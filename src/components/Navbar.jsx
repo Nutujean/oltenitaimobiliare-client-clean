@@ -18,29 +18,19 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-blue-700 text-white shadow-md fixed w-full top-0 z-50">
+    <nav className="bg-blue-700 text-white shadow-lg fixed top-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* 🔹 Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-bold tracking-tight hover:text-blue-200 transition"
-        >
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold hover:text-blue-200">
           Oltenița Imobiliare
         </Link>
 
-        {/* 🔹 Meniu */}
+        {/* Meniu */}
         <div className="flex items-center space-x-6">
-          <Link
-            to="/"
-            className="hover:text-blue-200 font-medium transition"
-          >
+          <Link to="/" className="hover:text-blue-200 font-medium">
             Acasă
           </Link>
-
-          <Link
-            to="/adauga-anunt"
-            className="hover:text-blue-200 font-medium transition"
-          >
+          <Link to="/adauga-anunt" className="hover:text-blue-200 font-medium">
             Adaugă anunț
           </Link>
 
@@ -48,13 +38,13 @@ export default function Navbar() {
             <>
               <Link
                 to="/anunturile-mele"
-                className="hover:text-blue-200 font-medium transition"
+                className="hover:text-blue-200 font-medium"
               >
                 Anunțurile mele
               </Link>
               <button
                 onClick={handleLogout}
-                className="bg-white text-blue-700 font-semibold px-4 py-1 rounded-lg hover:bg-blue-100 transition"
+                className="bg-white text-blue-700 px-4 py-1 rounded-lg font-semibold hover:bg-blue-100 transition"
               >
                 Deconectare
               </button>
@@ -63,7 +53,7 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="hover:text-blue-200 font-medium transition"
+                className="hover:text-blue-200 font-medium"
               >
                 Autentificare
               </Link>

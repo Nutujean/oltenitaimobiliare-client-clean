@@ -8,9 +8,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchListings() {
       try {
-        const res = await fetch(
-          "https://oltenitaimobiliare-backend.onrender.com/api/listings"
-        );
+        const res = await fetch("https://oltenitaimobiliare-backend.onrender.com/api/listings");
         const data = await res.json();
         setListings(data);
       } catch (err) {
@@ -23,13 +21,12 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      {/* 🟦 HERO cu fundal și bara de căutare */}
+    <div className="pt-20">
+      {/* HERO */}
       <section
         className="relative bg-cover bg-center h-[420px] flex flex-col justify-center items-center text-white"
         style={{
-          backgroundImage:
-            "url('https://oltenitaimobiliare.ro/images/hero-oltenita.jpg')",
+          backgroundImage: "url('https://oltenitaimobiliare.ro/images/hero-oltenita.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-blue-900/70" />
@@ -38,7 +35,7 @@ export default function Home() {
             Găsește locuința ideală în Oltenița
           </h1>
           <p className="text-lg text-gray-200 mb-8">
-            Case, apartamente și terenuri la cele mai bune prețuri
+            Caută apartamente, case și terenuri la cele mai bune prețuri
           </p>
 
           {/* Bara de căutare */}
@@ -62,12 +59,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔹 Lista de anunțuri */}
+      {/* LISTA DE ANUNȚURI */}
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-700">
-            Anunțuri recente
-          </h2>
+          <h2 className="text-2xl font-bold text-blue-700">Anunțuri recente</h2>
           <Link
             to="/adauga-anunt"
             className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg transition"
