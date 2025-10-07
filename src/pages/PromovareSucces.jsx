@@ -1,60 +1,54 @@
 // src/pages/PromovareSucces.jsx
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import API_URL from "../api";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function PromovareSucces() {
-  const [sp] = useSearchParams();
-  const [state, setState] = useState({ loading: true, ok: false, msg: "", data: null });
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [message, setMessage] = useState("Se confirmă plata...");
 
   useEffect(() => {
-    const run = async () => {
+    const confirmPayment = async () => {
       try {
-        const session_id = sp.get("session_id");
+        const params = new URLSearchParams(location.search);
+        const session_id = params.get("session_id");
         if (!session_id) {
-          setState({ loading: false, ok: false, msg: "Lipsește session_id.", data: null });
+          setMessage("Lipsește session_id din URL.");
           return;
         }
-        const r = await fetch(`${API_URL}/stripe/confirm?session_id=${encodeURIComponent(session_id)}`);
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.error || "Eroare confirmare");
-        setState({ loading: false, ok: true, msg: data.message || "Succes!", data });
-      } catch (e) {
-        setState({ loading: false, ok: false, msg: e.message, data: null });
+
+        const res = await fetch(
+          `https://oltenitaimobiliare-backend.onrender.com/api/stripe/confirm?session_id=${session_id}`
+        );
+
+        const data = await res.json();
+        if (data.ok) {
+          setMessage("✅ Plata confirmată! Anunțul tău a fost promovat cu succes.");
+        } else {
+          setMessage(`⚠️ ${data.error || "Eroare la confirmarea plății."}`);
+        }
+      } catch (err) {
+        console.error("Eroare confirmare plată:", err);
+        setMessage("❌ Eroare la conectarea cu serverul Stripe.");
       }
     };
-    run();
-  }, [sp]);
 
-  if (state.loading) return <p className="text-center py-10">Confirmăm plata…</p>;
+    confirmPayment();
+  }, [location]);
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10 text-center">
-      {state.ok ? (
-        <>
-          <h1 className="text-2xl font-bold text-emerald-700">Plata confirmată ✅</h1>
-          <p className="mt-2">Anunțul tău a fost promovat.</p>
-          {state.data?.featuredUntil && (
-            <p className="mt-1 text-sm text-gray-600">
-              Activ până la: {new Date(state.data.featuredUntil).toLocaleString("ro-RO")}
-            </p>
-          )}
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to={`/anunt/${state.data?.listingId}`} className="px-4 py-2 rounded bg-blue-600 text-white">
-              Vezi anunțul
-            </Link>
-            <Link to="/anunturile-mele" className="px-4 py-2 rounded border">Anunțurile mele</Link>
-          </div>
-        </>
-      ) : (
-        <>
-          <h1 className="text-2xl font-bold text-red-600">Eroare</h1>
-          <p className="mt-2">{state.msg}</p>
-          <div className="mt-6">
-            <Link to="/" className="px-4 py-2 rounded bg-gray-800 text-white">Înapoi acasă</Link>
-          </div>
-        </>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
+      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 shadow-md max-w-md">
+        <div className="text-5xl mb-4">💳</div>
+        <h1 className="text-xl font-bold text-green-700 mb-2">Rezultatul plății</h1>
+        <p className="text-gray-700 mb-6">{message}</p>
+        <button
+          onClick={() => navigate("/anunturile-mele")}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+        >
+          🔙 Înapoi la anunțurile mele
+        </button>
+      </div>
     </div>
   );
 }

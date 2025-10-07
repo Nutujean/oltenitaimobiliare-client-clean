@@ -1,92 +1,54 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 export default function Profil() {
+  const nav = useNavigate();
   const [me, setMe] = useState(null);
   const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setErr("Nu ești autentificat.");
-      setLoading(false);
+      nav("/login?next=/profil");
       return;
     }
-
-    const run = async () => {
-      try {
-        const r = await fetch(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (r.status === 401) {
-          throw new Error("Sesiune expirată sau token invalid. Autentifică-te din nou.");
-        }
+    fetch(`${API_URL}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (r) => {
         const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Eroare la profil");
+        if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
         setMe(data);
-      } catch (e) {
+      })
+      .catch((e) => {
         setErr(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    run();
-  }, []);
+        if (e.message.includes("401") || e.message.includes("Token")) {
+          // token invalid → delogare curată
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          nav("/login?next=/profil");
+        }
+      });
+  }, [nav]);
 
-  if (loading) {
-    return <div className="max-w-3xl mx-auto px-4 py-10">Se încarcă...</div>;
-  }
-
-  if (err) {
+  if (err && !me) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
-          {err}
-        </div>
-        <Link
-          to="/login"
-          className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700"
-        >
-          Mergi la autentificare
-        </Link>
+      <div className="max-w-xl mx-auto p-6">
+        <p className="text-red-600">Eroare: {err}</p>
       </div>
     );
   }
 
+  if (!me) return <p className="p-6">Se încarcă...</p>;
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Profilul meu</h1>
-        <button
-          onClick={logout}
-          className="bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200"
-        >
-          Ieșire
-        </button>
-      </div>
-
-      <div className="bg-white shadow rounded-xl p-4 space-y-2">
-        <p><strong>Nume:</strong> {me?.name || "-"}</p>
-        <p><strong>Email:</strong> {me?.email}</p>
-        <p><strong>Creat:</strong> {new Date(me?.createdAt).toLocaleString()}</p>
-      </div>
-
-      <div className="mt-6">
-        <Link
-          to="/anunturile-mele"
-          className="inline-block bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700"
-        >
-          Vezi anunțurile mele
-        </Link>
+    <div className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Profil</h1>
+      <div className="space-y-2">
+        <p><strong>Nume:</strong> {me.name}</p>
+        <p><strong>Email:</strong> {me.email}</p>
+        <p><strong>Creat la:</strong> {new Date(me.createdAt).toLocaleString()}</p>
       </div>
     </div>
   );

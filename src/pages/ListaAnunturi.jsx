@@ -84,6 +84,8 @@ export default function ListaAnunturi() {
           <option value="apartament">Apartament</option>
           <option value="casa">Casă / Vilă</option>
           <option value="teren">Teren</option>
+          <option value="garsoniera">Garsoniera</option>
+          <option value="spatiu comercial">Spatiu comercial</option>
           <option value="garaj">Garaj</option>
         </select>
         <select
@@ -94,7 +96,7 @@ export default function ListaAnunturi() {
         >
           <option value="">Tranzacție</option>
           <option value="vanzare">Vânzare</option>
-          <option value="inchiriere">Închiriere</option>
+          <option value="inchiriat">Închiriat</option>
         </select>
         <select
           name="camere"
