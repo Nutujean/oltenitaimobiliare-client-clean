@@ -1,11 +1,12 @@
-// src/pages/DetaliuAnunt.jsx
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
-  const id = rawId?.split("-").pop?.(); // acceptează slug-uri de tip title-id
+  const id = rawId?.split("-").pop?.();
+  const navigate = useNavigate();
+
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,18 +59,17 @@ export default function DetaliuAnunt() {
       </div>
     );
 
-  // helper share message
+  // share helpers
   const pageUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = `${listing.title} — ${listing.price} € · ${listing.location}\nVezi anunțul: ${pageUrl}`;
   const encodedText = encodeURIComponent(shareText);
   const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
     pageUrl
-  )}&quote=${encodeURIComponent(listing.title)}`;
-  // pentru WhatsApp: wa.me requires number in international format OR use text only
+  )}`;
   const whatsappNumber = listing.phone ? listing.phone.replace(/\s+/g, "") : "";
   const waLink = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/^\+/, "")}?text=${encodedText}`
-    : `https://wa.me/?text=${encodedText}`; // fallback: doar mesaj
+    : `https://wa.me/?text=${encodedText}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -79,23 +79,29 @@ export default function DetaliuAnunt() {
           text: shareText,
           url: pageUrl,
         });
-      } catch (e) {
-        // user cancelled or error
-        console.info("Share cancelled or failed", e);
-      }
+      } catch {}
     } else {
-      // fallback: copiem linkul în clipboard
       try {
         await navigator.clipboard.writeText(pageUrl);
-        alert("Link copiat în clipboard. Poți lipi și partaja manual.");
+        alert("Link copiat în clipboard.");
       } catch {
-        alert("Partajare indisponibilă. Copiază manual URL-ul.");
+        alert("Partajare indisponibilă.");
       }
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* 🔙 Buton Înapoi */}
+      <div className="mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+        >
+          ← Înapoi la anunțuri
+        </button>
+      </div>
+
       <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
       {listing.images?.length > 0 && (
@@ -107,6 +113,7 @@ export default function DetaliuAnunt() {
       )}
 
       <div className="flex flex-col md:flex-row gap-6">
+        {/* Stânga: detalii */}
         <div className="flex-1">
           <p className="text-2xl font-semibold text-blue-600 mb-2">
             {listing.price} €
@@ -116,7 +123,7 @@ export default function DetaliuAnunt() {
           <p className="text-gray-600">Categorie: {listing.category}</p>
         </div>
 
-        {/* CARD CONTACT + SHARE */}
+        {/* Dreapta: contact + distribuire */}
         <aside className="w-full md:w-80 bg-white border rounded-xl p-4 shadow">
           <h3 className="font-semibold mb-2">Contact</h3>
 
@@ -132,9 +139,11 @@ export default function DetaliuAnunt() {
             <p className="text-gray-500 mb-1">Telefon: necunoscut</p>
           )}
 
-          {/* optional: nume (doar dacă vrei să afișezi numele, dar nu emailul) */}
+          {/* optional: nume */}
           {listing.user?.name && (
-            <p className="text-gray-700 text-sm mb-3">Proprietar: {listing.user.name}</p>
+            <p className="text-gray-700 text-sm mb-3">
+              Proprietar: {listing.user.name}
+            </p>
           )}
 
           {/* Share buttons */}
@@ -164,14 +173,13 @@ export default function DetaliuAnunt() {
               Distribuie pe Facebook
             </a>
 
-            {/* Copiere link */}
             <button
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(pageUrl);
-                  alert("Linkul anunțului a fost copiat în clipboard.");
+                  alert("Linkul a fost copiat.");
                 } catch {
-                  alert("Nu s-a putut copia automat. Copiază manual URL-ul.");
+                  alert("Nu s-a putut copia automat.");
                 }
               }}
               className="w-full border border-gray-200 py-2 rounded-lg font-medium"
