@@ -59,13 +59,11 @@ export default function DetaliuAnunt() {
       </div>
     );
 
-  // share helpers
+  // linkuri de distribuire
   const pageUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = `${listing.title} — ${listing.price} € · ${listing.location}\nVezi anunțul: ${pageUrl}`;
   const encodedText = encodeURIComponent(shareText);
-  const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-    pageUrl
-  )}`;
+  const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
   const whatsappNumber = listing.phone ? listing.phone.replace(/\s+/g, "") : "";
   const waLink = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/^\+/, "")}?text=${encodedText}`
@@ -93,22 +91,24 @@ export default function DetaliuAnunt() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* 🔙 Buton Înapoi */}
-      <div className="mb-4">
+      <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-blue-50 hover:border-blue-400 transition"
         >
           ← Înapoi la anunțuri
         </button>
       </div>
 
+      {/* Titlu anunț */}
       <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
+      {/* Imagine principală */}
       {listing.images?.length > 0 && (
         <img
           src={listing.images[0]}
           alt={listing.title}
-          className="w-full h-80 object-cover rounded-lg mb-6"
+          className="w-full h-80 object-cover rounded-lg mb-6 shadow"
         />
       )}
 
@@ -118,9 +118,15 @@ export default function DetaliuAnunt() {
           <p className="text-2xl font-semibold text-blue-600 mb-2">
             {listing.price} €
           </p>
-          <p className="mt-2 text-gray-700 whitespace-pre-line">{listing.description}</p>
-          <p className="text-gray-600 mt-4">Locație: {listing.location}</p>
-          <p className="text-gray-600">Categorie: {listing.category}</p>
+          <p className="mt-2 text-gray-700 whitespace-pre-line">
+            {listing.description}
+          </p>
+          <p className="text-gray-600 mt-4">
+            <strong>Locație:</strong> {listing.location}
+          </p>
+          <p className="text-gray-600">
+            <strong>Categorie:</strong> {listing.category}
+          </p>
         </div>
 
         {/* Dreapta: contact + distribuire */}
@@ -139,14 +145,14 @@ export default function DetaliuAnunt() {
             <p className="text-gray-500 mb-1">Telefon: necunoscut</p>
           )}
 
-          {/* optional: nume */}
+          {/* Proprietar (opțional) */}
           {listing.user?.name && (
             <p className="text-gray-700 text-sm mb-3">
               Proprietar: {listing.user.name}
             </p>
           )}
 
-          {/* Share buttons */}
+          {/* Butoane share */}
           <div className="mt-3 border-t pt-3 flex flex-col gap-2">
             <button
               onClick={handleNativeShare}
