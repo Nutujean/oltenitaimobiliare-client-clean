@@ -1,234 +1,116 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Keyboard } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import API_URL from "../api";
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://oltenitaimobiliare-backend.onrender.com/api";
 
 export default function DetaliuAnunt() {
-  const { id } = useParams();
-  const nav = useNavigate();
-  const loc = useLocation();
+  const { id: rawId } = useParams();
+  const id = rawId?.split("-").pop(); // extrage doar ObjectId-ul real
 
   const [listing, setListing] = useState(null);
-  const [err, setErr] = useState("");
-  const [plan, setPlan] = useState("featured7");
-
-  // id real (acceptă /anunt/slug-<id> sau /anunt/<id>)
-  const listingId = useMemo(() => {
-    if (!id) return "";
-    const parts = String(id).split("-");
-    return parts[parts.length - 1];
-  }, [id]);
-
-  // user & token din localStorage
-  const me = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; }
-  }, []);
-  const token = useMemo(() => localStorage.getItem("token") || "", []);
-  const myId = me?.id || me?._id;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const run = async () => {
+    if (!id) return;
+
+    const fetchListing = async () => {
       try {
-        setErr("");
-        const r = await fetch(`${API_URL}/listings/${listingId}`);
-        if (!r.ok) throw new Error("Eroare la încărcarea anunțului");
-        const data = await r.json();
+        const res = await fetch(`${API_URL}/listings/${id}`);
+        if (!res.ok) throw new Error("Anunțul nu a fost găsit.");
+        const data = await res.json();
         setListing(data);
-      } catch (e) {
-        setErr(e.message || "Eroare");
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
-    run();
-  }, [listingId]);
 
-  const imagesToShow =
-    listing?.images?.length ? listing.images : (listing?.imageUrl ? [listing.imageUrl] : []);
-  const ownerId = listing?.user?._id || listing?.user;
-  const isOwner = myId && ownerId && String(myId) === String(ownerId);
-  const contactPhone = listing?.phone || "";
+    fetchListing();
+  }, [id]);
 
-  const featuredActive =
-    listing?.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
-
-  const startPromotion = async () => {
-    if (!token) {
-      nav(`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`);
-      return;
-    }
-    try {
-      const r = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ listingId: listing._id, plan }),
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data?.error || "Eroare la inițierea plății");
-      window.location.href = data.url;
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
-  if (err) {
+  if (loading)
     return (
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        <p className="text-red-600">{err}</p>
-        <button onClick={() => nav(-1)} className="mt-4 text-blue-600 hover:underline">← Înapoi</button>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p>Se încarcă detaliile anunțului...</p>
       </div>
     );
-  }
 
-  if (!listing) {
-    return <p className="text-center py-10">Se încarcă...</p>;
-  }
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <h2 className="text-xl font-semibold text-red-600 mb-2">Eroare</h2>
+        <p className="text-gray-700 mb-4">{error}</p>
+        <Link to="/" className="text-blue-600 hover:underline">
+          Înapoi la pagina principală
+        </Link>
+      </div>
+    );
 
-  /* ---------- DEBUG BAR (vizibil mereu ca să știm starea) ---------- */
-  const debugInfo = {
-    myId: myId || null,
-    ownerId: ownerId || null,
-    isOwner: !!isOwner,
-    hasToken: !!token,
-    featuredUntil: listing?.featuredUntil || null,
-  };
-  console.log("[DETALIU DEBUG]", debugInfo);
+  if (!listing)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p>Anunțul nu a fost găsit.</p>
+      </div>
+    );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* DEBUG vizual */}
-      <div className="text-xs bg-yellow-50 border border-yellow-200 text-yellow-700 rounded px-3 py-2 mb-4">
-        DEBUG: {JSON.stringify(debugInfo)}
-      </div>
-
-      {/* back */}
-      <div className="mb-4">
-        <button
-          onClick={() => nav(-1)}
-          className="inline-flex items-center gap-2 text-blue-600 hover:underline"
-        >
-          ← Înapoi
-        </button>
-      </div>
-
-      {/* slider */}
-      {imagesToShow.length > 0 && (
-        <Swiper
-          modules={[Navigation, Pagination, Keyboard]}
-          navigation
-          pagination={{ clickable: true }}
-          keyboard={{ enabled: true }}
-          spaceBetween={10}
-          slidesPerView={1}
-          className="mb-6 rounded overflow-hidden"
-        >
-          {imagesToShow.map((img, i) => (
-            <SwiperSlide key={i}>
-              <img
-                src={img || "https://via.placeholder.com/800x500?text=Fara+imagine"}
-                alt={listing.title}
-                className="w-full max-h-[70vh] object-cover"
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      )}
-
-      {/* titlu + badge-uri */}
-      <div className="flex flex-wrap items-center gap-3 mb-3">
-        <h1 className="text-3xl font-bold">{listing.title}</h1>
-        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-          {listing.dealType === "inchiriere" ? "De închiriere" : "De vânzare"}
-        </span>
-        {featuredActive && (
-          <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700">
-            Promovat până la {new Date(listing.featuredUntil).toLocaleDateString()}
+    <div className="max-w-5xl mx-auto p-4">
+      {/* Titlu + badge promovare */}
+      <div className="flex items-center gap-3 mb-3">
+        <h1 className="text-2xl font-bold">{listing.title}</h1>
+        {listing.featuredUntil && (
+          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
+            🌟 Anunț promovat
           </span>
         )}
       </div>
 
-      {/* preț & locație */}
-      <div className="flex flex-wrap gap-4 items-center mb-4">
-        {Number.isFinite(listing.price) && (
-          <p className="text-2xl text-green-700 font-semibold">{listing.price} €</p>
-        )}
-        <p className="text-gray-600">{listing.location}</p>
-      </div>
-
-      {/* mini-specs */}
-      {(Number.isFinite(listing.rooms) ||
-        Number.isFinite(listing.surface) ||
-        Number.isFinite(listing.floor)) && (
-        <div className="text-sm text-gray-600 mb-4 flex flex-wrap gap-3">
-          {Number.isFinite(listing.rooms) && <span>{listing.rooms} camere</span>}
-          {Number.isFinite(listing.surface) && <span>• {listing.surface} mp</span>}
-          {Number.isFinite(listing.floor) && <span>• Etaj {listing.floor}</span>}
+      {/* Galerie imagini */}
+      {listing.images?.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+          {listing.images.map((img, idx) => (
+            <img
+              key={idx}
+              src={img}
+              alt={`Imagine ${idx + 1}`}
+              className="rounded-xl shadow-md w-full h-64 object-cover"
+            />
+          ))}
         </div>
       )}
 
-      {/* descriere */}
-      <p className="text-gray-800 mb-6 whitespace-pre-line">{listing.description}</p>
-
-      {/* PROMOVARE – MEREU VIZIBILĂ */}
-      <div className="border rounded-xl p-4 mb-8 bg-white shadow-sm">
-        <h3 className="font-semibold mb-3">Promovează anunțul</h3>
-
-        {featuredActive ? (
-          <p className="text-green-700">
-            Anunțul este deja promovat până la{" "}
-            <strong>{new Date(listing.featuredUntil).toLocaleString()}</strong>.
-          </p>
-        ) : !me ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-gray-700">Pentru a promova anunțul, autentifică-te în cont.</p>
-            <button
-              onClick={() => nav(`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Autentifică-te
-            </button>
-          </div>
-        ) : isOwner ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <select
-              className="border rounded px-3 py-2 bg-white"
-              value={plan}
-              onChange={(e) => setPlan(e.target.value)}
-            >
-              <option value="featured7">Promovare 7 zile (4.99 €)</option>
-              <option value="featured30">Promovare 30 zile (14.99 €)</option>
-            </select>
-            <button
-              onClick={startPromotion}
-              className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700"
-            >
-              Promovează acum
-            </button>
-          </div>
-        ) : (
-          <p className="text-sm text-amber-700">
-            Ești autentificat(ă), dar nu cu contul proprietar al acestui anunț. Numai proprietarul poate iniția promovarea.
-          </p>
-        )}
-
-        <p className="text-xs text-gray-500 mt-2">
-          Anunțurile promovate apar primele în listă și sunt marcate cu badge „Promovat”.
+      {/* Detalii anunț */}
+      <div className="bg-white rounded-xl shadow p-5 mb-6">
+        <p><strong>Preț:</strong> {listing.price} €</p>
+        <p><strong>Tip:</strong> {listing.category}</p>
+        <p><strong>Localitate:</strong> {listing.location}</p>
+        <p className="mt-4 text-gray-800 whitespace-pre-line">
+          {listing.description}
         </p>
       </div>
 
-      {/* link editare pentru proprietar */}
-      {isOwner && (
-        <div className="mb-8">
-          <Link
-            to={`/editeaza-anunt/${listing._id}`}
-            className="inline-block bg-gray-800 text-white px-4 py-2 rounded hover:bg-black"
-          >
-            Editează anunțul
-          </Link>
+      {/* Info proprietar */}
+      {listing.user && (
+        <div className="bg-gray-50 rounded-xl p-4 border">
+          <h3 className="font-semibold mb-2">Detalii proprietar:</h3>
+          <p>{listing.user.name}</p>
+          <p className="text-gray-600">{listing.user.email}</p>
         </div>
       )}
+
+      {/* Buton înapoi */}
+      <div className="mt-6">
+        <Link
+          to="/"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          ← Înapoi la anunțuri
+        </Link>
+      </div>
     </div>
   );
 }

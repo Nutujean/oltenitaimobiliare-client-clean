@@ -1,42 +1,37 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
-export default function ListingCard({ listing, onEdit, onDelete }) {
-  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
-
-  const isOwner = listing.user === currentUser?._id;
+export default function ListingCard({ listing }) {
+  const isPromoted =
+    listing.featuredUntil &&
+    new Date(listing.featuredUntil).getTime() > Date.now();
 
   return (
-    <div className="border rounded-lg shadow hover:shadow-md transition overflow-hidden">
+    <div className="relative bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition">
       <Link to={`/anunt/${listing._id}`}>
-        <img
-          src={listing.images?.[0] || listing.imageUrl || "https://via.placeholder.com/400x250?text=Fără+imagine"}
-          alt={listing.title}
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative">
+          <img
+            src={
+              listing.images?.[0] ||
+              listing.imageUrl ||
+              "https://via.placeholder.com/400x250?text=Fără+imagine"
+            }
+            alt={listing.title}
+            className="w-full h-48 object-cover"
+          />
+
+          {/* 💎 Badge Promovat */}
+          {isPromoted && (
+            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-lg shadow-md flex items-center gap-1">
+              💎 Promovat
+            </div>
+          )}
+        </div>
       </Link>
 
-      <div className="p-3">
-        <h3 className="text-lg font-semibold">{listing.title}</h3>
-        <p className="text-gray-600">{listing.location}</p>
-        <p className="font-bold text-blue-600">{listing.price} €</p>
-
-        {isOwner && (
-          <div className="flex justify-between mt-3">
-            <button
-              onClick={() => onEdit(listing._id)}
-              className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500"
-            >
-              Editează
-            </button>
-            <button
-              onClick={() => onDelete(listing._id)}
-              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-            >
-              Șterge
-            </button>
-          </div>
-        )}
+      <div className="p-4">
+        <h2 className="text-lg font-semibold mb-1">{listing.title}</h2>
+        <p className="text-gray-600 text-sm mb-2">{listing.location}</p>
+        <p className="text-blue-700 font-bold text-lg">{listing.price} €</p>
       </div>
     </div>
   );

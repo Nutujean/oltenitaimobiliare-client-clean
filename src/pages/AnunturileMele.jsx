@@ -1,221 +1,226 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API_URL from "../api";
-import slugify from "../utils/slugify.js";
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Keyboard } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 export default function AnunturileMele() {
-  const nav = useNavigate();
-  const [items, setItems] = useState([]);
-  const [err, setErr] = useState("");
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [planById, setPlanById] = useState({}); // { [listingId]: "featured7" | "featured30" }
-
-  const token = localStorage.getItem("token") || "";
-
-  const getImageUrl = (l) => {
-    if (Array.isArray(l.images) && l.images.length > 0) return l.images[0];
-    if (l.imageUrl) return l.imageUrl;
-    return "https://via.placeholder.com/600x400?text=Fara+imagine";
-  };
-
-  const fetchMine = async () => {
-    try {
-      setLoading(true);
-      setErr("");
-      const r = await fetch(`${API_URL}/listings/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data?.error || "Eroare la încărcarea anunțurilor mele");
-      setItems(Array.isArray(data) ? data : []);
-      // init plan implicit
-      const initPlans = {};
-      (Array.isArray(data) ? data : []).forEach((l) => (initPlans[l._id] = "featured7"));
-      setPlanById(initPlans);
-    } catch (e) {
-      setErr(e.message || "Eroare");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [selectedPlan, setSelectedPlan] = useState({});
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) {
-      nav("/login?next=/anunturile-mele");
+      navigate("/login");
       return;
     }
-    fetchMine();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Sigur vrei să ștergi acest anunț?")) return;
+    async function fetchMyListings() {
+      try {
+        const res = await fetch(
+          "https://oltenitaimobiliare-backend.onrender.com/api/listings/my",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor mele");
+        const data = await res.json();
+        setListings(data);
+      } catch (err) {
+        console.error("Eroare la încărcarea anunțurilor mele:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMyListings();
+  }, [token, navigate]);
+
+  // 🔹 Funcție pentru promovare Stripe
+  const handlePromoveaza = async (listingId, plan) => {
     try {
-      const r = await fetch(`${API_URL}/listings/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data?.error || "Eroare la ștergere");
-      setItems((prev) => prev.filter((x) => x._id !== id));
-    } catch (e) {
-      alert(e.message);
+      const res = await fetch(
+        "https://oltenitaimobiliare-backend.onrender.com/api/stripe/create-checkout-session",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ listingId, plan }),
+        }
+      );
+
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Eroare la inițierea plății.");
+      }
+    } catch (err) {
+      console.error("Eroare la promovare:", err);
+      alert("Eroare la inițierea plății.");
     }
   };
 
-  const startPromotion = async (listing) => {
-    try {
-      const plan = planById[listing._id] || "featured7";
-      const r = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ listingId: listing._id, plan }),
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data?.error || "Eroare la inițierea plății");
-      window.location.href = data.url; // Stripe Checkout
-    } catch (e) {
-      alert(e.message);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-gray-600">
+        Se încarcă anunțurile tale...
+      </div>
+    );
+  }
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Anunțurile mele</h1>
+  if (listings.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold text-blue-700 mb-3">
+          Anunțurile mele
+        </h1>
+        <p className="text-gray-600 mb-6">Nu ai publicat încă niciun anunț.</p>
         <Link
           to="/adauga-anunt"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-blue-700 hover:bg-blue-800 text-white font-medium px-5 py-3 rounded-xl transition"
         >
-          + Adaugă anunț
+          + Adaugă primul tău anunț
         </Link>
       </div>
+    );
+  }
 
-      {err && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-          {err}
-        </div>
-      )}
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-bold text-blue-700 mb-6">Anunțurile mele</h1>
 
-      {loading ? (
-        <p>Se încarcă...</p>
-      ) : items.length === 0 ? (
-        <p>Nu ai încă anunțuri.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((l) => {
-            const featuredActive =
-              l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {listings.map((listing) => {
+          const isPromoted =
+            listing.featuredUntil &&
+            new Date(listing.featuredUntil).getTime() > Date.now();
 
-            return (
-              <div key={l._id} className="bg-white rounded-xl shadow overflow-hidden">
-                {/* Slider imagini */}
-                {(l.images?.length || l.imageUrl) ? (
-                  <Swiper
-                    modules={[Navigation, Pagination, Keyboard]}
-                    navigation
-                    pagination={{ clickable: true }}
-                    keyboard={{ enabled: true }}
-                    spaceBetween={8}
-                    slidesPerView={1}
-                    className="w-full"
-                  >
-                    {(l.images?.length ? l.images : [l.imageUrl]).map((img, i) => (
-                      <SwiperSlide key={i}>
-                        <img
-                          src={img || "https://via.placeholder.com/800x500?text=Fara+imagine"}
-                          alt={l.title}
-                          className="w-full h-56 object-cover"
-                        />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                ) : (
+          const formattedDate = isPromoted
+            ? new Date(listing.featuredUntil).toLocaleDateString("ro-RO", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : null;
+
+          const showMenu = selectedPlan[listing._id];
+
+          return (
+            <div
+              key={listing._id}
+              className="relative bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
+            >
+              <Link to={`/anunt/${listing._id}`}>
+                <div className="relative">
                   <img
-                    src={getImageUrl(l)}
-                    alt={l.title}
-                    className="w-full h-56 object-cover"
+                    src={
+                      listing.images?.[0] ||
+                      listing.imageUrl ||
+                      "https://via.placeholder.com/400x250?text=Fără+imagine"
+                    }
+                    alt={listing.title}
+                    className="w-full h-48 object-cover"
                   />
-                )}
 
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold">{l.title}</h3>
-                      <p className="text-gray-600">{l.price} € • {l.location}</p>
-                      <p className="text-sm text-gray-500">{l.category}</p>
-                      {featuredActive && (
-                        <p className="text-xs text-amber-700 mt-1">
-                          Promovat până la {new Date(l.featuredUntil).toLocaleDateString()}
-                        </p>
-                      )}
+                  {isPromoted && (
+                    <div className="absolute top-2 right-2 bg-blue-700 text-white text-xs px-2 py-1 rounded-lg shadow-md flex items-center gap-1">
+                      💎 <span>Promovat</span>
                     </div>
+                  )}
+                </div>
+              </Link>
 
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <Link
-                        to={`/editeaza-anunt/${l._id}`}
-                        className="px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 text-center"
-                      >
-                        Editează
-                      </Link>
+              <div className="p-4">
+                <h2 className="text-lg font-semibold mb-1 truncate">
+                  {listing.title}
+                </h2>
+                <p className="text-gray-600 text-sm mb-2 truncate">
+                  {listing.location}
+                </p>
+                <p className="text-blue-700 font-bold text-lg mb-2">
+                  {listing.price} €
+                </p>
+
+                {isPromoted ? (
+                  <p className="text-xs text-green-700 font-medium">
+                    Activ până la: {formattedDate}
+                  </p>
+                ) : (
+                  <div className="mt-3">
+                    {!showMenu ? (
                       <button
-                        onClick={() => handleDelete(l._id)}
-                        className="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700"
+                        onClick={() =>
+                          setSelectedPlan({ [listing._id]: true })
+                        }
+                        className="bg-gradient-to-r from-blue-600 to-indigo-500 text-white text-sm font-medium px-3 py-2 rounded-lg shadow hover:opacity-90 transition"
                       >
-                        Șterge
+                        💳 Promovează anunțul
                       </button>
-                      <Link
-                        to={`/anunt/${slugify(l.title)}-${l._id}`}
-                        className="px-3 py-1 rounded bg-gray-100 text-gray-800 text-sm hover:bg-gray-200 text-center"
-                        target="_blank"
-                      >
-                        Vezi public
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Promovare - direct în listă */}
-                  <div className="mt-4 border-t pt-3">
-                    {featuredActive ? (
-                      <p className="text-green-700 text-sm">
-                        Anunțul este deja promovat.
-                      </p>
                     ) : (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <select
-                          className="border rounded px-3 py-2 bg-white"
-                          value={planById[l._id] || "featured7"}
-                          onChange={(e) =>
-                            setPlanById((m) => ({ ...m, [l._id]: e.target.value }))
-                          }
-                        >
-                          <option value="featured7">Promovare 7 zile (4.99 €)</option>
-                          <option value="featured30">Promovare 30 zile (14.99 €)</option>
-                        </select>
-                        <button
-                          onClick={() => startPromotion(l)}
-                          className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700"
-                        >
-                          Promovează acum
-                        </button>
+                      <div className="bg-gray-100 p-3 rounded-lg shadow-inner space-y-2">
+                        <p className="text-sm font-medium text-gray-700 mb-2">
+                          Alege perioada:
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() =>
+                              handlePromoveaza(listing._id, "featured7")
+                            }
+                            className="bg-blue-700 text-white text-xs py-1.5 rounded hover:bg-blue-800"
+                          >
+                            7 zile – 5 €
+                          </button>
+                          <button
+                            onClick={() =>
+                              handlePromoveaza(listing._id, "featured14")
+                            }
+                            className="bg-blue-700 text-white text-xs py-1.5 rounded hover:bg-blue-800"
+                          >
+                            14 zile – 9 €
+                          </button>
+                          <button
+                            onClick={() =>
+                              handlePromoveaza(listing._id, "featured30")
+                            }
+                            className="bg-blue-700 text-white text-xs py-1.5 rounded hover:bg-blue-800"
+                          >
+                            30 zile – 15 €
+                          </button>
+                          <button
+                            onClick={() => setSelectedPlan({})}
+                            className="text-gray-500 text-xs mt-1 hover:underline"
+                          >
+                            Anulează
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
+                )}
+
+                <div className="mt-3 flex justify-between text-sm">
+                  <Link
+                    to={`/editeaza-anunt/${listing._id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    ✏️ Editează
+                  </Link>
+
+                  <Link
+                    to={`/anunt/${listing._id}`}
+                    className="text-gray-700 hover:text-blue-600"
+                  >
+                    🔍 Vezi
+                  </Link>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
