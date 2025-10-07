@@ -1,23 +1,33 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
-    <nav className="bg-blue-700 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Logo */}
-        <Link to="/" className="font-bold text-xl">
-          Oltenita Imobiliare
-        </Link>
+    <nav className="navbar">
+      <Link to="/">Acasă</Link>
+      <Link to="/adauga-anunt">Adaugă anunț</Link>
 
-        {/* Desktop menu */}
-        <div className="hidden md:flex space-x-6">
-          <Link to="/login" className="px-4">Login</Link>
-          <Link to="/register" className="px-4">Register</Link>
-          <Link to="/">Acasă</Link>
-          <Link to="/adauga">Adaugă Anunț</Link>
-          <Link to="/anunturile-mele">Anunțurile Mele</Link>
+      {!token ? (
+        <>
           <Link to="/login">Login</Link>
-          <Link to="/register">Register
+          <Link to="/register">Înregistrare</Link>
+        </>
+      ) : (
+        <>
+          <span>Bun venit, {user?.name || "Utilizator"}</span>
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      )}
+    </nav>
+  );
+}
