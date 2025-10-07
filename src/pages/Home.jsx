@@ -22,54 +22,110 @@ export default function Home() {
 
   return (
     <div className="pt-20">
-      {/* HERO */}
+      {/* HERO cu imagine și overlay */}
       <section
-        className="relative bg-cover bg-center h-[420px] flex flex-col justify-center items-center text-white"
+        className="relative bg-cover bg-center h-[480px] flex flex-col justify-center items-center text-white"
         style={{
-          backgroundImage: "url('https://oltenitaimobiliare.ro/images/hero-oltenita.jpg')",
+          backgroundImage:
+            "url('https://oltenitaimobiliare.ro/images/hero-oltenita.jpg')",
         }}
       >
-        <div className="absolute inset-0 bg-blue-900/70" />
+        <div className="absolute inset-0 bg-blue-900/60" />
         <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-            Găsește locuința ideală în Oltenița
+          <h1 className="text-4xl sm:text-5xl font-bold mb-3">
+            Oltenița Imobiliare
           </h1>
-          <p className="text-lg text-gray-200 mb-8">
-            Caută apartamente, case și terenuri la cele mai bune prețuri
+          <p className="text-lg sm:text-xl text-gray-200 mb-8">
+            Cumpără, vinde sau închiriază locuințe în zona ta
           </p>
 
-          {/* Bara de căutare */}
-          <div className="bg-white rounded-xl shadow-md p-3 flex flex-col sm:flex-row items-center gap-3 max-w-2xl mx-auto">
+          {/* Bara complexă de căutare */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Caută după titlu sau locație..."
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder="Cuvinte cheie (ex: 2 camere)"
+              className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
-            <select className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
               <option>Toate categoriile</option>
               <option>Apartamente</option>
               <option>Case</option>
               <option>Terenuri</option>
               <option>Garsoniere</option>
+              <option>Garaje</option>
+              <option>Spațiu comercial</option>
             </select>
-            <button className="bg-blue-700 hover:bg-blue-800 text-white font-medium px-5 py-2 rounded-lg transition">
+            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option>Toate locațiile</option>
+              <option>Oltenița</option>
+              <option>Chirnogi</option>
+              <option>Căscioarele</option>
+              <option>Spanțov</option>
+            </select>
+            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option>Toate tipurile</option>
+              <option>Vânzare</option>
+              <option>Închiriere</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Camere min."
+              className="w-[130px] border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+            <input
+              type="number"
+              placeholder="Preț max."
+              className="w-[130px] border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+            <button className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-lg transition">
               Caută
             </button>
+            <Link
+              to="/adauga-anunt"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition"
+            >
+              + Adaugă anunț
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* LISTA DE ANUNȚURI */}
-      <div className="max-w-7xl mx-auto px-4 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-700">Anunțuri recente</h2>
-          <Link
-            to="/adauga-anunt"
-            className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg transition"
-          >
-            + Adaugă anunț
-          </Link>
+      {/* CATEGORII POPULARE */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
+          Categorii populare
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+          {[
+            { name: "Apartamente", img: "https://oltenitaimobiliare.ro/images/cat-apartamente.jpg" },
+            { name: "Case", img: "https://oltenitaimobiliare.ro/images/cat-case.jpg" },
+            { name: "Terenuri", img: "https://oltenitaimobiliare.ro/images/cat-terenuri.jpg" },
+            { name: "Garsoniere", img: "https://oltenitaimobiliare.ro/images/cat-garsoniere.jpg" },
+            { name: "Garaje", img: "https://oltenitaimobiliare.ro/images/cat-garaje.jpg" },
+            { name: "Spațiu comercial", img: "https://oltenitaimobiliare.ro/images/cat-spatiu.jpg" },
+          ].map((cat, i) => (
+            <div
+              key={i}
+              className="relative rounded-xl overflow-hidden shadow hover:shadow-lg transition"
+            >
+              <img
+                src={cat.img}
+                alt={cat.name}
+                className="w-full h-40 object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <p className="text-white text-lg font-semibold">{cat.name}</p>
+              </div>
+            </div>
+          ))}
         </div>
+      </section>
+
+      {/* ANUNȚURI RECENTE */}
+      <section className="max-w-7xl mx-auto px-4 pb-10">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6">
+          Anunțuri recente
+        </h2>
 
         {loading ? (
           <p className="text-gray-600 text-center">Se încarcă anunțurile...</p>
@@ -123,7 +179,7 @@ export default function Home() {
             })}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
