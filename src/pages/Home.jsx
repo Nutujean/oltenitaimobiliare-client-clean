@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <div className="pt-20">
-      {/* 🟦 HERO cu imagine și overlay */}
+      {/* 🟦 HERO - imagine principală */}
       <section
         className="relative bg-cover bg-center h-[480px] flex flex-col justify-center items-center text-white"
         style={{ backgroundImage: "url('/images/hero-oltenita.jpg')" }}
@@ -35,14 +35,14 @@ export default function Home() {
             Oltenița Imobiliare
           </h1>
           <p className="text-lg sm:text-xl text-gray-200 mb-8">
-            Cumpără, vinde sau închiriază locuințe în zona ta
+            Găsește casa visurilor tale în Oltenița și împrejurimi
           </p>
 
-          {/* 🔍 Bara complexă de căutare */}
+          {/* 🔍 Bara de căutare */}
           <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Cuvinte cheie (ex: 2 camere, centru)"
+              placeholder="Ex: apartament 2 camere"
               className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
             <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -54,28 +54,6 @@ export default function Home() {
               <option>Garaje</option>
               <option>Spațiu comercial</option>
             </select>
-            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
-              <option>Toate locațiile</option>
-              <option>Oltenița</option>
-              <option>Chirnogi</option>
-              <option>Căscioarele</option>
-              <option>Spanțov</option>
-            </select>
-            <select className="min-w-[160px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
-              <option>Toate tipurile</option>
-              <option>Vânzare</option>
-              <option>Închiriere</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Camere min."
-              className="w-[130px] border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-            <input
-              type="number"
-              placeholder="Preț max."
-              className="w-[130px] border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
             <button className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-lg transition">
               Caută
             </button>
@@ -89,7 +67,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🏡 Categorii populare */}
+      {/* 🏡 Categorii cu poze */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
           Categorii populare
