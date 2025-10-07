@@ -21,6 +21,7 @@ import VerificaEmail from "./pages/VerificaEmail";
 import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
+import PromovareSucces from "./pages/PromovareSucces";
 
 /* Anunțuri */
 import AdaugaAnunt from "./pages/AdaugaAnunt";
@@ -57,6 +58,7 @@ function App() {
           <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
+          <Route path="/promovare-succes" element={<PromovareSucces />} />
 
           {/* Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
