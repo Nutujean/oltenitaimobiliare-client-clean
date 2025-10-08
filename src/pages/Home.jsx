@@ -45,6 +45,111 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 🏘️ CATEGORII */}
+      <section className="max-w-6xl mx-auto py-12 px-4">
+        <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
+          Categorii populare
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {/* Apartamente */}
+          <Link
+            to="/categorie/apartamente"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/apartamente.jpg"
+              alt="Apartamente"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Apartamente
+            </h3>
+          </Link>
+
+          {/* Case */}
+          <Link
+            to="/categorie/case"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/case.jpg"
+              alt="Case"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Case
+            </h3>
+          </Link>
+
+          {/* Terenuri */}
+          <Link
+            to="/categorie/terenuri"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/terenuri.jpg"
+              alt="Terenuri"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Terenuri
+            </h3>
+          </Link>
+
+          {/* Garsoniere */}
+          <Link
+            to="/categorie/garsoniere"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/garsoniere.jpg"
+              alt="Garsoniere"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Garsoniere
+            </h3>
+          </Link>
+
+          {/* Garaje */}
+          <Link
+            to="/categorie/garaje"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/garaje.jpg"
+              alt="Garaje"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Garaje
+            </h3>
+          </Link>
+
+          {/* Spațiu comercial */}
+          <Link
+            to="/categorie/spatiu-comercial"
+            className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+          >
+            <img
+              src="/spatiu-comercial.jpg"
+              alt="Spațiu comercial"
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+            <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+              Spațiu comercial
+            </h3>
+          </Link>
+        </div>
+      </section>
+
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
@@ -74,7 +179,6 @@ export default function Home() {
                     </div>
                   )}
 
-                  {/* BADGE PROMOVAT */}
                   {isFeatured && (
                     <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
                       PROMOVAT
