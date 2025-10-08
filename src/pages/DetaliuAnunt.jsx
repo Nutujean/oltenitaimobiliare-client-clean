@@ -1,47 +1,39 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import API_URL from "../api";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 export default function DetaliuAnunt() {
-  const navigate = useNavigate();
-  const { id: rawId } = useParams();
-  const id = rawId?.split("-").pop(); // ✅ extrage doar ObjectId-ul real
-
+  const { id } = useParams();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const [selectedImg, setSelectedImg] = useState(null);
+  const navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  // 🔹 Încarcă anunțul curent
   useEffect(() => {
-    if (!id) return;
-
-    (async () => {
+    const fetchListing = async () => {
       try {
         const res = await fetch(`${API_URL}/listings/${id}`);
         const data = await res.json();
-        if (!res.ok)
-          throw new Error(data?.error || "Eroare la încărcarea anunțului.");
+        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
         setListing(data);
-        setSelectedImg(data.images?.[0] || null);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    fetchListing();
   }, [id]);
 
-  // 🗑️ ștergere anunț
   const handleDelete = async () => {
-    const confirmDelete = window.confirm("Sigur vrei să ștergi acest anunț?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
 
     try {
-      setDeleting(true);
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Nu ești autentificat.");
-
       const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "DELETE",
         headers: {
@@ -50,170 +42,118 @@ export default function DetaliuAnunt() {
       });
 
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data?.error || "Eroare la ștergerea anunțului.");
+      if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
 
-      alert("✅ Anunț șters cu succes!");
+      alert("✅ Anunț șters cu succes.");
       navigate("/anunturile-mele");
     } catch (err) {
       alert("❌ " + err.message);
-    } finally {
-      setDeleting(false);
     }
   };
 
-  // 🔗 distribuire pe WhatsApp / Facebook
-  const shareWhatsApp = () => {
-    const text = `Vezi acest anunț pe Oltenița Imobiliare: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-  };
-
-  const shareFacebook = () => {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        window.location.href
-      )}`,
-      "_blank"
-    );
-  };
-
   if (loading)
-    return (
-      <div className="p-10 text-center text-gray-600">
-        Se încarcă anunțul...
-      </div>
-    );
+    return <p className="text-center mt-10 text-gray-600">Se încarcă anunțul...</p>;
 
   if (error)
     return (
-      <div className="p-10 text-center">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Eroare</h2>
-        <p className="text-gray-700 mb-4">{error}</p>
-        <Link to="/" className="text-blue-600 hover:underline">
-          ← Înapoi la anunțuri
-        </Link>
+      <div className="text-center mt-10 text-red-600">
+        {error}
+        <div className="mt-4">
+          <Link to="/" className="text-blue-600 underline">
+            Înapoi la acasă
+          </Link>
+        </div>
       </div>
     );
 
-  if (!listing)
-    return (
-      <div className="p-10 text-center text-gray-600">
-        Anunțul nu a fost găsit.
-      </div>
-    );
+  if (!listing) return <p className="text-center mt-10">Anunț inexistent.</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      {/* Titlu + promovare */}
-      <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-2xl font-bold">{listing.title}</h1>
-        {listing.featuredUntil && (
-          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
-            🌟 Anunț promovat
-          </span>
-        )}
-      </div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 px-3 py-1 rounded border hover:bg-gray-50 text-gray-700"
+      >
+        ← Înapoi
+      </button>
 
-      {/* Galerie principală */}
-      {selectedImg && (
+      <h1 className="text-3xl font-bold mb-3">{listing.title}</h1>
+
+      {listing.images?.length > 0 && (
         <img
-          src={selectedImg}
+          src={listing.images[0]}
           alt={listing.title}
-          className="w-full h-80 object-cover rounded-lg mb-4 shadow"
+          className="w-full h-80 object-cover rounded-lg mb-6"
         />
       )}
 
-      {/* Miniaturi */}
-      {listing.images?.length > 1 && (
-        <div className="flex gap-3 mb-6 overflow-x-auto">
-          {listing.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Imagine ${idx + 1}`}
-              className={`h-20 w-28 object-cover rounded cursor-pointer border ${
-                selectedImg === img
-                  ? "border-blue-600 shadow"
-                  : "border-gray-200 hover:opacity-80"
-              }`}
-              onClick={() => setSelectedImg(img)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Detalii */}
-      <p className="text-2xl text-blue-700 font-semibold mb-2">
+      <p className="text-2xl font-semibold text-blue-700 mb-3">
         {listing.price} €
       </p>
-      <p className="text-gray-700 mb-4">{listing.description}</p>
-      <p className="text-gray-600 mb-1">
+
+      <p className="text-gray-700 mb-2">{listing.description}</p>
+      <p className="text-sm text-gray-500">
         <strong>Locație:</strong> {listing.location}
       </p>
-      <p className="text-gray-600 mb-4">
+      <p className="text-sm text-gray-500 mb-6">
         <strong>Categorie:</strong> {listing.category}
       </p>
 
-      {/* Telefon clicabil */}
+      {/* 🔹 Date de contact */}
       {listing.phone && (
-        <p className="text-lg mt-4">
+        <p className="text-lg font-semibold mb-4">
           📞{" "}
           <a
             href={`tel:${listing.phone}`}
-            className="text-blue-600 hover:underline"
+            className="text-blue-600 underline hover:text-blue-800"
           >
             {listing.phone}
           </a>
         </p>
       )}
 
-      {/* Butoane distribuire */}
-      <div className="flex gap-3 mt-4">
-        <button
-          onClick={shareWhatsApp}
-          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+      {/* 🔹 Distribuire socială */}
+      <div className="flex gap-3 mb-6">
+        <a
+          href={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
         >
-          📲 Distribuie pe WhatsApp
-        </button>
-        <button
-          onClick={shareFacebook}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          Distribuie pe Facebook
+        </a>
+        <a
+          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+            `Vezi acest anunț: ${window.location.href}`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
         >
-          📘 Distribuie pe Facebook
-        </button>
+          Trimite pe WhatsApp
+        </a>
       </div>
 
-      {/* Butoane acțiune */}
-      <div className="flex flex-wrap gap-3 mt-6">
-        <Link
-          to={`/editeaza-anunt/${id}`}
-          className="px-4 py-2 rounded border bg-gray-50 hover:bg-gray-100"
-        >
-          ✏️ Editează
-        </Link>
-
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="px-4 py-2 rounded border bg-red-100 hover:bg-red-200 text-red-800 disabled:opacity-50"
-        >
-          🗑️ {deleting ? "Se șterge..." : "Șterge"}
-        </button>
-
-        <Link
-          to={`/promoveaza/${id}`}
-          className="px-4 py-2 rounded border bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
-        >
-          💎 Promovează
-        </Link>
-
-        <Link
-          to="/anunturile-mele"
-          className="px-4 py-2 rounded border bg-blue-100 hover:bg-blue-200 text-blue-800"
-        >
-          ← Înapoi la anunțurile mele
-        </Link>
-      </div>
+      {/* 🔒 Butoane doar pentru proprietarul autentificat */}
+      {user &&
+        listing.user &&
+        (String(user._id) === String(listing.user._id) ||
+          String(user._id) === String(listing.user)) && (
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => navigate(`/editeaza-anunt/${listing._id}`)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Editează
+            </button>
+            <button
+              onClick={handleDelete}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            >
+              Șterge
+            </button>
+          </div>
+        )}
     </div>
   );
 }
