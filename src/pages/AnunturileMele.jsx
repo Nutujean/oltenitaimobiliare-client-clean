@@ -4,7 +4,6 @@ import { API_URL } from "../config";
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState(null);
   const [activeListing, setActiveListing] = useState(null);
   const token = localStorage.getItem("token");
 
@@ -65,7 +64,7 @@ export default function AnunturileMele() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la promovare");
-      window.location.href = data.url; // redirecționează la Stripe Checkout
+      window.location.href = data.url;
     } catch (err) {
       console.error("Eroare la promovare:", err);
       alert(err.message);
@@ -90,59 +89,83 @@ export default function AnunturileMele() {
         <p className="text-gray-600">Nu ai adăugat încă niciun anunț.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {listings.map((listing) => (
-            <div
-              key={listing._id}
-              className="border rounded-lg shadow-md p-4 flex flex-col justify-between"
-            >
-              <div>
-                {listing.images?.length > 0 ? (
-                  <img
-                    src={listing.images[0]}
-                    alt={listing.title}
-                    className="w-full h-48 object-cover rounded-md mb-3"
-                  />
-                ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">
-                    Fără imagine
-                  </div>
+          {listings.map((listing) => {
+            const featuredUntil = listing.featuredUntil
+              ? new Date(listing.featuredUntil)
+              : null;
+            const now = new Date();
+            const isFeatured = featuredUntil && featuredUntil > now;
+            const dateText = featuredUntil
+              ? featuredUntil.toLocaleDateString("ro-RO", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : null;
+
+            return (
+              <div
+                key={listing._id}
+                className={`border rounded-lg shadow-md p-4 flex flex-col justify-between relative ${
+                  isFeatured ? "border-yellow-400" : ""
+                }`}
+              >
+                {/* Badge pentru proprietar */}
+                {isFeatured && (
+                  <span className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded-full shadow">
+                    ⭐ Promovat până la {dateText}
+                  </span>
                 )}
 
-                <h2 className="text-xl font-semibold">{listing.title}</h2>
-                <p className="text-gray-700 mb-2">{listing.price} €</p>
-                <p className="text-sm text-gray-500 mb-3">
-                  {listing.location} • {listing.category}
-                </p>
+                <div>
+                  {listing.images?.length > 0 ? (
+                    <img
+                      src={listing.images[0]}
+                      alt={listing.title}
+                      className="w-full h-48 object-cover rounded-md mb-3"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">
+                      Fără imagine
+                    </div>
+                  )}
+
+                  <h2 className="text-xl font-semibold">{listing.title}</h2>
+                  <p className="text-gray-700 mb-2">{listing.price} €</p>
+                  <p className="text-sm text-gray-500 mb-3">
+                    {listing.location} • {listing.category}
+                  </p>
+                </div>
+
+                <div className="flex justify-between gap-2 mt-3">
+                  <button
+                    onClick={() => (window.location.href = `/editeaza-anunt/${listing._id}`)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                  >
+                    Editează
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(listing._id)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                  >
+                    Șterge
+                  </button>
+
+                  <button
+                    onClick={() => openPromoteOptions(listing._id)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                  >
+                    Promovează
+                  </button>
+                </div>
               </div>
-
-              <div className="flex justify-between gap-2 mt-3">
-                <button
-                  onClick={() => (window.location.href = `/editeaza-anunt/${listing._id}`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
-                >
-                  Editează
-                </button>
-
-                <button
-                  onClick={() => handleDelete(listing._id)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                >
-                  Șterge
-                </button>
-
-                <button
-                  onClick={() => openPromoteOptions(listing._id)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                >
-                  Promovează
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* 🔹 Popup alegere plan */}
+      {/* Popup alegere plan */}
       {activeListing && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-xl w-80">
