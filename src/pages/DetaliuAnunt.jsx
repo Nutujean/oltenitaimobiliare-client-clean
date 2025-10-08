@@ -7,12 +7,12 @@ export default function DetaliuAnunt() {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentImage, setCurrentImage] = useState(0);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
-  // 🔹 Încarcă anunțul curent
   useEffect(() => {
     const fetchListing = async () => {
       try {
@@ -32,23 +32,30 @@ export default function DetaliuAnunt() {
 
   const handleDelete = async () => {
     if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
-
     try {
       const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
-
       alert("✅ Anunț șters cu succes.");
       navigate("/anunturile-mele");
     } catch (err) {
       alert("❌ " + err.message);
     }
+  };
+
+  const prevImage = () => {
+    setCurrentImage((prev) =>
+      prev === 0 ? listing.images.length - 1 : prev - 1
+    );
+  };
+
+  const nextImage = () => {
+    setCurrentImage((prev) =>
+      prev === listing.images.length - 1 ? 0 : prev + 1
+    );
   };
 
   if (loading)
@@ -77,16 +84,51 @@ export default function DetaliuAnunt() {
         ← Înapoi
       </button>
 
-      <h1 className="text-3xl font-bold mb-3">{listing.title}</h1>
+      <h1 className="text-3xl font-bold mb-4">{listing.title}</h1>
 
+      {/* 🔹 Galerie imagini cu săgeți */}
       {listing.images?.length > 0 && (
-        <img
-          src={listing.images[0]}
-          alt={listing.title}
-          className="w-full h-80 object-cover rounded-lg mb-6"
-        />
+        <div className="relative mb-6">
+          <img
+            src={listing.images[currentImage]}
+            alt={`Imagine ${currentImage + 1}`}
+            className="w-full h-80 object-cover rounded-lg shadow"
+          />
+
+          {/* 🔹 Săgeți navigare */}
+          {listing.images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
+              >
+                ←
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
+              >
+                →
+              </button>
+
+              {/* 🔹 Indicatori buline jos */}
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+                {listing.images.map((_, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={`w-3 h-3 rounded-full cursor-pointer ${
+                      i === currentImage ? "bg-white" : "bg-gray-400/60"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
 
+      {/* 🔹 Detalii anunț */}
       <p className="text-2xl font-semibold text-blue-700 mb-3">
         {listing.price} €
       </p>
@@ -99,7 +141,7 @@ export default function DetaliuAnunt() {
         <strong>Categorie:</strong> {listing.category}
       </p>
 
-      {/* 🔹 Date de contact */}
+      {/* 🔹 Telefon clicabil */}
       {listing.phone && (
         <p className="text-lg font-semibold mb-4">
           📞{" "}
@@ -134,7 +176,7 @@ export default function DetaliuAnunt() {
         </a>
       </div>
 
-      {/* 🔒 Butoane doar pentru proprietarul autentificat */}
+      {/* 🔹 Butoane proprietar */}
       {user &&
         listing.user &&
         (String(user._id) === String(listing.user._id) ||
