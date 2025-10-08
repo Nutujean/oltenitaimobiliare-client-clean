@@ -1,119 +1,109 @@
 import { useEffect, useState } from "react";
-import { API_URL } from "../config";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 export default function AnunturileMele() {
-  const [anunturi, setAnunturi] = useState([]);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setIsLoggedIn(false);
-      return; // nu apelăm backendul
-    }
-
-    setIsLoggedIn(true);
-
     const fetchMyListings = async () => {
       try {
+        if (!token) {
+          setError("Nu ești autentificat.");
+          setLoading(false);
+          return;
+        }
+
         const res = await fetch(`${API_URL}/listings/my`, {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
+        if (!res.ok) throw new Error("Eroare la încărcarea anunțurilor mele");
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Eroare la încărcarea anunțurilor mele");
-        setAnunturi(data);
+        setListings(data);
       } catch (err) {
-        console.error("Eroare la încărcarea anunțurilor mele:", err);
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchMyListings();
-  }, []);
+  }, [token]);
 
-  // 🟥 Dacă utilizatorul nu e logat
-  if (!isLoggedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">
-          Trebuie să fii autentificat pentru a accesa această pagină
-        </h2>
-        <Link
-          to="/login"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Autentifică-te
-        </Link>
-      </div>
-    );
-  }
+  if (loading) return <p className="p-6">Se încarcă...</p>;
+  if (error) return <p className="p-6 text-red-600">{error}</p>;
 
-  // 🔶 Dacă există eroare
-  if (error) {
-    return (
-      <div className="p-6 text-center text-red-600">
-        <p>{error}</p>
-      </div>
-    );
-  }
+  if (listings.length === 0)
+    return <p className="p-6 text-gray-600">Nu ai adăugat încă niciun anunț.</p>;
 
-  // 🔹 Dacă nu există anunțuri
-  if (anunturi.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-600">
-        <p>Nu ai încă niciun anunț postat.</p>
-        <Link
-          to="/adauga-anunt"
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Adaugă un anunț
-        </Link>
-      </div>
-    );
-  }
-
-  // ✅ Dacă e logat și are anunțuri
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Anunțurile Mele</h1>
+      <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {anunturi.map((a) => (
+        {listings.map((listing) => (
           <div
-            key={a._id}
-            className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition relative"
+            key={listing._id}
+            className="bg-white shadow rounded-lg overflow-hidden"
           >
             <img
-              src={a.images?.[0] || "https://via.placeholder.com/400x250?text=Fără+imagine"}
-              alt={a.title}
+              src={
+                listing.images?.[0] ||
+                "https://via.placeholder.com/400x250?text=Fără+imagine"
+              }
+              alt={listing.title}
               className="w-full h-48 object-cover"
             />
             <div className="p-4">
-              <h3 className="font-semibold text-lg line-clamp-2">{a.title}</h3>
-              <p className="text-gray-600">{a.price} €</p>
-              <p className="text-sm text-gray-500">{a.location}</p>
+              <h3 className="text-lg font-semibold mb-2">{listing.title}</h3>
+              <p className="text-gray-600 mb-2">{listing.price} €</p>
+              <p className="text-sm text-gray-500">{listing.location}</p>
 
-              <div className="flex justify-between mt-4 text-sm">
-                <Link
-                  to={`/editeaza-anunt/${a._id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  Editează
-                </Link>
-                <Link
-                  to={`/anunt/${a._id}`}
-                  className="text-green-600 hover:underline"
-                >
-                  Vizualizează
-                </Link>
-              </div>
+              {token ? (
+                <div className="flex gap-2 mt-3">
+                  <Link
+                    to={`/editeaza-anunt/${listing._id}`}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                  >
+                    Editează
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      if (
+                        window.confirm(
+                          "Sigur vrei să ștergi acest anunț?"
+                        )
+                      ) {
+                        const res = await fetch(
+                          `${API_URL}/listings/${listing._id}`,
+                          {
+                            method: "DELETE",
+                            headers: { Authorization: `Bearer ${token}` },
+                          }
+                        );
+                        if (res.ok)
+                          setListings((prev) =>
+                            prev.filter((a) => a._id !== listing._id)
+                          );
+                        else alert("Eroare la ștergere");
+                      }
+                    }}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    Șterge
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 mt-3 italic">
+                  * Autentifică-te pentru a edita sau șterge anunțurile tale
+                </p>
+              )}
             </div>
           </div>
         ))}
