@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 export default function Categories() {
-  const { slug } = useParams(); // ex: "apartamente"
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // traduceri pentru afișare frumoasă
   const categoryNames = {
     apartamente: "Apartamente",
     case: "Case",
@@ -26,7 +26,6 @@ export default function Categories() {
         const res = await fetch(`${API_URL}/listings`);
         const data = await res.json();
 
-        // filtrăm anunțurile după categorie
         const filtered = Array.isArray(data)
           ? data.filter(
               (item) =>
@@ -47,9 +46,16 @@ export default function Categories() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">
-        {displayName}
-      </h1>
+      {/* 🟦 Titlu + buton Înapoi */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-blue-800">{displayName}</h1>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg border shadow-sm transition"
+        >
+          ← Înapoi
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-gray-500 text-center">Se încarcă anunțurile...</p>
