@@ -29,6 +29,7 @@ import AdaugaAnunt from "./pages/AdaugaAnunt";
 import EditareAnunt from "./pages/EditareAnunt";
 import DetaliuAnunt from "./pages/DetaliuAnunt";
 import Categories from "./pages/Categories";
+import ToateAnunturile from "./pages/ToateAnunturile";
 
 /* 404 */
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,7 @@ function App() {
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
           {/* Notă: :id poate fi „slug-si-ID”; în pagină extragi ID-ul cu split pe „-” */}
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
+          <Route path="/anunturi" element={<ToateAnunturile />} />
 
           {/* Categorii (slug: apartamente, case, etc.) */}
           <Route path="/categorie/:slug" element={<Categories />} />

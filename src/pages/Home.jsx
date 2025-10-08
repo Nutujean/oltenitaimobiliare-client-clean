@@ -37,7 +37,7 @@ export default function Home() {
           </h1>
           <p className="text-lg mb-6">Cele mai noi anunțuri imobiliare din zonă</p>
           <Link
-            to="/categorie/apartamente"
+            to="/anunturi"
             className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium"
           >
             Vezi Anunțurile

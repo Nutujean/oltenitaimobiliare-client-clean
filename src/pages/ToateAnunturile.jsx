@@ -1,63 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import API_URL from "../api";
 
-function ToateAnunturile() {
+export default function ToateAnunturile() {
   const [listings, setListings] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/listings`);
+        const res = await fetch(`${API_URL}/listings`);
         const data = await res.json();
-        const sorted = data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setListings(sorted);
-      } catch (err) {
-        console.error("❌ Eroare la preluarea anunțurilor:", err);
+        setListings(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Eroare la preluarea anunțurilor:", e);
       }
     };
     fetchListings();
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Toate anunțurile</h1>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-center">Toate Anunțurile</h1>
       {listings.length === 0 ? (
-        <p className="text-gray-600">Nu există anunțuri momentan.</p>
+        <p className="text-gray-600 text-center">Nu există anunțuri momentan.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {listings.map((listing) => (
-            <div
-              key={listing._id}
-              onClick={() => navigate(`/anunt/${listing._id}`)}
-              className="bg-white shadow hover:shadow-lg rounded-lg overflow-hidden cursor-pointer transition-transform transform hover:scale-105"
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {listings.map((l) => (
+            <Link
+              key={l._id}
+              to={`/anunt/${l._id}`}
+              className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition"
             >
               <img
-                src={
-                  listing.images && listing.images.length > 0
-                    ? listing.images[0]
-                    : "https://via.placeholder.com/400x250?text=Fără+imagine"
-                }
-                alt={listing.title}
-                className="w-full h-48 object-cover"
+                src={l.images?.[0] || "https://via.placeholder.com/400x250?text=Fără+imagine"}
+                alt={l.title}
+                className="w-full h-56 object-cover"
               />
               <div className="p-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  {listing.title}
-                </h3>
-                <p className="text-gray-600 mb-2">{listing.location}</p>
-                <p className="text-blue-600 font-bold">
-                  {listing.price} EUR
-                </p>
+                <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
+                <p className="text-blue-700 font-semibold">{l.price} €</p>
+                <p className="text-sm text-gray-500">{l.location}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
     </div>
   );
 }
-
-export default ToateAnunturile;
