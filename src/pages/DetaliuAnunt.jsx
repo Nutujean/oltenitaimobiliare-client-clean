@@ -1,119 +1,154 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://oltenitaimobiliare-backend.onrender.com/api";
+import { useParams, useNavigate } from "react-router-dom";
+import API_URL from "../api";
 
 export default function DetaliuAnunt() {
-  const { id: rawId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const id = rawId?.split("-").pop();
-
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!id) return;
     const fetchListing = async () => {
       try {
         const res = await fetch(`${API_URL}/listings/${id}`);
-        if (!res.ok) throw new Error("Anunțul nu a fost găsit.");
         const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
         setListing(data);
-      } catch (err) {
-        setError(err.message);
+      } catch (e) {
+        console.error("Eroare la preluarea anunțului:", e);
       } finally {
         setLoading(false);
       }
     };
+
     fetchListing();
   }, [id]);
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p>Se încarcă detaliile anunțului...</p>
-      </div>
-    );
+  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
+  if (!listing) return <p className="text-center py-10">Anunțul nu există.</p>;
 
-  if (error)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Eroare</h2>
-        <p className="text-gray-700 mb-4">{error}</p>
-        <Link to="/" className="text-blue-600 hover:underline">
-          Înapoi la pagina principală
-        </Link>
-      </div>
-    );
+  const shareUrl = window.location.href;
 
-  if (!listing)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p>Anunțul nu a fost găsit.</p>
-      </div>
-    );
+  const handleShare = (platform) => {
+    if (platform === "facebook") {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+        "_blank"
+      );
+    } else if (platform === "whatsapp") {
+      window.open(
+        `https://api.whatsapp.com/send?text=${encodeURIComponent(
+          `${listing.title} - ${shareUrl}`
+        )}`,
+        "_blank"
+      );
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      alert("Link copiat în clipboard!");
+    }
+  };
+
+  const isFeatured =
+    listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
   return (
-    <div className="max-w-5xl mx-auto p-4">
-      {/* 🟦 Buton Înapoi */}
-      <div className="mb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg border shadow-sm transition"
-        >
-          ← Înapoi
-        </button>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* 🔙 Buton Înapoi */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
+      >
+        ← Înapoi
+      </button>
+
+      {/* 📸 Imagine principală */}
+      {listing.images?.length > 0 && (
+        <img
+          src={listing.images[0]}
+          alt={listing.title}
+          className="w-full h-96 object-cover rounded-xl shadow"
+        />
+      )}
+
+      {/* 🔹 Titlu + preț */}
+      <div className="mt-6 flex justify-between items-start flex-wrap gap-2">
+        <h1 className="text-3xl font-bold">{listing.title}</h1>
+        <p className="text-2xl font-semibold text-blue-700">{listing.price} €</p>
       </div>
 
-      {/* Titlu + badge promovare */}
-      <div className="flex items-center gap-3 mb-3">
-        <h1 className="text-2xl font-bold">{listing.title}</h1>
-        {listing.featuredUntil && (
-          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
-            🌟 Anunț promovat
-          </span>
+      {/* 🔹 Detalii */}
+      <p className="text-gray-600 mt-2">{listing.location}</p>
+
+      {isFeatured && (
+        <div className="inline-block mt-2 bg-green-600 text-white text-sm px-3 py-1 rounded">
+          ⭐ Promovat până la{" "}
+          {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+        </div>
+      )}
+
+      {/* 🔹 Descriere */}
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-2">Descriere</h2>
+        <p className="text-gray-700 whitespace-pre-line">{listing.description}</p>
+      </div>
+
+      {/* 🔹 Detalii suplimentare */}
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-gray-700">
+        {listing.surface && <p>Suprafață: {listing.surface} mp</p>}
+        {listing.rooms && <p>Camere: {listing.rooms}</p>}
+        {listing.floor && <p>Etaj: {listing.floor}</p>}
+        {listing.dealType && <p>Tip tranzacție: {listing.dealType}</p>}
+        {listing.category && <p>Categorie: {listing.category}</p>}
+      </div>
+
+      {/* 🔹 Datele utilizatorului */}
+      <div className="mt-10 border-t pt-6">
+        <h2 className="text-xl font-semibold mb-3">Date de contact</h2>
+        {listing.user ? (
+          <div className="bg-gray-50 border rounded-xl p-4">
+            <p>
+              <strong>Nume:</strong> {listing.user.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {listing.user.email}
+            </p>
+            {listing.phone && (
+              <p>
+                <strong>Telefon:</strong> {listing.phone}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-gray-500">Utilizator neidentificat.</p>
         )}
       </div>
 
-      {/* restul codului tău rămâne identic */}
-      {listing.images?.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          {listing.images.map((img, idx) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Imagine ${idx + 1}`}
-              className="rounded-xl shadow-md w-full h-64 object-cover"
-            />
-          ))}
+      {/* 🔹 Distribuire */}
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold mb-3">Distribuie anunțul</h2>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => handleShare("facebook")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Facebook
+          </button>
+          <button
+            onClick={() => handleShare("whatsapp")}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          >
+            WhatsApp
+          </button>
+          <button
+            onClick={() => handleShare("copy")}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+          >
+            Copiază linkul
+          </button>
         </div>
-      )}
-
-      <div className="bg-white rounded-xl shadow p-5 mb-6">
-        <p>
-          <strong>Preț:</strong> {listing.price} €
-        </p>
-        <p>
-          <strong>Tip:</strong> {listing.category}
-        </p>
-        <p>
-          <strong>Localitate:</strong> {listing.location}
-        </p>
-        <p className="mt-4 text-gray-800 whitespace-pre-line">
-          {listing.description}
-        </p>
       </div>
-
-      {listing.user && (
-        <div className="bg-gray-50 rounded-xl p-4 border">
-          <h3 className="font-semibold mb-2">Detalii proprietar:</h3>
-          <p>{listing.user.name}</p>
-          <p className="text-gray-600">{listing.user.email}</p>
-        </div>
-      )}
     </div>
   );
 }
