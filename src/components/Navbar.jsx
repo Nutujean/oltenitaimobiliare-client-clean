@@ -1,60 +1,144 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const handleLogout = () => {
-    // 🔥 Curățăm complet tot ce ține de user/token
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    sessionStorage.clear();
-
-    // Forțăm refresh pentru siguranță (ca să șteargă starea)
-    window.location.href = "/";
+    navigate("/login");
+    window.location.reload(); // 🔄 actualizează starea UI
   };
 
+  // 🔹 Efect: închidem meniul la schimbarea dimensiunii ecranului
+  useEffect(() => {
+    const close = () => window.innerWidth > 768 && setMenuOpen(false);
+    window.addEventListener("resize", close);
+    return () => window.removeEventListener("resize", close);
+  }, []);
+
   return (
-    <nav className="bg-blue-700 text-white px-6 py-3 flex justify-between items-center shadow-md">
-      <div className="flex items-center gap-4">
-        <Link to="/" className="font-bold text-lg hover:text-gray-200">
-          Oltenița Imobiliare
+    <nav className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        {/* 🔹 Logo */}
+        <Link
+          to="/"
+          className="text-2xl font-extrabold text-blue-700 tracking-tight"
+        >
+          Oltenița<span className="text-gray-800">Imobiliare</span>
         </Link>
-        <Link to="/adauga-anunt" className="hover:text-gray-200">
-          Adaugă anunț
-        </Link>
-        <Link to="/categorie/apartamente" className="hover:text-gray-200">
-          Apartamente
-        </Link>
-        <Link to="/categorie/case" className="hover:text-gray-200">
-          Case
-        </Link>
+
+        {/* 🔹 Meniu principal desktop */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link to="/" className="hover:text-blue-600 font-medium">
+            Acasă
+          </Link>
+          <Link to="/adauga-anunt" className="hover:text-blue-600 font-medium">
+            Adaugă anunț
+          </Link>
+          <Link to="/anunturile-mele" className="hover:text-blue-600 font-medium">
+            Anunțurile mele
+          </Link>
+          <Link to="/contact" className="hover:text-blue-600 font-medium">
+            Contact
+          </Link>
+          <Link to="/despre" className="hover:text-blue-600 font-medium">
+            Despre noi
+          </Link>
+
+          {!token ? (
+            <>
+              <Link
+                to="/login"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Autentificare
+              </Link>
+              <Link
+                to="/register"
+                className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition"
+              >
+                Înregistrare
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-600">
+                👋 Salut, <strong>{user?.name || "Utilizator"}</strong>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* 🔹 Buton mobil */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden text-gray-700 focus:outline-none"
+        >
+          {menuOpen ? "✖" : "☰"}
+        </button>
       </div>
 
-      <div className="flex items-center gap-4">
-        {!token ? (
-          <>
-            <Link to="/login" className="hover:text-gray-200">
-              Login
-            </Link>
-            <Link to="/register" className="hover:text-gray-200">
-              Înregistrare
-            </Link>
-          </>
-        ) : (
-          <>
-            <span>Bun venit, {user?.name || "Utilizator"}</span>
+      {/* 🔹 Meniu mobil */}
+      {menuOpen && (
+        <div className="md:hidden bg-white border-t shadow-inner flex flex-col p-4 gap-3 text-lg">
+          <Link to="/" onClick={() => setMenuOpen(false)}>
+            Acasă
+          </Link>
+          <Link to="/adauga-anunt" onClick={() => setMenuOpen(false)}>
+            Adaugă anunț
+          </Link>
+          <Link to="/anunturile-mele" onClick={() => setMenuOpen(false)}>
+            Anunțurile mele
+          </Link>
+          <Link to="/contact" onClick={() => setMenuOpen(false)}>
+            Contact
+          </Link>
+          <Link to="/despre" onClick={() => setMenuOpen(false)}>
+            Despre noi
+          </Link>
+
+          {!token ? (
+            <>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="text-blue-600 font-semibold"
+              >
+                Autentificare
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMenuOpen(false)}
+                className="text-blue-600 font-semibold"
+              >
+                Înregistrare
+              </Link>
+            </>
+          ) : (
             <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+              onClick={() => {
+                setMenuOpen(false);
+                handleLogout();
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
             >
               Logout
             </button>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
