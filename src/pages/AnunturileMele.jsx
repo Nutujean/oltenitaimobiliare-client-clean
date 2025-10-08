@@ -4,16 +4,17 @@ import { API_URL } from "../config";
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [activeListing, setActiveListing] = useState(null);
   const token = localStorage.getItem("token");
 
-  // 🔹 1. Încarcă anunțurile utilizatorului logat
+  // 🔹 Încarcă anunțurile utilizatorului logat
   const fetchMyListings = async () => {
     try {
       const res = await fetch(`${API_URL}/listings/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor mele");
       setListings(data);
     } catch (err) {
@@ -27,7 +28,7 @@ export default function AnunturileMele() {
     if (token) fetchMyListings();
   }, [token]);
 
-  // 🔹 2. Șterge un anunț
+  // 🔹 Șterge anunț
   const handleDelete = async (id) => {
     if (!confirm("Sigur dorești să ștergi acest anunț?")) return;
     try {
@@ -36,7 +37,6 @@ export default function AnunturileMele() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului");
       alert("✅ Anunț șters cu succes!");
       fetchMyListings();
@@ -45,8 +45,14 @@ export default function AnunturileMele() {
     }
   };
 
-  // 🔹 3. Promovează un anunț (Stripe)
-  const handlePromote = async (listingId) => {
+  // 🔹 Deschide popup pentru alegerea planului
+  const openPromoteOptions = (listingId) => {
+    setActiveListing(listingId);
+  };
+
+  // 🔹 Trimite către Stripe planul ales
+  const handlePromote = async (plan) => {
+    if (!activeListing) return;
     try {
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
@@ -54,7 +60,7 @@ export default function AnunturileMele() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ listingId, plan: "featured7" }),
+        body: JSON.stringify({ listingId: activeListing, plan }),
       });
 
       const data = await res.json();
@@ -77,7 +83,7 @@ export default function AnunturileMele() {
   if (loading) return <p className="p-6 text-gray-500">Se încarcă anunțurile...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6 relative">
       <h1 className="text-3xl font-bold mb-6 text-blue-700">Anunțurile Mele</h1>
 
       {listings.length === 0 ? (
@@ -125,7 +131,7 @@ export default function AnunturileMele() {
                 </button>
 
                 <button
-                  onClick={() => handlePromote(listing._id)}
+                  onClick={() => openPromoteOptions(listing._id)}
                   className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                 >
                   Promovează
@@ -133,6 +139,44 @@ export default function AnunturileMele() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 🔹 Popup alegere plan */}
+      {activeListing && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 shadow-xl w-80">
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Alege tipul de promovare
+            </h3>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handlePromote("featured7")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                7 zile – 8 €
+              </button>
+              <button
+                onClick={() => handlePromote("featured14")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                14 zile – 15 €
+              </button>
+              <button
+                onClick={() => handlePromote("featured30")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                30 zile – 25 €
+              </button>
+            </div>
+
+            <button
+              onClick={() => setActiveListing(null)}
+              className="mt-5 text-gray-500 hover:text-gray-700 block w-full text-center"
+            >
+              ✖ Anulează
+            </button>
+          </div>
         </div>
       )}
     </div>
