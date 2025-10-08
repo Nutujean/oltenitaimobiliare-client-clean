@@ -1,78 +1,59 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [user, setUser] = useState(null);
-
-  // 🔄 Verifică mereu localStorage la schimbarea de rută (reactiv)
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-  }, [location.pathname]); // se reactivează la fiecare navigare
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const handleLogout = () => {
+    // 🔥 Curățăm complet tot ce ține de user/token
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
+    sessionStorage.clear();
+
+    // Forțăm refresh pentru siguranță (ca să șteargă starea)
+    window.location.href = "/";
   };
 
   return (
-    <nav className="bg-blue-700 text-white px-6 py-3 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-bold hover:text-gray-200 transition"
-        >
+    <nav className="bg-blue-700 text-white px-6 py-3 flex justify-between items-center shadow-md">
+      <div className="flex items-center gap-4">
+        <Link to="/" className="font-bold text-lg hover:text-gray-200">
           Oltenița Imobiliare
         </Link>
+        <Link to="/adauga-anunt" className="hover:text-gray-200">
+          Adaugă anunț
+        </Link>
+        <Link to="/categorie/apartamente" className="hover:text-gray-200">
+          Apartamente
+        </Link>
+        <Link to="/categorie/case" className="hover:text-gray-200">
+          Case
+        </Link>
+      </div>
 
-        {/* Linkuri principale */}
-        <div className="flex items-center gap-6">
-          <Link to="/" className="hover:text-gray-200 transition">
-            Acasă
-          </Link>
-          <Link to="/adauga-anunt" className="hover:text-gray-200 transition">
-            Adaugă anunț
-          </Link>
-          <Link to="/anunturile-mele" className="hover:text-gray-200 transition">
-            Anunțurile mele
-          </Link>
-
-          {!user ? (
-            <>
-              <Link to="/login" className="hover:text-gray-200 transition">
-                Autentificare
-              </Link>
-              <Link to="/register" className="hover:text-gray-200 transition">
-                Înregistrare
-              </Link>
-            </>
-          ) : (
-            <div className="flex items-center gap-4">
-              <span className="text-sm">👤 {user?.name || "Utilizator"}</span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-medium transition"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="flex items-center gap-4">
+        {!token ? (
+          <>
+            <Link to="/login" className="hover:text-gray-200">
+              Login
+            </Link>
+            <Link to="/register" className="hover:text-gray-200">
+              Înregistrare
+            </Link>
+          </>
+        ) : (
+          <>
+            <span>Bun venit, {user?.name || "Utilizator"}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+            >
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );
