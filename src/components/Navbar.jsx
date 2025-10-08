@@ -12,10 +12,10 @@ export default function Navbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
-    window.location.reload(); // 🔄 actualizează starea UI
+    window.location.reload(); // 🔄 Actualizează UI după delogare
   };
 
-  // 🔹 Efect: închidem meniul la schimbarea dimensiunii ecranului
+  // Închide meniul mobil la redimensionare
   useEffect(() => {
     const close = () => window.innerWidth > 768 && setMenuOpen(false);
     window.addEventListener("resize", close);
@@ -33,22 +33,13 @@ export default function Navbar() {
           Oltenița<span className="text-gray-800">Imobiliare</span>
         </Link>
 
-        {/* 🔹 Meniu principal desktop */}
+        {/* 🔹 Meniu desktop */}
         <div className="hidden md:flex items-center gap-6">
           <Link to="/" className="hover:text-blue-600 font-medium">
             Acasă
           </Link>
-          <Link to="/adauga-anunt" className="hover:text-blue-600 font-medium">
-            Adaugă anunț
-          </Link>
           <Link to="/anunturile-mele" className="hover:text-blue-600 font-medium">
             Anunțurile mele
-          </Link>
-          <Link to="/contact" className="hover:text-blue-600 font-medium">
-            Contact
-          </Link>
-          <Link to="/despre" className="hover:text-blue-600 font-medium">
-            Despre noi
           </Link>
 
           {!token ? (
@@ -96,17 +87,8 @@ export default function Navbar() {
           <Link to="/" onClick={() => setMenuOpen(false)}>
             Acasă
           </Link>
-          <Link to="/adauga-anunt" onClick={() => setMenuOpen(false)}>
-            Adaugă anunț
-          </Link>
           <Link to="/anunturile-mele" onClick={() => setMenuOpen(false)}>
             Anunțurile mele
-          </Link>
-          <Link to="/contact" onClick={() => setMenuOpen(false)}>
-            Contact
-          </Link>
-          <Link to="/despre" onClick={() => setMenuOpen(false)}>
-            Despre noi
           </Link>
 
           {!token ? (
