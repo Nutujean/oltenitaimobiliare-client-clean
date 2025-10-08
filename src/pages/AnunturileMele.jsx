@@ -1,107 +1,110 @@
 import { useEffect, useState } from "react";
+import { API_URL } from "../config";
 import { Link } from "react-router-dom";
-import API_URL from "../api";
 
 export default function AnunturileMele() {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [anunturi, setAnunturi] = useState([]);
   const [error, setError] = useState("");
+  const [isLogged, setIsLogged] = useState(false);
 
   useEffect(() => {
     const fetchMyListings = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Nu ești autentificat.");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsLogged(false);
+        setError("Trebuie să fii autentificat pentru a-ți vedea anunțurile.");
+        return;
+      }
 
+      setIsLogged(true);
+
+      try {
         const res = await fetch(`${API_URL}/listings/my`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ token trimis corect
+            Authorization: `Bearer ${token}`,
           },
         });
 
         const data = await res.json();
-        if (!res.ok)
-          throw new Error(data?.error || "Eroare la încărcarea anunțurilor mele");
-
-        setListings(data);
+        if (!res.ok) throw new Error(data?.error || "Eroare la încărcare");
+        setAnunturi(data);
       } catch (err) {
-        console.error("Eroare la încărcarea anunțurilor mele:", err);
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchMyListings();
   }, []);
 
-  if (loading)
+  if (!isLogged)
     return (
-      <div className="p-6 text-center text-gray-600">Se încarcă anunțurile...</div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <h2 className="text-xl font-semibold text-red-600 mb-3">
+          Trebuie să fii autentificat
+        </h2>
+        <Link
+          to="/login"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Autentifică-te
+        </Link>
+      </div>
     );
 
   if (error)
     return (
       <div className="p-6 text-center text-red-600">
         <p>{error}</p>
-        <Link to="/login" className="text-blue-600 hover:underline">
-          Autentificare
-        </Link>
       </div>
     );
 
-  if (!listings.length)
+  if (anunturi.length === 0)
     return (
-      <div className="p-6 text-center text-gray-500">
-        Nu ai încă niciun anunț publicat.
-        <br />
-        <Link to="/adauga-anunt" className="text-blue-600 hover:underline">
-          Adaugă primul tău anunț
-        </Link>
+      <div className="p-6 text-center text-gray-600">
+        <p>Nu ai încă niciun anunț.</p>
       </div>
     );
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {listings.map((listing) => {
-          const isPromoted =
-            listing.featuredUntil &&
-            new Date(listing.featuredUntil).getTime() > Date.now();
+      <h1 className="text-2xl font-bold mb-4">Anunțurile Mele</h1>
 
-          return (
-            <div
-              key={listing._id}
-              className="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden transition"
-            >
-              <Link to={`/anunt/${listing._id}`}>
-                <img
-                  src={
-                    listing.images?.[0] ||
-                    "/noimage.jpg"
-                  }
-                  alt={listing.title}
-                  className="w-full h-48 object-cover"
-                />
-              </Link>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {anunturi.map((a) => (
+          <div
+            key={a._id}
+            className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition"
+          >
+            {a.images?.[0] && (
+              <img
+                src={a.images[0]}
+                alt={a.title}
+                className="w-full h-48 object-cover"
+              />
+            )}
+            <div className="p-4">
+              <h3 className="font-bold line-clamp-2">{a.title}</h3>
+              <p className="text-gray-600">{a.price} €</p>
+              <p className="text-sm text-gray-500">{a.location}</p>
 
-              <div className="p-4">
-                <h2 className="font-semibold text-lg truncate">
-                  {listing.title}
-                </h2>
-                <p className="text-blue-600 font-bold">{listing.price} €</p>
-                <p className="text-gray-500 text-sm">{listing.location}</p>
-                {isPromoted && (
-                  <p className="text-yellow-600 text-sm font-medium mt-1">
-                    🌟 Promovat
-                  </p>
-                )}
+              <div className="flex justify-between mt-3">
+                <Link
+                  to={`/editeaza-anunt/${a._id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  Editează
+                </Link>
+                <Link
+                  to={`/anunt/${a._id}`}
+                  className="text-green-600 hover:underline"
+                >
+                  Vizualizează
+                </Link>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
