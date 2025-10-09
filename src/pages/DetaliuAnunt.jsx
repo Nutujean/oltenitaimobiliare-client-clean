@@ -51,7 +51,7 @@ export default function DetaliuAnunt() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8 pt-20">
       {/* 📸 Galerie imagini */}
       <div
         className="relative w-full h-96 overflow-hidden rounded-xl shadow cursor-pointer"
