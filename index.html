@@ -1,13 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Oltenita Imobiliare</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="description" content="Oltenița Imobiliare - Găsește casa potrivită pentru tine. Apartamente, case, terenuri și spații comerciale în Oltenița și împrejurimi.">
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="title" content="Oltenita Imobiliare - Case, Apartamente, Terenuri în Oltenița">
+    <meta name="description" content="Cauți o locuință în Oltenița? Pe Oltenita Imobiliare găsești apartamente, case, terenuri și spații comerciale din toată zona. Adaugă sau promovează gratuit anunțul tău!">
+    <meta name="keywords" content="oltenita, imobiliare, apartamente, case, terenuri, spații comerciale, anunțuri oltenița, oltenitaimobiliare">
+    <meta name="author" content="Oltenita Imobiliare">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Oltenita Imobiliare - Anunțuri din Oltenița">
+    <meta property="og:description" content="Descoperă cele mai noi anunțuri imobiliare din Oltenița. Case, apartamente, terenuri și spații comerciale.">
+    <meta property="og:image" content="https://oltenitaimobiliare.ro/preview.jpg">
+    <meta property="og:url" content="https://oltenitaimobiliare.ro">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <title>Oltenița Imobiliare</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
   </head>
+
   <body>
-    <div id="root"></div>
+    <!-- 🔹 Loader vizibil imediat (ajută PageSpeed + SEO) -->
+    <div id="root">
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: system-ui, sans-serif;
+        color: #444;
+        text-align: center;
+      ">
+        <img src="/favicon.png" alt="Logo" width="64" height="64" style="margin-bottom: 20px; opacity: 0.8;" />
+        <p style="font-size: 18px;">Se încarcă aplicația <strong>Oltenița Imobiliare</strong>...</p>
+      </div>
+    </div>
+
+    <!-- 🔹 Aplicația React (se încarcă imediat după JS) -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

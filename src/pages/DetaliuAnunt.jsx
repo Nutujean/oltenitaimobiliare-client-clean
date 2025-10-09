@@ -106,7 +106,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔹 Titlu + preț */}
+      {/* 🔹 preț + Titlu */}
       <div className="mt-6 flex justify-between items-start flex-wrap gap-2">
         <h1 className="text-3xl font-bold">{listing.title}</h1>
         <p className="text-2xl font-semibold text-blue-700">{listing.price} €</p>
