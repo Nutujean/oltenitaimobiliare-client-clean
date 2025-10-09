@@ -1,45 +1,39 @@
+// src/pages/Contact.jsx
 export default function Contact() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold mb-6">Contactează-ne</h1>
 
-      <p className="text-gray-700 mb-6">
-        Pentru întrebări, sugestii sau colaborări, completează formularul de
-        mai jos sau folosește datele de contact directe.
+      <p className="mb-6 text-gray-600">
+        Pentru întrebări, sugestii sau colaborări, completează formularul de mai jos
+        sau folosește datele de contact directe.
       </p>
 
-      {/* Formular simplu */}
-      <form className="bg-white shadow rounded-lg p-6 space-y-4">
-        <input
-          type="text"
-          placeholder="Numele tău"
-          className="w-full px-3 py-2 border rounded"
-        />
-        <input
-          type="email"
-          placeholder="Emailul tău"
-          className="w-full px-3 py-2 border rounded"
-        />
-        <textarea
-          placeholder="Mesajul tău"
-          className="w-full px-3 py-2 border rounded h-32"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
+      {/* Formular */}
+      <form className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Numele tău</label>
+          <input type="text" className="w-full border rounded-lg p-2" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Emailul tău</label>
+          <input type="email" className="w-full border rounded-lg p-2" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Mesajul tău</label>
+          <textarea rows="4" className="w-full border rounded-lg p-2" required />
+        </div>
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
           Trimite
         </button>
       </form>
 
-      {/* Date directe */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-3">Date de contact</h2>
-        <ul className="space-y-2 text-gray-700">
-          <li>📧 Email: contact@oltenitaimobiliare.ro</li>
-          <li>📞 Telefon: +40 7XX XXX XXX</li>
-          <li>📍 Locație: Oltenița, România</li>
-        </ul>
+      {/* Date de contact */}
+      <div className="mt-10 space-y-2">
+        <h2 className="text-xl font-semibold">Date de contact</h2>
+        <p>📧 <strong>Email:</strong> contact@oltenitaimobiliare.ro</p>
+        <p>📞 <strong>Telefon:</strong> +40 7XX XXX XXX</p>
+        <p>📍 <strong>Locație:</strong> Oltenița, România</p>
       </div>
     </div>
   );

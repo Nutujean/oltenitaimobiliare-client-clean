@@ -3,6 +3,7 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 py-10 mt-16">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-8">
+        
         {/* Despre noi */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">
@@ -18,31 +19,19 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Linkuri utile</h3>
           <ul className="space-y-2 text-sm">
-            <li>
-              <a href="/" className="hover:text-white">Acasă</a>
-            </li>
-            <li>
-              <a href="/categorie/apartamente" className="hover:text-white">Apartamente</a>
-            </li>
-            <li>
-              <a href="/categorie/case" className="hover:text-white">Case</a>
-            </li>
-            <li>
-              <a href="/categorie/terenuri" className="hover:text-white">Terenuri</a>
-            </li>
+            <li><a href="/" className="hover:text-white">Acasă</a></li>
+            <li><a href="/categorie/apartamente" className="hover:text-white">Apartamente</a></li>
+            <li><a href="/categorie/case" className="hover:text-white">Case</a></li>
+            <li><a href="/categorie/terenuri" className="hover:text-white">Terenuri</a></li>
           </ul>
         </div>
 
-        {/* Fără contact personal */}
+        {/* Informații legale */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Informații</h3>
           <ul className="space-y-2 text-sm">
-            <li>
-              <a href="/termeni" className="hover:text-white">Termeni și condiții</a>
-            </li>
-            <li>
-              <a href="/confidentialitate" className="hover:text-white">Politica de confidențialitate</a>
-            </li>
+            <li><a href="/termeni" className="hover:text-white">Termeni și condiții</a></li>
+            <li><a href="/confidentialitate" className="hover:text-white">Politica de confidențialitate</a></li>
           </ul>
         </div>
       </div>
