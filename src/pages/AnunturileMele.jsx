@@ -127,7 +127,7 @@ export default function AnunturileMele() {
 
                 <div className="p-4">
                   <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
-                  <p className="text-blue-700 font-semibold">{l.price} €</p>
+                  <p className="text-blue-700 font-semibold">{l.price} RON</p>
                   <p className="text-sm text-gray-500">{l.location}</p>
 
                   <div className="flex gap-2 mt-3">
@@ -151,21 +151,21 @@ export default function AnunturileMele() {
                       onClick={() => handlePromoveaza(l._id, "featured7")}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
                     >
-                      Promovează 7 zile – 8 €
+                      Promovează 7 zile – 50 RON
                     </button>
 
                     <button
                       onClick={() => handlePromoveaza(l._id, "featured14")}
                       className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
                     >
-                      Promovează 14 zile – 15 €
+                      Promovează 14 zile – 85 RON
                     </button>
 
                     <button
                       onClick={() => handlePromoveaza(l._id, "featured30")}
                       className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
                     >
-                      Promovează 30 zile – 25 €
+                      Promovează 30 zile – 125 RON
                     </button>
                   </div>
                 </div>
