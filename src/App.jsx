@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop"; // ✅ import nou
 
 /* Pagini principale */
 import Home from "./pages/Home";
@@ -37,10 +38,10 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
-
-      <main className="flex-grow">
-        <Routes>
+  <Navbar />
+  <ScrollToTop />  {/* ✅ adăugat aici */}
+  <main className="flex-grow">
+    <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
           <Route path="/despre" element={<DespreNoi />} />
