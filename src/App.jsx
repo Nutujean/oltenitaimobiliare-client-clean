@@ -40,7 +40,7 @@ function App() {
     <div className="flex flex-col min-h-screen">
   <Navbar />
   <ScrollToTop />  {/* ✅ adăugat aici */}
-  <main className="flex-grow">
+  <main className="flex-grow pt-24">
     <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
