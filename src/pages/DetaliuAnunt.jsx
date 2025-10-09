@@ -136,7 +136,7 @@ export default function DetaliuAnunt() {
         {listing.category && <p>Categorie: {listing.category}</p>}
       </div>
 
-      {/* 🔹 Date de contact frumoase + clicabile */}
+      {/* 🔹 Date de contact fără email */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-3">Date de contact</h2>
         {listing.user ? (
@@ -144,17 +144,6 @@ export default function DetaliuAnunt() {
             <p className="text-lg">
               <strong>Nume:</strong> {listing.user.name}
             </p>
-            {listing.user.email && (
-              <p className="text-lg">
-                <strong>Email:</strong>{" "}
-                <a
-                  href={`mailto:${listing.user.email}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {listing.user.email}
-                </a>
-              </p>
-            )}
             {listing.phone && (
               <p className="text-lg">
                 <strong>Telefon:</strong>{" "}
