@@ -13,6 +13,10 @@ export default function DetaliuAnunt() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0); // 🔹 când se deschide anunțul, te duce sus
+  }, [id]);
+
+  useEffect(() => {
     const fetchListing = async () => {
       try {
         const res = await fetch(`${API_URL}/listings/${id}`);
@@ -48,7 +52,7 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Galerie imagini */}
+      {/* 📸 Galerie imagini */}
       <div
         className="relative w-full h-96 overflow-hidden rounded-xl shadow cursor-pointer"
         onClick={() => setIsZoomed(true)}
@@ -90,7 +94,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* Lightbox / imagine mărită */}
+      {/* 🔍 Lightbox fullscreen cu navigare */}
       {isZoomed && (
         <div
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
@@ -107,10 +111,33 @@ export default function DetaliuAnunt() {
           >
             ✕
           </button>
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-white text-4xl font-bold hover:text-gray-300"
+              >
+                ❮
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-white text-4xl font-bold hover:text-gray-300"
+              >
+                ❯
+              </button>
+            </>
+          )}
         </div>
       )}
 
-      {/* Titlu + Înapoi */}
+      {/* Titlu + buton Înapoi */}
       <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-3xl font-bold">{listing.title}</h1>
         <button
