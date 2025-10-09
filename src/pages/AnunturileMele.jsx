@@ -8,7 +8,7 @@ export default function AnunturileMele() {
   const [form, setForm] = useState({});
   const token = localStorage.getItem("token");
 
-  // 🔹 Preia anunțurile utilizatorului logat
+  // 🔹 Obține anunțurile utilizatorului
   const fetchListings = async () => {
     try {
       const res = await fetch(`${API_URL}/listings/my`, {
@@ -16,7 +16,7 @@ export default function AnunturileMele() {
       });
       const data = await res.json();
       if (res.ok) setListings(data);
-      else console.error("Eroare la preluare anunțuri:", data.error);
+      else console.error("Eroare:", data.error);
     } catch (e) {
       console.error("Eroare server:", e);
     } finally {
@@ -28,7 +28,7 @@ export default function AnunturileMele() {
     fetchListings();
   }, []);
 
-  // 🔹 Editare anunț
+  // 🔹 Începe editarea
   const handleEdit = (l) => {
     setEditingId(l._id);
     setForm({
@@ -65,11 +65,11 @@ export default function AnunturileMele() {
       setEditingId(null);
       fetchListings();
     } catch (e) {
-      alert("❌ Eroare: " + e.message);
+      alert("❌ " + e.message);
     }
   };
 
-  // 🔹 Ștergere anunț
+  // 🔹 Șterge anunț
   const handleDelete = async (id) => {
     if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
     try {
@@ -86,7 +86,7 @@ export default function AnunturileMele() {
     }
   };
 
-  // 🔹 Promovare (Stripe)
+  // 🔹 Promovare
   const handlePromote = async (listingId, plan = "featured7") => {
     try {
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
@@ -100,7 +100,6 @@ export default function AnunturileMele() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la promovare");
-
       window.location.href = data.url;
     } catch (e) {
       alert("❌ " + e.message);
@@ -125,11 +124,11 @@ export default function AnunturileMele() {
               >
                 <h3 className="text-xl font-semibold mb-3">Editează anunțul</h3>
 
-                {/* 🖼️ Poze existente + ștergere individuală */}
+                {/* 🖼️ Imagini existente mari + ștergere */}
                 {form.images?.length > 0 && (
-                  <div className="flex flex-wrap gap-3 mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                     {form.images.map((img, idx) => (
-                      <div key={idx} className="relative group">
+                      <div key={idx} className="relative">
                         <img
                           src={
                             typeof img === "string"
@@ -137,7 +136,7 @@ export default function AnunturileMele() {
                               : URL.createObjectURL(img)
                           }
                           alt={`imagine-${idx}`}
-                          className="w-24 h-24 object-cover rounded-md border"
+                          className="w-full h-44 object-cover rounded-lg shadow-md"
                         />
                         <button
                           onClick={() =>
@@ -146,7 +145,7 @@ export default function AnunturileMele() {
                               images: form.images.filter((_, i) => i !== idx),
                             })
                           }
-                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                          className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-700"
                           title="Șterge imaginea"
                         >
                           ×
@@ -156,7 +155,7 @@ export default function AnunturileMele() {
                   </div>
                 )}
 
-                {/* 📤 Adaugă poze noi */}
+                {/* 📤 Încarcă imagini noi */}
                 <input
                   type="file"
                   multiple
@@ -218,7 +217,7 @@ export default function AnunturileMele() {
                     onClick={() => handleSave(l._id)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                   >
-                    Salvează modificările
+                    Salvează
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
@@ -237,10 +236,10 @@ export default function AnunturileMele() {
                   <img
                     src={l.images[0]}
                     alt={l.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-52 object-cover"
                   />
                 ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                  <div className="w-full h-52 bg-gray-200 flex items-center justify-center text-gray-500">
                     Fără imagine
                   </div>
                 )}
