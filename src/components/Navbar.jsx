@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "/public/logo.png"; // 🖼️ asigură-te că ai logo.png în /public
+import logo from "../assets/logo.png";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
