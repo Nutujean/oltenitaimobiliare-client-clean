@@ -5,12 +5,12 @@ import API_URL from "../api";
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
   const id = rawId?.split("-").pop();
-
   const navigate = useNavigate();
+
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -20,55 +20,40 @@ export default function DetaliuAnunt() {
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
         setListing(data);
       } catch (e) {
-        setErr(e.message || "Eroare la încărcarea anunțului");
+        console.error("Eroare la preluarea anunțului:", e);
       } finally {
         setLoading(false);
       }
     };
-    if (id) fetchListing();
+    fetchListing();
   }, [id]);
 
   if (loading) return <p className="text-center py-10">Se încarcă...</p>;
-  if (err) return <p className="text-center py-10 text-red-600">{err}</p>;
   if (!listing) return <p className="text-center py-10">Anunțul nu există.</p>;
 
-  const images = Array.isArray(listing.images) ? listing.images : [];
-  const hasImages = images.length > 0;
-
-  const prevImage = () =>
-    setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
-  const nextImage = () =>
-    setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
+  const images = listing.images || [];
+  const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
+  const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
   const isFeatured =
-    listing.featuredUntil &&
-    new Date(listing.featuredUntil).getTime() > Date.now();
+    listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
-  const shareUrl = (typeof window !== "undefined" && window.location.href) || "";
   const handleShare = (platform) => {
-    if (platform === "facebook") {
-      window.open(
-        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-        "_blank"
-      );
-    } else if (platform === "whatsapp") {
-      window.open(
-        `https://api.whatsapp.com/send?text=${encodeURIComponent(
-          `${listing.title} - ${shareUrl}`
-        )}`,
-        "_blank"
-      );
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      alert("Link copiat în clipboard!");
-    }
+    const url = window.location.href;
+    if (platform === "facebook")
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
+    if (platform === "whatsapp")
+      window.open(`https://api.whatsapp.com/send?text=${url}`, "_blank");
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* 📸 Galerie imagini */}
-      <div className="relative w-full h-96 overflow-hidden rounded-xl shadow">
-        {hasImages ? (
+      {/* Galerie imagini */}
+      <div
+        className="relative w-full h-96 overflow-hidden rounded-xl shadow cursor-pointer"
+        onClick={() => setIsZoomed(true)}
+      >
+        {images.length > 0 ? (
           <>
             <img
               src={images[currentImage]}
@@ -78,13 +63,19 @@ export default function DetaliuAnunt() {
             {images.length > 1 && (
               <>
                 <button
-                  onClick={prevImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60"
                 >
                   ❮
                 </button>
                 <button
-                  onClick={nextImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60"
                 >
                   ❯
@@ -99,10 +90,29 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔹 Titlu + Buton Înapoi */}
+      {/* Lightbox / imagine mărită */}
+      {isZoomed && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          onClick={() => setIsZoomed(false)}
+        >
+          <img
+            src={images[currentImage]}
+            alt={listing.title}
+            className="max-w-[95vw] max-h-[90vh] object-contain"
+          />
+          <button
+            onClick={() => setIsZoomed(false)}
+            className="absolute top-6 right-6 text-white text-3xl font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Titlu + Înapoi */}
       <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-3xl font-bold">{listing.title}</h1>
-
         <button
           onClick={() => navigate(-1)}
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
@@ -111,12 +121,11 @@ export default function DetaliuAnunt() {
         </button>
       </div>
 
-      {/* 🔹 Preț + Promovat */}
+      {/* Preț */}
       <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
         <p className="text-2xl font-semibold text-blue-700">
           <span className="font-bold text-gray-800">Preț:</span> {listing.price} €
         </p>
-
         {isFeatured && (
           <span className="bg-green-600 text-white text-sm px-3 py-1 rounded shadow">
             ⭐ Promovat până la{" "}
@@ -125,12 +134,9 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔹 Locație */}
-      {listing.location && (
-        <p className="text-gray-600 mt-1">📍 {listing.location}</p>
-      )}
+      {listing.location && <p className="text-gray-600 mt-1">📍 {listing.location}</p>}
 
-      {/* 🔹 Descriere */}
+      {/* Descriere */}
       {listing.description && (
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-2">Descriere</h2>
@@ -138,7 +144,7 @@ export default function DetaliuAnunt() {
         </div>
       )}
 
-      {/* 🔹 Detalii suplimentare */}
+      {/* Detalii */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-gray-700">
         {listing.surface && <p>Suprafață: {listing.surface} mp</p>}
         {listing.rooms && <p>Camere: {listing.rooms}</p>}
@@ -147,7 +153,7 @@ export default function DetaliuAnunt() {
         {listing.category && <p>Categorie: {listing.category}</p>}
       </div>
 
-      {/* 🔹 Date de contact */}
+      {/* Contact */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-3">Date de contact</h2>
         {listing.user || listing.phone ? (
@@ -174,7 +180,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔹 Distribuire */}
+      {/* Distribuire */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-3">Distribuie anunțul</h2>
         <div className="flex gap-3 flex-wrap">
@@ -189,12 +195,6 @@ export default function DetaliuAnunt() {
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
           >
             WhatsApp
-          </button>
-          <button
-            onClick={() => handleShare("copy")}
-            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-          >
-            Copiază linkul
           </button>
         </div>
       </div>
