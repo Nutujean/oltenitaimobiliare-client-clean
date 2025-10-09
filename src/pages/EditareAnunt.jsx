@@ -1,308 +1,131 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../api";
-import CloudinaryUploader from "../components/CloudinaryUploader";
-
-const CATEGORIES = [
-  "Apartamente",
-  "Garsoniere",
-  "Case",
-  "Terenuri",
-  "Garaje",
-  "Spațiu comercial",
-];
-
-const LOCATII = [
-  "Oltenita","Chirnogi","Ulmeni","Mitreni","Clatesti","Spantov","Cascioarele",
-  "Soldanu","Negoiesti","Valea Rosie","Radovanu","Chiselet","Manastirea","Budesti",
-];
 
 export default function EditareAnunt() {
-  const { id: rawId } = useParams();
-  const id = (rawId || "").split("-").pop();
-  const [listing, setListing] = useState(null);
-
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState("");
-
-  const [dealType, setDealType] = useState("vanzare");
-  const [floor, setFloor] = useState("");
-  const [surface, setSurface] = useState("");
-  const [rooms, setRooms] = useState("");
-
-  const [images, setImages] = useState([]);
-
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { id } = useParams();
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+    location: "",
+    surface: "",
+    rooms: "",
+    floor: "",
+    phone: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const toNumberOrEmpty = (v) => {
-    if (v === "" || v === null || v === undefined) return "";
-    const n = Number(String(v).replace(",", "."));
-    return Number.isFinite(n) ? n : "";
-  };
-
+  // 🟢 Preia datele existente ale anunțului
   useEffect(() => {
-    const run = async () => {
+    const fetchListing = async () => {
       try {
-        const r = await fetch(`${API_URL}/listings/${id}`);
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Eroare la încărcarea anunțului");
-        setListing(data);
-
-        setTitle(data.title || "");
-        setPrice(
-          typeof data.price === "number" && Number.isFinite(data.price)
-            ? String(data.price)
-            : ""
-        );
-        setCategory(data.category || "");
-        setLocation(data.location || "");
-        setDescription(data.description || "");
-        setPhone(data.phone || "");
-
-        setDealType(data.dealType || "vanzare");
-        setFloor(Number.isFinite(data.floor) ? String(data.floor) : "");
-        setSurface(Number.isFinite(data.surface) ? String(data.surface) : "");
-        setRooms(Number.isFinite(data.rooms) ? String(data.rooms) : "");
-
-        const initialImages = Array.isArray(data.images) && data.images.length
-          ? data.images
-          : data.imageUrl
-          ? [data.imageUrl]
-          : [];
-        setImages(initialImages);
-      } catch (e) {
-        setErr(e.message);
+        const res = await fetch(`${API_URL}/listings/${id}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Eroare la încărcare");
+        setFormData(data);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    run();
+    fetchListing();
   }, [id]);
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setErr("");
-    setOk("");
-    setSaving(true);
+  // 🟢 Când utilizatorul modifică un câmp
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
+  // 🟢 Salvare modificări
+  const handleSave = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Trebuie să fii autentificat.");
-
-      const payload = {
-        title: title.trim(),
-        description: description.trim(),
-        location,
-        category,
-        phone: phone.trim(),
-        images,
-
-        dealType,
-        price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
-        floor: floor !== "" ? Number(floor) : undefined,
-        surface: surface !== "" ? Number(String(surface).replace(",", ".")) : undefined,
-        rooms: rooms !== "" ? Number(rooms) : undefined,
-      };
-
-      const r = await fetch(`${API_URL}/listings/${id}`, {
+      const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(formData),
       });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data?.error || "Eroare la actualizare");
-
-      setOk("Anunț actualizat.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la salvare");
+      alert("✅ Anunț actualizat cu succes!");
       navigate("/anunturile-mele");
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      alert("❌ " + err.message);
     }
   };
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-10">Se încarcă...</div>;
-  if (err)
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-          {err}
-        </div>
-        <Link to="/anunturile-mele" className="text-blue-600 hover:underline">
-          Înapoi
-        </Link>
-      </div>
-    );
+  if (loading) return <p className="text-center py-10">Se încarcă anunțul...</p>;
+  if (error) return <p className="text-center py-10 text-red-600">{error}</p>;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Editează anunț</h1>
-        <Link to="/anunturile-mele" className="text-blue-600 hover:underline">
-          Anunțurile mele
-        </Link>
+      <h1 className="text-3xl font-bold mb-6 text-center">Editează Anunțul</h1>
+
+      <div className="space-y-4">
+        <input
+          type="text"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="Titlul anunțului"
+          className="w-full border p-3 rounded"
+        />
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Descriere"
+          className="w-full border p-3 rounded h-32"
+        />
+        <input
+          type="number"
+          name="price"
+          value={formData.price}
+          onChange={handleChange}
+          placeholder="Preț (RON)"
+          className="w-full border p-3 rounded"
+        />
+        <input
+          type="text"
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          placeholder="Locație"
+          className="w-full border p-3 rounded"
+        />
+        <input
+          type="text"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="Telefon"
+          className="w-full border p-3 rounded"
+        />
+
+        {/* 🔵 Butoane de acțiune */}
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={handleSave}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+          >
+            💾 Salvează modificările
+          </button>
+          <button
+            onClick={() => navigate("/anunturile-mele")}
+            className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-3 rounded-lg font-medium"
+          >
+            ← Înapoi
+          </button>
+        </div>
       </div>
-
-      {ok && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
-          {ok}
-        </div>
-      )}
-
-      <form onSubmit={onSubmit} className="space-y-5 bg-white rounded-xl shadow p-5">
-        <div>
-          <label className="block text-sm font-medium mb-1">Titlu</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* tip + categorie + locatie */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Tip ofertă</label>
-            <select
-              className="w-full border rounded px-3 py-2 bg-white"
-              value={dealType}
-              onChange={(e) => setDealType(e.target.value)}
-            >
-              <option value="vanzare">De vânzare</option>
-              <option value="inchiriere">De închiriere</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Categorie</label>
-            <select
-              className="w-full border rounded px-3 py-2 bg-white"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="">Alege...</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Locație</label>
-            <select
-              className="w-full border rounded px-3 py-2 bg-white"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            >
-              <option value="">Alege...</option>
-              {LOCATII.map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Preț (€)</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="w-full border rounded px-3 py-2"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            onBlur={() => setPrice(toNumberOrEmpty(price))}
-          />
-        </div>
-
-        {["Apartamente", "Garsoniere"].includes(category) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Etaj</label>
-              <select
-                className="w-full border rounded px-3 py-2 bg-white"
-                value={floor}
-                onChange={(e) => setFloor(e.target.value)}
-              >
-                <option value="">—</option>
-                <option value="0">Parter</option>
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <option key={i + 1} value={i + 1}>{i + 1}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Suprafață (mp)</label>
-              <input
-                type="text"
-                inputMode="decimal"
-                className="w-full border rounded px-3 py-2"
-                value={surface}
-                onChange={(e) => setSurface(e.target.value)}
-                onBlur={() => setSurface(toNumberOrEmpty(surface))}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Camere</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                className="w-full border rounded px-3 py-2"
-                value={rooms}
-                onChange={(e) => setRooms(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Imagini</label>
-          <CloudinaryUploader value={images} onChange={setImages} max={15} />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Telefon</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Descriere</label>
-          <textarea
-            rows={6}
-            className="w-full border rounded px-3 py-2"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-600 text-white px-5 py-2 rounded font-semibold hover:bg-blue-700 disabled:opacity-60"
-        >
-          {saving ? "Se salvează..." : "Salvează modificările"}
-        </button>
-      </form>
     </div>
   );
 }
