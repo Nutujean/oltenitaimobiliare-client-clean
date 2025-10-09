@@ -54,7 +54,7 @@ export default function DetaliuAnunt() {
     <div className="max-w-5xl mx-auto px-4 py-8 pt-20">
       {/* 📸 Galerie imagini */}
       <div
-        className="relative w-full h-96 overflow-hidden rounded-xl shadow cursor-pointer"
+        className="relative w-full h-72 overflow-hidden rounded-xl shadow cursor-pointer"
         onClick={() => setIsZoomed(true)}
       >
         {images.length > 0 ? (
@@ -62,7 +62,7 @@ export default function DetaliuAnunt() {
             <img
               src={images[currentImage]}
               alt={listing.title}
-              className="w-full h-96 object-cover transition-all duration-500"
+              className="w-full h-72 object-cover transition-all duration-500"
             />
             {images.length > 1 && (
               <>
