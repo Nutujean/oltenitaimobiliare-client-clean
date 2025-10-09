@@ -42,7 +42,7 @@ export default function Navbar() {
 
         {/* 🔗 LINK-URI */}
         <div className="flex items-center gap-5 text-sm font-medium">
-          <Link to="/" className="hover:text-gray-200 transition">Acasă</Link>
+          <Link to="/" className="hover:text-gray-200">Acasă</Link>
           <Link to="/categorie/apartamente" className="hover:text-gray-200 transition">Anunțuri</Link>
 
           {/* 🔵 Buton Adaugă Anunț */}
