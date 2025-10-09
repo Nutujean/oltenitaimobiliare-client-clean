@@ -64,7 +64,7 @@ export default function DetaliuAnunt() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 pt-20">
+    <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
       {/* 📸 Galerie: poze întregi (object-contain) pe aspect 16:9 */}
       <div
         className="relative w-full aspect-[16/9] max-h-[70vh] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer flex items-center justify-center"
