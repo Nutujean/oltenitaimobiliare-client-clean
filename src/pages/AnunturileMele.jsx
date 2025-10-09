@@ -1,179 +1,89 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import API_URL from "../api";
+{editingId === l._id ? (
+  <div className="p-4 border rounded-xl bg-gray-50 shadow-inner space-y-4">
+    <h3 className="text-xl font-semibold mb-3">Editează anunțul</h3>
 
-export default function AnunturileMele() {
-  const [listings, setListings] = useState([]);
-  const [error, setError] = useState("");
+    {/* 🖼️ Afișează imaginile existente */}
+    {form.images?.length > 0 && (
+      <div className="flex flex-wrap gap-3">
+        {form.images.map((img, idx) => (
+          <div key={idx} className="relative">
+            <img
+              src={typeof img === "string" ? img : URL.createObjectURL(img)}
+              alt={`imagine-${idx}`}
+              className="w-24 h-24 object-cover rounded-md border"
+            />
+          </div>
+        ))}
+      </div>
+    )}
 
-  // ✅ preluare token din localStorage
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    const fetchMyListings = async () => {
-      try {
-        if (!token) {
-          setError("Nu ești autentificat.");
-          return;
-        }
-
-        const res = await fetch(`${API_URL}/listings/my`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor mele");
-
-        setListings(Array.isArray(data) ? data : []);
-      } catch (e) {
-        console.error("Eroare la încărcarea anunțurilor mele:", e);
-        setError(e.message);
+    {/* 📤 Încarcă imagini noi */}
+    <input
+      type="file"
+      multiple
+      onChange={(e) =>
+        setForm({
+          ...form,
+          images: [
+            ...(form.images || []),
+            ...Array.from(e.target.files || []),
+          ],
+        })
       }
-    };
+      className="block w-full border p-2 rounded-md"
+    />
 
-    fetchMyListings();
-  }, [token]);
+    {/* ✏️ Titlu */}
+    <input
+      type="text"
+      value={form.title || ""}
+      onChange={(e) => setForm({ ...form, title: e.target.value })}
+      placeholder="Titlu anunț"
+      className="block w-full border p-2 rounded-md"
+    />
 
-  // ✅ ștergere anunț
-  const handleDelete = async (id) => {
-    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
+    {/* 💰 Preț */}
+    <input
+      type="number"
+      value={form.price || ""}
+      onChange={(e) => setForm({ ...form, price: e.target.value })}
+      placeholder="Preț"
+      className="block w-full border p-2 rounded-md"
+    />
 
-    try {
-      const res = await fetch(`${API_URL}/listings/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    {/* 🏠 Locație */}
+    <input
+      type="text"
+      value={form.location || ""}
+      onChange={(e) => setForm({ ...form, location: e.target.value })}
+      placeholder="Localitate / zonă"
+      className="block w-full border p-2 rounded-md"
+    />
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
+    {/* 📝 Descriere */}
+    <textarea
+      value={form.description || ""}
+      onChange={(e) => setForm({ ...form, description: e.target.value })}
+      placeholder="Descriere anunț"
+      className="block w-full border p-2 rounded-md min-h-[100px]"
+    />
 
-      setListings((prev) => prev.filter((l) => l._id !== id));
-      alert("Anunțul a fost șters.");
-    } catch (e) {
-      console.error("Eroare la ștergere:", e);
-      alert(e.message);
-    }
-  };
-
-  // ✅ promovare anunț (Stripe)
-  const handlePromoveaza = async (listingId, plan) => {
-    try {
-      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ listingId, plan }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la promovare");
-
-      window.location.href = data.url; // redirecționează către Stripe Checkout
-    } catch (e) {
-      console.error("Eroare promovare:", e);
-      alert(e.message || "Eroare la inițierea plății");
-    }
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Anunțurile Mele</h1>
-
-      {error && (
-        <p className="text-center text-red-600 font-medium mb-4">{error}</p>
-      )}
-
-      {!token ? (
-        <div className="text-center">
-          <p>Trebuie să te autentifici pentru a vedea anunțurile tale.</p>
-          <Link
-            to="/login"
-            className="mt-3 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Autentificare
-          </Link>
-        </div>
-      ) : listings.length === 0 ? (
-        <p className="text-gray-600 text-center">Nu ai anunțuri adăugate.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {listings.map((l) => {
-            const isFeatured =
-              l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
-
-            return (
-              <div
-                key={l._id}
-                className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition relative"
-              >
-                {l.images?.length > 0 ? (
-                  <img
-                    src={l.images[0]}
-                    alt={l.title}
-                    className="w-full h-56 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
-                    Fără imagine
-                  </div>
-                )}
-
-                {isFeatured && (
-                  <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
-                    PROMOVAT
-                  </span>
-                )}
-
-                <div className="p-4">
-                  <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
-                  <p className="text-blue-700 font-semibold">{l.price} RON</p>
-                  <p className="text-sm text-gray-500">{l.location}</p>
-
-                  <div className="flex gap-2 mt-3">
-                    <Link
-                      to={`/editeaza-anunt/${l._id}`}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm"
-                    >
-                      Editează
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(l._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm"
-                    >
-                      Șterge
-                    </button>
-                  </div>
-
-                  {/* 🔹 Butoane de promovare */}
-                  <div className="flex flex-col gap-2 mt-4">
-                    <button
-                      onClick={() => handlePromoveaza(l._id, "featured7")}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
-                    >
-                      Promovează 7 zile – 50 RON
-                    </button>
-
-                    <button
-                      onClick={() => handlePromoveaza(l._id, "featured14")}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
-                    >
-                      Promovează 14 zile – 85 RON
-                    </button>
-
-                    <button
-                      onClick={() => handlePromoveaza(l._id, "featured30")}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                    >
-                      Promovează 30 zile – 125 RON
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+    {/* 🔘 Butoane */}
+    <div className="flex gap-3">
+      <button
+        onClick={() => handleSave(l._id)}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+      >
+        Salvează modificările
+      </button>
+      <button
+        onClick={() => setEditingId(null)}
+        className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
+      >
+        Anulează
+      </button>
     </div>
-  );
-}
+  </div>
+) : (
+  // restul codului pentru afișarea anunțurilor rămâne neschimbat
+)}
