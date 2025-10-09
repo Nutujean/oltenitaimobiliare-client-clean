@@ -1,25 +1,29 @@
 // src/components/Footer.jsx
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-10 mt-16">
+    <footer className="bg-gray-900 text-gray-300 py-12 mt-16">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
-        {/* Despre */}
+        
+        {/* 🏠 Despre site */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Oltenița Imobiliare</h3>
-          <p className="text-sm leading-relaxed">
-            Platformă locală de anunțuri imobiliare pentru Oltenița și împrejurimi.
-            Publică, editează, promovează anunțuri rapid și sigur.
+          <p className="text-sm leading-relaxed text-gray-400">
+            Platforma locală de anunțuri imobiliare pentru Oltenița și împrejurimi.
+            Găsește rapid apartamente, case, terenuri și spații comerciale disponibile
+            în zonă. Totul simplu, rapid și sigur.
           </p>
         </div>
 
-        {/* Link-uri utile – pune-le pe cele pe care le aveai */}
+        {/* 🔗 Link-uri utile */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Link-uri utile</h3>
           <ul className="space-y-2 text-sm">
             <li><a href="/" className="hover:text-white">Acasă</a></li>
             <li><a href="/categorie/apartamente" className="hover:text-white">Apartamente</a></li>
+            <li><a href="/categorie/garsoniere" className="hover:text-white">Garsoniere</a></li>
             <li><a href="/categorie/case" className="hover:text-white">Case</a></li>
             <li><a href="/categorie/terenuri" className="hover:text-white">Terenuri</a></li>
+            <li><a href="/categorie/spatii-comerciale" className="hover:text-white">Spații comerciale</a></li>
             <li><a href="/despre" className="hover:text-white">Despre noi</a></li>
             <li><a href="/termeni" className="hover:text-white">Termeni și condiții</a></li>
             <li><a href="/confidentialitate" className="hover:text-white">Politica de confidențialitate</a></li>
@@ -27,11 +31,9 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Contact – formular Netlify (email + telefon + mesaj) */}
+        {/* ✉️ Formular Contact – Netlify */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Contact</h3>
-
-          {/* Netlify Forms */}
           <form
             name="footer-contact"
             method="POST"
@@ -39,17 +41,15 @@ export default function Footer() {
             netlify-honeypot="bot-field"
             className="space-y-3 text-sm"
           >
-            {/* Netlify needs these */}
             <input type="hidden" name="form-name" value="footer-contact" />
-            <input type="hidden" name="subject" value="Mesaj nou de pe oltenitaimobiliare.ro (footer)" />
+            <input type="hidden" name="subject" value="Mesaj nou din footer Oltenița Imobiliare" />
 
-            {/* Honeypot anti-spam */}
             <p className="hidden">
               <label>Nu completa: <input name="bot-field" /></label>
             </p>
 
             <div>
-              <label className="block mb-1">Email</label>
+              <label className="block mb-1 text-gray-400">Email</label>
               <input
                 type="email"
                 name="email"
@@ -60,7 +60,7 @@ export default function Footer() {
             </div>
 
             <div>
-              <label className="block mb-1">Telefon</label>
+              <label className="block mb-1 text-gray-400">Telefon</label>
               <input
                 type="tel"
                 name="phone"
@@ -71,7 +71,7 @@ export default function Footer() {
             </div>
 
             <div>
-              <label className="block mb-1">Mesaj (opțional)</label>
+              <label className="block mb-1 text-gray-400">Mesaj (opțional)</label>
               <textarea
                 name="message"
                 rows="3"
@@ -82,18 +82,15 @@ export default function Footer() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg mt-2"
             >
               Trimite
             </button>
-
-            <p className="text-[12px] text-gray-500">
-              Prin trimitere ești de acord cu prelucrarea datelor conform Politicii de confidențialitate.
-            </p>
           </form>
         </div>
       </div>
 
+      {/* ⬇️ Subsol simplu */}
       <div className="text-center text-sm text-gray-500 mt-10 border-t border-gray-800 pt-4">
         © {new Date().getFullYear()} Oltenița Imobiliare. Toate drepturile rezervate.
       </div>
