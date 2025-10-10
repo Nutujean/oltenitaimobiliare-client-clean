@@ -1,4 +1,3 @@
-// src/pages/AnunturileMele.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
@@ -28,7 +27,7 @@ export default function AnunturileMele() {
     navigate("/login");
   };
 
-  // helper pentru fallback rute
+  // helper fallback pentru rute
   const apiTry = async (paths, options = {}) => {
     for (const p of paths) {
       try {
@@ -39,7 +38,6 @@ export default function AnunturileMele() {
         } catch (_) {
           data = {};
         }
-
         if (res.ok) return data;
         if (res.status === 404) continue;
         throw new Error(data.message || data.error || `Eroare ${res.status}`);
@@ -54,7 +52,6 @@ export default function AnunturileMele() {
   useEffect(() => {
     fetchListings();
     fetchUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchListings = async () => {
@@ -136,17 +133,9 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  const handlePromote = async (id) => {
+  // 🔹 Nou: alegere plan promovare clară (butoane UI)
+  const handlePromote = async (id, planKey) => {
     try {
-      const plan = window.prompt(
-        "Alege planul de promovare:\n1️⃣ 7 zile – 50 lei\n2️⃣ 14 zile – 85 lei\n3️⃣ 30 zile – 125 lei",
-        "1"
-      );
-
-      let planKey = "featured7";
-      if (plan === "2") planKey = "featured14";
-      else if (plan === "3") planKey = "featured30";
-
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -367,12 +356,33 @@ export default function AnunturileMele() {
                     >
                       Șterge
                     </button>
-                    <button
-                      onClick={() => handlePromote(l._id)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                    >
-                      Promovează
-                    </button>
+                  </div>
+
+                  {/* 🔹 Nou: butoane promovare */}
+                  <div className="mt-3">
+                    <p className="text-sm font-semibold text-blue-700 mb-1">
+                      Promovează anunțul:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handlePromote(l._id, "featured7")}
+                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm"
+                      >
+                        7 zile / 50 lei
+                      </button>
+                      <button
+                        onClick={() => handlePromote(l._id, "featured14")}
+                        className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-800 text-sm"
+                      >
+                        14 zile / 85 lei
+                      </button>
+                      <button
+                        onClick={() => handlePromote(l._id, "featured30")}
+                        className="bg-blue-800 text-white px-2 py-1 rounded hover:bg-blue-900 text-sm"
+                      >
+                        30 zile / 125 lei
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
