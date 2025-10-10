@@ -20,7 +20,13 @@ const Footer = () => {
         }}
       >
         {/* 🏠 Descriere site */}
-        <div>
+        <div
+          style={{
+            textAlign: "center",
+            gridColumn: "1 / -1",
+          }}
+          className="footer-about"
+        >
           <h3
             style={{
               fontSize: "20px",
@@ -30,8 +36,16 @@ const Footer = () => {
           >
             Oltenița Imobiliare 🏠
           </h3>
-          <p style={{ lineHeight: "1.7", fontSize: "15px" }}>
-            Platforma locală de anunțuri imobiliare pentru Oltenița și
+          <p
+            style={{
+              lineHeight: "1.7",
+              fontSize: "15px",
+              maxWidth: "500px",
+              margin: "0 auto",
+              color: "rgba(255,255,255,0.9)",
+            }}
+          >
+            Platformă locală de anunțuri imobiliare pentru Oltenița și
             împrejurimi. Găsește rapid apartamente, case, terenuri și spații
             comerciale disponibile în zonă. Totul simplu, rapid și sigur — locul
             unde fiecare proprietate își găsește cumpărătorul potrivit.
@@ -39,7 +53,7 @@ const Footer = () => {
         </div>
 
         {/* 🔗 Linkuri utile */}
-        <div>
+        <div style={{ textAlign: "center" }}>
           <h4
             style={{
               marginBottom: "12px",
@@ -55,6 +69,7 @@ const Footer = () => {
               padding: 0,
               lineHeight: "1.8",
               fontSize: "15px",
+              margin: 0,
             }}
           >
             <li>
@@ -86,7 +101,7 @@ const Footer = () => {
         </div>
 
         {/* 📬 Formular contact simplificat */}
-        <div>
+        <div style={{ textAlign: "center" }}>
           <h4
             style={{
               marginBottom: "12px",
@@ -103,6 +118,8 @@ const Footer = () => {
               display: "flex",
               flexDirection: "column",
               gap: "10px",
+              maxWidth: "350px",
+              margin: "0 auto",
             }}
           >
             <input
@@ -149,10 +166,11 @@ const Footer = () => {
       <p
         style={{
           textAlign: "center",
-          fontSize: "16px",
-          marginTop: "50px",
+          fontSize: "15px",
+          marginTop: "40px",
           color: "rgba(255,255,255,0.95)",
           fontWeight: "500",
+          lineHeight: "1.5",
         }}
       >
         Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
@@ -172,13 +190,33 @@ const Footer = () => {
       <p
         style={{
           textAlign: "center",
-          fontSize: "14px",
+          fontSize: "13px",
           opacity: "0.9",
+          marginTop: "5px",
         }}
       >
         © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile
         rezervate.
       </p>
+
+      {/* 📱 Stilizare responsive pur CSS inline */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            footer div[style*='grid'] {
+              grid-template-columns: 1fr;
+              gap: 30px;
+              text-align: center;
+            }
+            footer h3 {
+              font-size: 18px !important;
+            }
+            footer p {
+              font-size: 14px !important;
+            }
+          }
+        `}
+      </style>
     </footer>
   );
 };
@@ -188,6 +226,7 @@ const linkStyle = {
   color: "white",
   textDecoration: "none",
 };
+
 const inputStyle = {
   padding: "10px",
   borderRadius: "6px",
