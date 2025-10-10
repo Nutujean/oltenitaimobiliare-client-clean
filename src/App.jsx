@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import ScrollToTop from "./components/ScrollToTop"; // ✅ import nou
+import ScrollToTop from "./components/ScrollToTop";
 
 /* Pagini principale */
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
-import Desprenoi from "./pages/DespreNoi";
+import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
@@ -23,7 +23,7 @@ import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
 import PromovareSucces from "./pages/PromovareSucces";
-import SuccesPlata from "./pages/SuccesPlata"
+import SuccesPlata from "./pages/SuccesPlata";
 
 /* Anunțuri */
 import AdaugaAnunt from "./pages/AdaugaAnunt";
@@ -38,11 +38,14 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
-  <Navbar />
-  <ScrollToTop />  {/* ✅ adăugat aici */}
-  <main className="flex-grow pt-24">
-    <Routes>
-          {/* Public */}
+      {/* ✅ Navbar fix sus */}
+      <Navbar />
+      {/* ✅ Scroll to top la schimbare de pagină */}
+      <ScrollToTop />
+
+      <main className="flex-grow pt-24">
+        <Routes>
+          {/* 🔹 Public */}
           <Route path="/" element={<Home />} />
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/contact" element={<Contact />} />
@@ -50,35 +53,35 @@ function App() {
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
 
-          {/* Autentificare */}
+          {/* 🔹 Autentificare */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/resetare-parola" element={<ResetPassword />} />
           <Route path="/verifica-email" element={<VerificaEmail />} />
 
-          {/* Utilizator */}
+          {/* 🔹 Utilizator */}
           <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
           <Route path="/promovare-succes" element={<PromovareSucces />} />
           <Route path="/succesplata" element={<SuccesPlata />} />
 
-          {/* Anunțuri */}
+          {/* 🔹 Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
-          {/* Notă: :id poate fi „slug-si-ID”; în pagină extragi ID-ul cu split pe „-” */}
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
           <Route path="/anunturi" element={<ToateAnunturile />} />
 
-          {/* Categorii (slug: apartamente, case, etc.) */}
+          {/* 🔹 Categorii */}
           <Route path="/categorie/:slug" element={<Categories />} />
 
-          {/* 404 */}
+          {/* 🔹 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
+      {/* ✅ Footer global */}
       <Footer />
     </div>
   );
