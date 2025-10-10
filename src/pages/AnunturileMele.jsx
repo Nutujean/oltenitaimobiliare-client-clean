@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
@@ -13,7 +14,7 @@ export default function AnunturileMele() {
     images: [],
   });
 
-  const [previewImg, setPreviewImg] = useState(null); // ✅ imagine mărită
+  const [previewImg, setPreviewImg] = useState(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -126,7 +127,6 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // Actualizare profil
   const handleUpdateProfile = async () => {
     try {
       if (!token) {
@@ -189,7 +189,6 @@ export default function AnunturileMele() {
             />
           </div>
         </div>
-
         <div className="flex flex-wrap gap-3 mt-2">
           <button
             onClick={handleUpdateProfile}
@@ -204,107 +203,129 @@ export default function AnunturileMele() {
             Șterge numărul
           </button>
         </div>
-
         {successMsg && (
-          <p className={`mt-3 font-medium ${successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"}`}>
+          <p
+            className={`mt-3 font-medium ${
+              successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"
+            }`}
+          >
             {successMsg}
           </p>
         )}
       </div>
 
-      {/* 🔹 ANUNȚURI */}
+      {/* 🔹 LISTA DE ANUNȚURI */}
       {listings.length === 0 ? (
         <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {listings.map((l) =>
             editingId === l._id ? (
-              <div key={l._id} className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-                <h3 className="text-xl font-semibold text-blue-700 mb-4">Editează anunțul</h3>
+              <div key={l._id} className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h3 className="text-xl font-semibold text-blue-700 mb-5">Editează anunțul</h3>
 
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  <input
-                    type="text"
-                    className="w-full border p-2 rounded"
-                    placeholder="Titlu"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  />
-                  <input
-                    type="number"
-                    className="w-full border p-2 rounded"
-                    placeholder="Preț (€)"
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  />
-                  <textarea
-                    className="w-full border p-2 rounded md:col-span-2"
-                    placeholder="Descriere"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="w-full border p-2 rounded"
-                    placeholder="Locație"
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="w-full border p-2 rounded"
-                    placeholder="Categorie"
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  />
+                <div className="grid md:grid-cols-2 gap-5 mb-5">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Titlu</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded-lg"
+                      value={form.title}
+                      onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Preț (€)</label>
+                    <input
+                      type="number"
+                      className="w-full border p-2 rounded-lg"
+                      value={form.price}
+                      onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Descriere</label>
+                    <textarea
+                      className="w-full border p-2 rounded-lg min-h-[100px]"
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Locație</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded-lg"
+                      value={form.location}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Categorie</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded-lg"
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 {/* 🖼️ Poze drag & drop */}
                 <label className="block text-sm font-medium text-gray-700 mb-2">Imagini</label>
-                <div
-                  className="grid grid-cols-3 gap-3 mb-4"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    const from = e.dataTransfer.getData("fromIndex");
-                    const to = e.target.dataset.index;
-                    if (from !== null && to !== undefined) {
-                      const newImages = [...form.images];
-                      const [moved] = newImages.splice(from, 1);
-                      newImages.splice(to, 0, moved);
-                      setForm({ ...form, images: newImages });
-                    }
+                <DragDropContext
+                  onDragEnd={(result) => {
+                    if (!result.destination) return;
+                    const reordered = Array.from(form.images);
+                    const [removed] = reordered.splice(result.source.index, 1);
+                    reordered.splice(result.destination.index, 0, removed);
+                    setForm({ ...form, images: reordered });
                   }}
                 >
-                  {form.images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      data-index={idx}
-                      className="relative border border-blue-300 rounded-lg overflow-hidden cursor-move"
-                      draggable
-                      onDragStart={(e) => e.dataTransfer.setData("fromIndex", idx)}
-                    >
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-full h-32 object-cover hover:opacity-90 transition"
-                        onClick={() => setPreviewImg(img)}
-                      />
-                      <button
-                        onClick={() =>
-                          setForm({
-                            ...form,
-                            images: form.images.filter((_, i) => i !== idx),
-                          })
-                        }
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
+                  <Droppable droppableId="images">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="grid grid-cols-3 gap-3 mb-5"
                       >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                        {form.images.map((img, index) => (
+                          <Draggable key={index} draggableId={index.toString()} index={index}>
+                            {(provided) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className="relative border border-blue-300 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-move bg-gray-50"
+                              >
+                                <img
+                                  src={img}
+                                  alt=""
+                                  className="w-full h-32 object-cover"
+                                  onClick={() => setPreviewImg(img)}
+                                />
+                                <button
+                                  onClick={() =>
+                                    setForm({
+                                      ...form,
+                                      images: form.images.filter((_, i) => i !== index),
+                                    })
+                                  }
+                                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
 
-                <input type="file" multiple onChange={handleImageChange} className="mb-4" />
+                <input type="file" multiple onChange={handleImageChange} className="mb-5" />
 
                 <div className="flex gap-3">
                   <button
@@ -354,7 +375,7 @@ export default function AnunturileMele() {
       {/* 🖼️ Modal previzualizare imagine */}
       {previewImg && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          className="fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-50"
           onClick={() => setPreviewImg(null)}
         >
           <img
