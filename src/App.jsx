@@ -6,7 +6,7 @@ import ScrollToTop from "./components/ScrollToTop"; // ✅ import nou
 /* Pagini principale */
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
-import Despre-noi from "./pages/despre-noi";
+import Desprenoi from "./pages/despre-noi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
