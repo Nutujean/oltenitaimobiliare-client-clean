@@ -13,8 +13,9 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const next = params.get("next") || "/profil";
+  const next = params.get("next") || "/anunturile-mele"; // ✅ după login mergem direct la Anunțurile Mele
 
+  // 🔹 retrimite email de verificare
   const handleResendVerification = async () => {
     setErr("");
     setMsg("");
@@ -32,6 +33,7 @@ export default function Login() {
     }
   };
 
+  // 🔹 autentificare utilizator
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -48,19 +50,19 @@ export default function Login() {
       const data = await r.json().catch(() => ({}));
 
       if (!r.ok) {
-        // mesaj mai prietenos + opțiune de retrimitere verificare
         if (r.status === 403 || /verific/i.test(data?.error || "")) {
-          setErr("Contul nu este verificat. Verifică-ți emailul sau retrimite linkul de confirmare.");
+          setErr("Contul nu este verificat. Verifică emailul sau retrimite linkul de confirmare.");
         } else {
           setErr(data?.error || "Email sau parolă greșite");
         }
         return;
       }
 
-      // salvează token + user
+      // ✅ salvăm token + user în localStorage
       if (data?.token) localStorage.setItem("token", data.token);
-      if (data?.user) localStorage.setItem("user", JSON.stringify(data.user));
+      if (data?.user) localStorage.setItem("userInfo", JSON.stringify(data.user));
 
+      // ✅ redirecționăm după login
       navigate(next, { replace: true });
     } catch (e) {
       setErr("Eroare la autentificare. Încearcă din nou.");
