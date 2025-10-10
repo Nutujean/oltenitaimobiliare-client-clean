@@ -6,7 +6,7 @@ import ScrollToTop from "./components/ScrollToTop"; // ✅ import nou
 /* Pagini principale */
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
-import Desprenoi from "./pages/despre-noi";
+import Desprenoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
@@ -44,7 +44,7 @@ function App() {
     <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
-          <Route path="/despre-noi" element={<despre-noi />} />
+          <Route path="/desprenoi" element={<DespreNoi />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
