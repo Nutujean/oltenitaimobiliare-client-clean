@@ -1,4 +1,6 @@
+// src/pages/AnunturileMele.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
@@ -18,8 +20,15 @@ export default function AnunturileMele() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
-  // 🔹 Funcție fallback API
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // helper pentru fallback rute
   const apiTry = async (paths, options = {}) => {
     for (const p of paths) {
       try {
@@ -30,6 +39,7 @@ export default function AnunturileMele() {
         } catch (_) {
           data = {};
         }
+
         if (res.ok) return data;
         if (res.status === 404) continue;
         throw new Error(data.message || data.error || `Eroare ${res.status}`);
@@ -44,6 +54,7 @@ export default function AnunturileMele() {
   useEffect(() => {
     fetchListings();
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchListings = async () => {
@@ -125,23 +136,28 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // 🔹 Promovare Stripe
-  const handlePromote = async (id, days, price) => {
+  const handlePromote = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/stripe/create-checkout-session/${id}`, {
+      const plan = window.prompt(
+        "Alege planul de promovare:\n1️⃣ 7 zile – 50 lei\n2️⃣ 14 zile – 85 lei\n3️⃣ 30 zile – 125 lei",
+        "1"
+      );
+
+      let planKey = "featured7";
+      if (plan === "2") planKey = "featured14";
+      else if (plan === "3") planKey = "featured30";
+
+      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ days, price }),
+        body: JSON.stringify({ listingId: id, plan: planKey }),
       });
+
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Eroare la inițializarea plății.");
-      }
+      if (!res.ok) throw new Error(data.error || "Eroare la inițializarea plății");
+      window.location.href = data.url;
     } catch (err) {
-      console.error("Eroare Stripe:", err);
-      alert("Eroare la promovare.");
+      alert("Eroare: " + err.message);
     }
   };
 
@@ -183,86 +199,185 @@ export default function AnunturileMele() {
     }
   };
 
-  // ================== INTERFAȚA ==================
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Anunțurile Mele</h1>
+      {/* Bara titlu + logout */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">Anunțurile Mele</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+        >
+          Logout
+        </button>
+      </div>
 
-      {/* 🔵 PROFIL UTILIZATOR */}
+      {/* Profil utilizator */}
       <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-10 shadow-sm">
         <h2 className="text-xl font-semibold text-blue-800 mb-4">Profilul meu</h2>
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           <div>
             <label className="block text-sm font-medium mb-1 text-blue-900">Nume complet</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded-md" placeholder="Introdu numele tău" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border p-2 rounded-md"
+              placeholder="Introdu numele tău"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-blue-900">Telefon</label>
-            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border p-2 rounded-md" placeholder="07xxxxxxxx" />
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full border p-2 rounded-md"
+              placeholder="07xxxxxxxx"
+            />
           </div>
         </div>
+
         <div className="flex flex-wrap gap-3 mt-2">
-          <button onClick={handleUpdateProfile} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          <button
+            onClick={handleUpdateProfile}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
             Salvează modificările
           </button>
-          <button onClick={() => setPhone("")} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+          <button
+            onClick={() => setPhone("")}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
             Șterge numărul
           </button>
         </div>
+
         {successMsg && (
-          <p className={`mt-3 font-medium ${successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"}`}>{successMsg}</p>
+          <p
+            className={`mt-3 font-medium ${
+              successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {successMsg}
+          </p>
         )}
       </div>
 
-      {/* 🔹 LISTA ANUNȚURI */}
+      {/* Lista anunțuri */}
       {listings.length === 0 ? (
         <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {listings.map((l) => (
-            <div key={l._id} className="relative bg-white rounded-xl shadow-md overflow-hidden border">
-              {/* ⭐ Banner Promovat */}
-              {l.featuredUntil && new Date(l.featuredUntil) > new Date() && (
-                <div className="absolute top-2 left-2 bg-yellow-400 text-white font-semibold px-2 py-1 text-xs rounded shadow">
-                  ⭐ Promovat până la {new Date(l.featuredUntil).toLocaleDateString("ro-RO")}
+          {listings.map((l) =>
+            editingId === l._id ? (
+              <div key={l._id} className="bg-white p-5 rounded-xl shadow-md">
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Titlu anunț"
+                />
+                <input
+                  type="number"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  placeholder="Preț (€)"
+                />
+                <textarea
+                  className="w-full border p-2 rounded mb-2"
+                  rows="3"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Descriere"
+                />
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder="Locație"
+                />
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  placeholder="Categorie"
+                />
+
+                {/* Poze existente */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {form.images.map((img, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={img} alt="" className="w-full h-32 object-cover rounded" />
+                      <button
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            images: form.images.filter((_, i) => i !== idx),
+                          })
+                        }
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              )}
 
-              {/* Imagine */}
-              {l.images?.length > 0 && (
-                <img src={l.images[0]} alt={l.title} className="w-full h-48 object-cover" />
-              )}
+                <input type="file" multiple onChange={handleImageChange} className="mb-3" />
 
-              {/* Informații */}
-              <div className="p-4">
-                <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
-                <h3 className="font-bold text-xl mb-1">{l.title}</h3>
-                <p className="text-gray-600">{l.location}</p>
-
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <button onClick={() => handleEdit(l)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
-                    Editează
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleSave(l._id)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                  >
+                    Salvează
                   </button>
-                  <button onClick={() => handleDelete(l._id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                    Șterge
-                  </button>
-                </div>
-
-                {/* 🟡 PROMOVARE */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button onClick={() => handlePromote(l._id, 7, 50)} className="bg-yellow-400 text-white font-semibold px-3 py-1 rounded hover:bg-yellow-500">
-                    7 zile - 50 lei
-                  </button>
-                  <button onClick={() => handlePromote(l._id, 14, 85)} className="bg-orange-500 text-white font-semibold px-3 py-1 rounded hover:bg-orange-600">
-                    14 zile - 85 lei
-                  </button>
-                  <button onClick={() => handlePromote(l._id, 30, 125)} className="bg-red-600 text-white font-semibold px-3 py-1 rounded hover:bg-red-700">
-                    30 zile - 125 lei
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                  >
+                    Anulează
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
+            ) : (
+              <div key={l._id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                {l.images?.length > 0 && (
+                  <img src={l.images[0]} alt={l.title} className="w-full h-48 object-cover" />
+                )}
+                <div className="p-4">
+                  <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
+                  <h3 className="font-bold text-xl mb-1">{l.title}</h3>
+                  <p className="text-gray-600">{l.location}</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      onClick={() => handleEdit(l)}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                    >
+                      Editează
+                    </button>
+                    <button
+                      onClick={() => handleDelete(l._id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                    >
+                      Șterge
+                    </button>
+                    <button
+                      onClick={() => handlePromote(l._id)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    >
+                      Promovează
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
     </div>
