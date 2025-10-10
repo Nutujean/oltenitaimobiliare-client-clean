@@ -26,30 +26,30 @@ export default function AnunturileMele() {
   }, []);
 
   // 🔹 Încarcă anunțurile utilizatorului
-const fetchListings = async () => {
-  try {
-    const res = await fetch(`${API_URL}/listings/my`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`${API_URL}/listings/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
 
-    // ✅ siguranță: doar dacă e array
-    if (!Array.isArray(data)) {
-      console.warn("⚠️ API listings a trimis un obiect în loc de array:", data);
-      setListings([]);
-      return;
+      // ✅ siguranță: doar dacă e array
+      if (!Array.isArray(data)) {
+        console.warn("⚠️ API listings a trimis un obiect în loc de array:", data);
+        setListings([]);
+        return;
+      }
+
+      setListings(data);
+    } catch (e) {
+      console.error("Eroare la anunțurile mele:", e);
     }
+  };
 
-    setListings(data);
-  } catch (e) {
-    console.error("Eroare la anunțurile mele:", e);
-  }
-};
-
-  // 🔹 Încarcă profilul utilizatorului curent
+  // 🔹 Încarcă profilul utilizatorului curent (ruta corectă)
   const fetchUserProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/profile`, {
+      const res = await fetch(`${API_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -125,8 +125,8 @@ const fetchListings = async () => {
         return;
       }
 
-      // Obținem ID-ul sigur al utilizatorului logat
-      const resUser = await fetch(`${API_URL}/auth/profile`, {
+      // Obținem ID-ul sigur al utilizatorului logat (ruta corectă)
+      const resUser = await fetch(`${API_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const userData = await resUser.json();
@@ -135,10 +135,8 @@ const fetchListings = async () => {
         return;
       }
 
-      // 🔹 Debug
-      console.log("🔍 update profil", userData._id, `${API_URL}/auth/update/${userData._id}`);
+      console.log("🔍 update profil", userData._id, `${API_URL}/users/update/${userData._id}`);
 
-      // Trimitem cererea corectă
       const response = await fetch(`${API_URL}/users/update/${userData._id}`, {
         method: "PUT",
         headers: {
@@ -167,15 +165,11 @@ const fetchListings = async () => {
 
       {/* 🔵 PROFIL UTILIZATOR */}
       <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-10 shadow-sm">
-        <h2 className="text-xl font-semibold text-blue-800 mb-4">
-          Profilul meu
-        </h2>
+        <h2 className="text-xl font-semibold text-blue-800 mb-4">Profilul meu</h2>
 
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           <div>
-            <label className="block text-sm font-medium mb-1 text-blue-900">
-              Nume complet
-            </label>
+            <label className="block text-sm font-medium mb-1 text-blue-900">Nume complet</label>
             <input
               type="text"
               value={name}
@@ -185,9 +179,7 @@ const fetchListings = async () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-blue-900">
-              Telefon
-            </label>
+            <label className="block text-sm font-medium mb-1 text-blue-900">Telefon</label>
             <input
               type="text"
               value={phone}
@@ -269,11 +261,7 @@ const fetchListings = async () => {
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {form.images.map((img, idx) => (
                     <div key={idx} className="relative">
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-full h-32 object-cover rounded"
-                      />
+                      <img src={img} alt="" className="w-full h-32 object-cover rounded" />
                       <button
                         onClick={() =>
                           setForm({
@@ -289,12 +277,7 @@ const fetchListings = async () => {
                   ))}
                 </div>
 
-                <input
-                  type="file"
-                  multiple
-                  onChange={handleImageChange}
-                  className="mb-3"
-                />
+                <input type="file" multiple onChange={handleImageChange} className="mb-3" />
 
                 <div className="flex gap-3">
                   <button
@@ -312,16 +295,9 @@ const fetchListings = async () => {
                 </div>
               </div>
             ) : (
-              <div
-                key={l._id}
-                className="bg-white rounded-xl shadow-md overflow-hidden"
-              >
+              <div key={l._id} className="bg-white rounded-xl shadow-md overflow-hidden">
                 {l.images?.length > 0 && (
-                  <img
-                    src={l.images[0]}
-                    alt={l.title}
-                    className="w-full h-48 object-cover"
-                  />
+                  <img src={l.images[0]} alt={l.title} className="w-full h-48 object-cover" />
                 )}
                 <div className="p-4">
                   <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
