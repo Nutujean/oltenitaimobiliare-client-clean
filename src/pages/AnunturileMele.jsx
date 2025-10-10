@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
@@ -23,25 +22,39 @@ export default function AnunturileMele() {
 
   useEffect(() => {
     fetchListings();
-
-    // preluăm user info
-    const userData = JSON.parse(localStorage.getItem("userInfo"));
-    if (userData) {
-      setName(userData.name || "");
-      setPhone(userData.phone || "");
-    }
+    fetchUserProfile();
   }, []);
 
+  // 🔹 Încarcă anunțurile utilizatorului
   const fetchListings = async () => {
     try {
       const res = await fetch(`${API_URL}/listings/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor mele");
+      if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor");
       setListings(data);
     } catch (e) {
-      console.error("Eroare la încărcarea anunțurilor mele:", e);
+      console.error("Eroare la anunțurile mele:", e);
+    }
+  };
+
+  // 🔹 Încarcă profilul utilizatorului curent
+  const fetchUserProfile = async () => {
+    try {
+      const res = await fetch(`${API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setName(data.name || "");
+        setPhone(data.phone || "");
+        localStorage.setItem("userInfo", JSON.stringify(data)); // salvează și în localStorage
+      } else {
+        console.error("Eroare profil:", data);
+      }
+    } catch (err) {
+      console.error("Eroare la obținerea profilului:", err);
     }
   };
 
@@ -76,10 +89,8 @@ export default function AnunturileMele() {
         },
         body: JSON.stringify(form),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la salvare");
-
       alert("✅ Anunț actualizat cu succes!");
       setEditingId(null);
       fetchListings();
@@ -99,30 +110,36 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // 🔹 actualizare profil (nume + telefon)
+  // 🔹 Actualizare profil (nume + telefon)
   const handleUpdateProfile = async () => {
     try {
-      const userData = JSON.parse(localStorage.getItem("userInfo"));
-      if (!userData) {
+      const userData =
+        JSON.parse(localStorage.getItem("userInfo")) || {};
+
+      if (!token) {
         alert("Trebuie să fii logat pentru a modifica datele.");
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/users/update/${userData._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${userData.token}`,
-          },
-          body: JSON.stringify({ name, phone }),
-        }
-      );
+      // dacă nu avem id în localStorage, îl obținem
+      const userId = userData._id
+        ? userData._id
+        : (await (await fetch(`${API_URL}/users/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })).json())._id;
+
+      const response = await fetch(`${API_URL}/users/update/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, phone }),
+      });
 
       if (!response.ok) throw new Error("Eroare la actualizare profil");
-
       const updated = await response.json();
+
       localStorage.setItem("userInfo", JSON.stringify(updated));
       setSuccessMsg("✅ Datele au fost actualizate cu succes!");
       setTimeout(() => setSuccessMsg(""), 4000);
@@ -137,15 +154,17 @@ export default function AnunturileMele() {
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Anunțurile Mele</h1>
 
-      {/* 🔵 SECȚIUNE PROFIL */}
-      <div className="bg-gray-50 border border-gray-300 p-5 rounded-xl mb-10">
-        <h2 className="text-xl font-semibold text-blue-700 mb-4">
+      {/* 🔵 PROFIL UTILIZATOR */}
+      <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-10 shadow-sm">
+        <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Profilul meu
         </h2>
 
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Nume complet</label>
+            <label className="block text-sm font-medium mb-1 text-blue-900">
+              Nume complet
+            </label>
             <input
               type="text"
               value={name}
@@ -155,7 +174,9 @@ export default function AnunturileMele() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Telefon</label>
+            <label className="block text-sm font-medium mb-1 text-blue-900">
+              Telefon
+            </label>
             <input
               type="text"
               value={phone}
@@ -192,7 +213,7 @@ export default function AnunturileMele() {
         )}
       </div>
 
-      {/* 🔹 LISTA DE ANUNȚURI EXISTENTĂ */}
+      {/* 🔹 LISTA DE ANUNȚURI */}
       {listings.length === 0 ? (
         <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
