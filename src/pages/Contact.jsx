@@ -1,40 +1,76 @@
-// src/pages/Contact.jsx
+import React from "react";
+
 export default function Contact() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6">Contactează-ne</h1>
-
-      <p className="mb-6 text-gray-600">
-        Pentru întrebări, sugestii sau colaborări, completează formularul de mai jos
-        sau folosește datele de contact directe.
+    <div
+      style={{
+        maxWidth: "700px",
+        margin: "60px auto",
+        padding: "20px",
+        textAlign: "center",
+      }}
+    >
+      <h2 style={{ color: "#0a58ca", marginBottom: "20px" }}>Contactează-ne</h2>
+      <p style={{ color: "#555", marginBottom: "30px" }}>
+        Pentru întrebări, sugestii sau colaborări, completează formularul de mai
+        jos. Mesajul tău va fi trimis direct către echipa Oltenița Imobiliare.
       </p>
 
-      {/* Formular */}
-      <form className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Numele tău</label>
-          <input type="text" className="w-full border rounded-lg p-2" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Emailul tău</label>
-          <input type="email" className="w-full border rounded-lg p-2" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Mesajul tău</label>
-          <textarea rows="4" className="w-full border rounded-lg p-2" required />
-        </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
-          Trimite
+      <form
+        action="https://formsubmit.co/oltenitaimobiliare@gmail.com"
+        method="POST"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
+        <input
+          type="text"
+          name="name"
+          placeholder="Numele tău"
+          required
+          style={inputStyle}
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Emailul tău"
+          required
+          style={inputStyle}
+        />
+        <textarea
+          name="message"
+          placeholder="Mesajul tău"
+          rows="5"
+          required
+          style={inputStyle}
+        ></textarea>
+        <button
+          type="submit"
+          style={{
+            backgroundColor: "#0a58ca",
+            color: "white",
+            padding: "12px 0",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            fontSize: "16px",
+          }}
+        >
+          Trimite mesajul
         </button>
       </form>
-
-      {/* Date de contact */}
-      <div className="mt-10 space-y-2">
-        <h2 className="text-xl font-semibold">Date de contact</h2>
-        <p>📧 <strong>Email:</strong> contact@oltenitaimobiliare.ro</p>
-        <p>📞 <strong>Telefon:</strong> +40 7XX XXX XXX</p>
-        <p>📍 <strong>Locație:</strong> Oltenița, România</p>
-      </div>
     </div>
   );
 }
+
+const inputStyle = {
+  padding: "12px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "15px",
+  outline: "none",
+  width: "100%",
+};
