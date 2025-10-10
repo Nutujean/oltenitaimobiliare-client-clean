@@ -13,53 +13,64 @@ export default function AnunturileMele() {
     images: [],
   });
 
-  // 🔹 pentru profil
+  // 🔹 profil
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
   const token = localStorage.getItem("token");
 
+  // 🔧 helper: încearcă mai multe rute până găsește una validă
+  const apiTry = async (paths, options = {}) => {
+    for (const p of paths) {
+      try {
+        const res = await fetch(`${API_URL}${p}`, options);
+        let data = {};
+        try { data = await res.json(); } catch (_) { data = {}; }
+
+        if (res.ok) return data;                // ✅ gata
+        if (res.status === 404) continue;       // 🔁 încearcă următoarea rută
+        // alt cod de eroare -> aruncă exact mesajul primit
+        throw new Error(data.message || data.error || `Eroare ${res.status}`);
+      } catch (err) {
+        // dacă e o eroare de rețea, încearcă următoarea; altfel, o propagăm
+        if (String(err).includes("Failed to fetch")) continue;
+        throw err;
+      }
+    }
+    throw new Error("Ruta API inexistentă"); // numai dacă au picat toate variantele
+  };
+
   useEffect(() => {
     fetchListings();
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔹 Încarcă anunțurile utilizatorului
+  // 🔹 Încarcă anunțurile utilizatorului (fallback pe mai multe variante)
   const fetchListings = async () => {
     try {
-      const res = await fetch(`${API_URL}/listings/my`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-
-      // ✅ siguranță: doar dacă e array
-      if (!Array.isArray(data)) {
-        console.warn("⚠️ API listings a trimis un obiect în loc de array:", data);
-        setListings([]);
-        return;
-      }
-
-      setListings(data);
+      const data = await apiTry(
+        ["/listings/my", "/listings/me", "/listings/user"],
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setListings(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Eroare la anunțurile mele:", e);
+      setListings([]);
     }
   };
 
-  // 🔹 Încarcă profilul utilizatorului curent (ruta corectă)
+  // 🔹 Încarcă profilul utilizatorului curent (fallback /users/profile → /auth/profile)
   const fetchUserProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setName(data.name || "");
-        setPhone(data.phone || "");
-        localStorage.setItem("userInfo", JSON.stringify(data));
-      } else {
-        console.error("Eroare profil:", data);
-      }
+      const data = await apiTry(
+        ["/users/profile", "/auth/profile"],
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setName(data?.name || "");
+      setPhone(data?.phone || "");
+      localStorage.setItem("userInfo", JSON.stringify(data || {}));
     } catch (err) {
       console.error("Eroare la obținerea profilului:", err);
     }
@@ -117,7 +128,7 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // 🔹 Actualizare profil (nume + telefon)
+  // 🔹 Actualizare profil (nume + telefon) — fallback la update: /users/update/:id → /auth/update/:id
   const handleUpdateProfile = async () => {
     try {
       if (!token) {
@@ -125,31 +136,30 @@ export default function AnunturileMele() {
         return;
       }
 
-      // Obținem ID-ul sigur al utilizatorului logat (ruta corectă)
-      const resUser = await fetch(`${API_URL}/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = await resUser.json();
-      if (!resUser.ok || !userData._id) {
+      // luăm user-ul pentru _id (cu fallback)
+      const me = await apiTry(
+        ["/users/profile", "/auth/profile"],
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!me?._id) {
         alert("Eroare la identificarea utilizatorului.");
         return;
       }
 
-      console.log("🔍 update profil", userData._id, `${API_URL}/users/update/${userData._id}`);
+      // încercăm mai întâi ruta /users/update/:id, apoi /auth/update/:id
+      const updated = await apiTry(
+        [`/users/update/${me._id}`, `/auth/update/${me._id}`],
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name, phone }),
+        }
+      );
 
-      const response = await fetch(`${API_URL}/users/update/${userData._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name, phone }),
-      });
-
-      const updated = await response.json();
-      if (!response.ok) throw new Error(updated.message || "Eroare la actualizare profil");
-
-      localStorage.setItem("userInfo", JSON.stringify(updated));
+      localStorage.setItem("userInfo", JSON.stringify(updated || {}));
       setSuccessMsg("✅ Datele au fost actualizate cu succes!");
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (error) {
