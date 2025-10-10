@@ -145,15 +145,30 @@ const Footer = () => {
         </div>
       </div>
 
+      {/* 💙 Text special deasupra liniei */}
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: "16px",
+          marginTop: "50px",
+          color: "rgba(255,255,255,0.95)",
+          fontWeight: "500",
+        }}
+      >
+        Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
+      </p>
+
+      {/* 🔹 Linie separatoare */}
       <hr
         style={{
           border: "none",
           borderTop: "1px solid rgba(255,255,255,0.3)",
-          margin: "40px auto 20px",
+          margin: "20px auto",
           maxWidth: "1000px",
         }}
       />
 
+      {/* 🔹 Copyright */}
       <p
         style={{
           textAlign: "center",
@@ -168,6 +183,7 @@ const Footer = () => {
   );
 };
 
+// 🔹 Stiluri generale
 const linkStyle = {
   color: "white",
   textDecoration: "none",
