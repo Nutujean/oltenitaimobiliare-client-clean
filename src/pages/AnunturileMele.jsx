@@ -132,7 +132,7 @@ export default function AnunturileMele() {
       console.log("🔍 update profil", userData._id, `${API_URL}/auth/update/${userData._id}`);
 
       // Trimitem cererea corectă
-      const response = await fetch(`${API_URL}/auth/update/${userData._id}`, {
+      const response = await fetch(`${API_URL}/users/update/${userData._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
