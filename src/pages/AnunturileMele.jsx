@@ -28,7 +28,7 @@ export default function AnunturileMele() {
   // 🔹 Încarcă anunțurile utilizatorului
   const fetchListings = async () => {
     try {
-      const res = await fetch(`${API_URL}/listings/my`, {
+      const res = await fetch(`${API_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
