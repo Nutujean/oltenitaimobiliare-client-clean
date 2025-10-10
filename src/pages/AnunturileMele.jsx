@@ -26,18 +26,25 @@ export default function AnunturileMele() {
   }, []);
 
   // 🔹 Încarcă anunțurile utilizatorului
-  const fetchListings = async () => {
-    try {
-      const res = await fetch(`${API_URL}/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor");
-      setListings(data);
-    } catch (e) {
-      console.error("Eroare la anunțurile mele:", e);
+const fetchListings = async () => {
+  try {
+    const res = await fetch(`${API_URL}/listings/my`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+
+    // ✅ siguranță: doar dacă e array
+    if (!Array.isArray(data)) {
+      console.warn("⚠️ API listings a trimis un obiect în loc de array:", data);
+      setListings([]);
+      return;
     }
-  };
+
+    setListings(data);
+  } catch (e) {
+    console.error("Eroare la anunțurile mele:", e);
+  }
+};
 
   // 🔹 Încarcă profilul utilizatorului curent
   const fetchUserProfile = async () => {
