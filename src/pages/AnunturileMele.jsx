@@ -13,41 +13,40 @@ export default function AnunturileMele() {
     images: [],
   });
 
-  // 🔹 profil
+  const [previewImg, setPreviewImg] = useState(null); // ✅ imagine mărită
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-
   const token = localStorage.getItem("token");
 
-  // 🔧 helper: încearcă mai multe rute până găsește una validă
+  // helper
   const apiTry = async (paths, options = {}) => {
     for (const p of paths) {
       try {
         const res = await fetch(`${API_URL}${p}`, options);
         let data = {};
-        try { data = await res.json(); } catch (_) { data = {}; }
+        try {
+          data = await res.json();
+        } catch (_) {
+          data = {};
+        }
 
-        if (res.ok) return data;                // ✅ gata
-        if (res.status === 404) continue;       // 🔁 încearcă următoarea rută
-        // alt cod de eroare -> aruncă exact mesajul primit
+        if (res.ok) return data;
+        if (res.status === 404) continue;
         throw new Error(data.message || data.error || `Eroare ${res.status}`);
       } catch (err) {
-        // dacă e o eroare de rețea, încearcă următoarea; altfel, o propagăm
         if (String(err).includes("Failed to fetch")) continue;
         throw err;
       }
     }
-    throw new Error("Ruta API inexistentă"); // numai dacă au picat toate variantele
+    throw new Error("Ruta API inexistentă");
   };
 
   useEffect(() => {
     fetchListings();
     fetchUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔹 Încarcă anunțurile utilizatorului (fallback pe mai multe variante)
   const fetchListings = async () => {
     try {
       const data = await apiTry(
@@ -61,7 +60,6 @@ export default function AnunturileMele() {
     }
   };
 
-  // 🔹 Încarcă profilul utilizatorului curent (fallback /users/profile → /auth/profile)
   const fetchUserProfile = async () => {
     try {
       const data = await apiTry(
@@ -128,15 +126,13 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // 🔹 Actualizare profil (nume + telefon) — fallback la update: /users/update/:id → /auth/update/:id
+  // Actualizare profil
   const handleUpdateProfile = async () => {
     try {
       if (!token) {
         alert("Trebuie să fii logat pentru a modifica datele.");
         return;
       }
-
-      // luăm user-ul pentru _id (cu fallback)
       const me = await apiTry(
         ["/users/profile", "/auth/profile"],
         { headers: { Authorization: `Bearer ${token}` } }
@@ -145,8 +141,6 @@ export default function AnunturileMele() {
         alert("Eroare la identificarea utilizatorului.");
         return;
       }
-
-      // încercăm mai întâi ruta /users/update/:id, apoi /auth/update/:id
       const updated = await apiTry(
         [`/users/update/${me._id}`, `/auth/update/${me._id}`],
         {
@@ -158,7 +152,6 @@ export default function AnunturileMele() {
           body: JSON.stringify({ name, phone }),
         }
       );
-
       localStorage.setItem("userInfo", JSON.stringify(updated || {}));
       setSuccessMsg("✅ Datele au fost actualizate cu succes!");
       setTimeout(() => setSuccessMsg(""), 4000);
@@ -173,10 +166,9 @@ export default function AnunturileMele() {
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Anunțurile Mele</h1>
 
-      {/* 🔵 PROFIL UTILIZATOR */}
+      {/* 🔵 PROFIL */}
       <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-10 shadow-sm">
         <h2 className="text-xl font-semibold text-blue-800 mb-4">Profilul meu</h2>
-
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           <div>
             <label className="block text-sm font-medium mb-1 text-blue-900">Nume complet</label>
@@ -185,7 +177,6 @@ export default function AnunturileMele() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full border p-2 rounded-md"
-              placeholder="Introdu numele tău"
             />
           </div>
           <div>
@@ -195,7 +186,6 @@ export default function AnunturileMele() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full border p-2 rounded-md"
-              placeholder="07xxxxxxxx"
             />
           </div>
         </div>
@@ -216,62 +206,89 @@ export default function AnunturileMele() {
         </div>
 
         {successMsg && (
-          <p
-            className={`mt-3 font-medium ${
-              successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"
-            }`}
-          >
+          <p className={`mt-3 font-medium ${successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"}`}>
             {successMsg}
           </p>
         )}
       </div>
 
-      {/* 🔹 LISTA DE ANUNȚURI */}
+      {/* 🔹 ANUNȚURI */}
       {listings.length === 0 ? (
         <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {listings.map((l) =>
             editingId === l._id ? (
-              <div key={l._id} className="bg-white p-5 rounded-xl shadow-md">
-                <input
-                  type="text"
-                  className="w-full border p-2 rounded mb-2"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                />
-                <input
-                  type="number"
-                  className="w-full border p-2 rounded mb-2"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  placeholder="Preț (€)"
-                />
-                <textarea
-                  className="w-full border p-2 rounded mb-2"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-                <input
-                  type="text"
-                  className="w-full border p-2 rounded mb-2"
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  placeholder="Locație"
-                />
-                <input
-                  type="text"
-                  className="w-full border p-2 rounded mb-2"
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  placeholder="Categorie"
-                />
+              <div key={l._id} className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h3 className="text-xl font-semibold text-blue-700 mb-4">Editează anunțul</h3>
 
-                {/* Poze existente */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    placeholder="Titlu"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  />
+                  <input
+                    type="number"
+                    className="w-full border p-2 rounded"
+                    placeholder="Preț (€)"
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  />
+                  <textarea
+                    className="w-full border p-2 rounded md:col-span-2"
+                    placeholder="Descriere"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    placeholder="Locație"
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    placeholder="Categorie"
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  />
+                </div>
+
+                {/* 🖼️ Poze drag & drop */}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Imagini</label>
+                <div
+                  className="grid grid-cols-3 gap-3 mb-4"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    const from = e.dataTransfer.getData("fromIndex");
+                    const to = e.target.dataset.index;
+                    if (from !== null && to !== undefined) {
+                      const newImages = [...form.images];
+                      const [moved] = newImages.splice(from, 1);
+                      newImages.splice(to, 0, moved);
+                      setForm({ ...form, images: newImages });
+                    }
+                  }}
+                >
                   {form.images.map((img, idx) => (
-                    <div key={idx} className="relative">
-                      <img src={img} alt="" className="w-full h-32 object-cover rounded" />
+                    <div
+                      key={idx}
+                      data-index={idx}
+                      className="relative border border-blue-300 rounded-lg overflow-hidden cursor-move"
+                      draggable
+                      onDragStart={(e) => e.dataTransfer.setData("fromIndex", idx)}
+                    >
+                      <img
+                        src={img}
+                        alt=""
+                        className="w-full h-32 object-cover hover:opacity-90 transition"
+                        onClick={() => setPreviewImg(img)}
+                      />
                       <button
                         onClick={() =>
                           setForm({
@@ -279,7 +296,7 @@ export default function AnunturileMele() {
                             images: form.images.filter((_, i) => i !== idx),
                           })
                         }
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
                       >
                         ✕
                       </button>
@@ -287,18 +304,18 @@ export default function AnunturileMele() {
                   ))}
                 </div>
 
-                <input type="file" multiple onChange={handleImageChange} className="mb-3" />
+                <input type="file" multiple onChange={handleImageChange} className="mb-4" />
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleSave(l._id)}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                    className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
                   >
                     Salvează
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
-                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                    className="bg-gray-400 text-white px-5 py-2 rounded-lg hover:bg-gray-500"
                   >
                     Anulează
                   </button>
@@ -331,6 +348,20 @@ export default function AnunturileMele() {
               </div>
             )
           )}
+        </div>
+      )}
+
+      {/* 🖼️ Modal previzualizare imagine */}
+      {previewImg && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setPreviewImg(null)}
+        >
+          <img
+            src={previewImg}
+            alt="previzualizare"
+            className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg border-4 border-white"
+          />
         </div>
       )}
     </div>
