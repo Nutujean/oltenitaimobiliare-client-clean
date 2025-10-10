@@ -6,31 +6,26 @@ const Footer = () => {
       style={{
         backgroundColor: "#0a58ca",
         color: "white",
-        padding: "50px 20px 30px",
-        marginTop: "60px",
+        padding: "30px 15px 20px",
+        marginTop: "40px",
       }}
     >
       <div
         style={{
-          maxWidth: "1200px",
+          maxWidth: "1100px",
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "40px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: "25px",
+          alignItems: "start",
         }}
       >
         {/* 🏠 Descriere site */}
-        <div
-          style={{
-            textAlign: "center",
-            gridColumn: "1 / -1",
-          }}
-          className="footer-about"
-        >
+        <div style={{ textAlign: "center" }}>
           <h3
             style={{
-              fontSize: "20px",
-              marginBottom: "10px",
+              fontSize: "18px",
+              marginBottom: "8px",
               fontWeight: "bold",
             }}
           >
@@ -38,17 +33,16 @@ const Footer = () => {
           </h3>
           <p
             style={{
-              lineHeight: "1.7",
-              fontSize: "15px",
-              maxWidth: "500px",
+              lineHeight: "1.6",
+              fontSize: "14px",
+              maxWidth: "400px",
               margin: "0 auto",
               color: "rgba(255,255,255,0.9)",
             }}
           >
             Platformă locală de anunțuri imobiliare pentru Oltenița și
             împrejurimi. Găsește rapid apartamente, case, terenuri și spații
-            comerciale disponibile în zonă. Totul simplu, rapid și sigur — locul
-            unde fiecare proprietate își găsește cumpărătorul potrivit.
+            comerciale — totul simplu, rapid și sigur.
           </p>
         </div>
 
@@ -56,8 +50,8 @@ const Footer = () => {
         <div style={{ textAlign: "center" }}>
           <h4
             style={{
-              marginBottom: "12px",
-              fontSize: "18px",
+              marginBottom: "8px",
+              fontSize: "16px",
               fontWeight: "bold",
             }}
           >
@@ -67,45 +61,25 @@ const Footer = () => {
             style={{
               listStyle: "none",
               padding: 0,
-              lineHeight: "1.8",
-              fontSize: "15px",
+              lineHeight: "1.6",
+              fontSize: "14px",
               margin: 0,
             }}
           >
-            <li>
-              <a href="/despre-noi" style={linkStyle}>
-                Despre noi
-              </a>
-            </li>
-            <li>
-              <a href="/termeni" style={linkStyle}>
-                Termeni și condiții
-              </a>
-            </li>
-            <li>
-              <a href="/confidentialitate" style={linkStyle}>
-                Politica de confidențialitate
-              </a>
-            </li>
-            <li>
-              <a href="/cookies" style={linkStyle}>
-                Politica cookies
-              </a>
-            </li>
-            <li>
-              <a href="/contact" style={linkStyle}>
-                Contact
-              </a>
-            </li>
+            <li><a href="/despre-noi" style={linkStyle}>Despre noi</a></li>
+            <li><a href="/termeni" style={linkStyle}>Termeni și condiții</a></li>
+            <li><a href="/confidentialitate" style={linkStyle}>Confidențialitate</a></li>
+            <li><a href="/cookies" style={linkStyle}>Cookies</a></li>
+            <li><a href="/contact" style={linkStyle}>Contact</a></li>
           </ul>
         </div>
 
-        {/* 📬 Formular contact simplificat */}
+        {/* 📬 Formular contact */}
         <div style={{ textAlign: "center" }}>
           <h4
             style={{
-              marginBottom: "12px",
-              fontSize: "18px",
+              marginBottom: "8px",
+              fontSize: "16px",
               fontWeight: "bold",
             }}
           >
@@ -117,32 +91,14 @@ const Footer = () => {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "10px",
-              maxWidth: "350px",
+              gap: "8px",
+              maxWidth: "280px",
               margin: "0 auto",
             }}
           >
-            <input
-              type="text"
-              name="name"
-              placeholder="Numele tău"
-              required
-              style={inputStyle}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Emailul tău"
-              required
-              style={inputStyle}
-            />
-            <textarea
-              name="message"
-              placeholder="Mesajul tău"
-              rows="3"
-              required
-              style={inputStyle}
-            ></textarea>
+            <input type="text" name="name" placeholder="Numele tău" required style={inputStyle} />
+            <input type="email" name="email" placeholder="Emailul tău" required style={inputStyle} />
+            <textarea name="message" placeholder="Mesajul tău" rows="3" required style={inputStyle}></textarea>
             <button
               type="submit"
               style={{
@@ -150,9 +106,9 @@ const Footer = () => {
                 color: "#0a58ca",
                 border: "none",
                 borderRadius: "6px",
-                padding: "10px 0",
+                padding: "8px 0",
                 fontWeight: "bold",
-                fontSize: "15px",
+                fontSize: "14px",
                 cursor: "pointer",
               }}
             >
@@ -162,57 +118,55 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* 💙 Text special deasupra liniei */}
+      {/* 💙 Text subsol */}
       <p
         style={{
           textAlign: "center",
-          fontSize: "15px",
-          marginTop: "40px",
-          color: "rgba(255,255,255,0.95)",
+          fontSize: "14px",
+          marginTop: "25px",
+          color: "rgba(255,255,255,0.9)",
           fontWeight: "500",
-          lineHeight: "1.5",
+          lineHeight: "1.4",
         }}
       >
         Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
       </p>
 
-      {/* 🔹 Linie separatoare */}
       <hr
         style={{
           border: "none",
           borderTop: "1px solid rgba(255,255,255,0.3)",
-          margin: "20px auto",
-          maxWidth: "1000px",
+          margin: "15px auto",
+          maxWidth: "800px",
         }}
       />
 
-      {/* 🔹 Copyright */}
       <p
         style={{
           textAlign: "center",
-          fontSize: "13px",
-          opacity: "0.9",
+          fontSize: "12px",
+          opacity: "0.85",
           marginTop: "5px",
         }}
       >
-        © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile
-        rezervate.
+        © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile rezervate.
       </p>
 
-      {/* 📱 Stilizare responsive pur CSS inline */}
+      {/* 📱 Responsive CSS */}
       <style>
         {`
           @media (max-width: 768px) {
-            footer div[style*='grid'] {
-              grid-template-columns: 1fr;
-              gap: 30px;
-              text-align: center;
+            footer {
+              padding: 25px 10px 15px;
             }
             footer h3 {
-              font-size: 18px !important;
+              font-size: 16px !important;
             }
             footer p {
-              font-size: 14px !important;
+              font-size: 13px !important;
+            }
+            footer h4 {
+              font-size: 15px !important;
             }
           }
         `}
@@ -221,17 +175,16 @@ const Footer = () => {
   );
 };
 
-// 🔹 Stiluri generale
 const linkStyle = {
   color: "white",
   textDecoration: "none",
 };
 
 const inputStyle = {
-  padding: "10px",
-  borderRadius: "6px",
+  padding: "8px",
+  borderRadius: "5px",
   border: "none",
-  fontSize: "14px",
+  fontSize: "13px",
   outline: "none",
   width: "100%",
 };
