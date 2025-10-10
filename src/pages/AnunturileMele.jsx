@@ -42,14 +42,14 @@ export default function AnunturileMele() {
   // 🔹 Încarcă profilul utilizatorului curent
   const fetchUserProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/users/me`, {
+      const res = await fetch(`${API_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok) {
         setName(data.name || "");
         setPhone(data.phone || "");
-        localStorage.setItem("userInfo", JSON.stringify(data)); // salvează și în localStorage
+        localStorage.setItem("userInfo", JSON.stringify(data));
       } else {
         console.error("Eroare profil:", data);
       }
@@ -113,22 +113,26 @@ export default function AnunturileMele() {
   // 🔹 Actualizare profil (nume + telefon)
   const handleUpdateProfile = async () => {
     try {
-      const userData =
-        JSON.parse(localStorage.getItem("userInfo")) || {};
-
       if (!token) {
         alert("Trebuie să fii logat pentru a modifica datele.");
         return;
       }
 
-      // dacă nu avem id în localStorage, îl obținem
-      const userId = userData._id
-        ? userData._id
-        : (await (await fetch(`${API_URL}/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })).json())._id;
+      // Obținem ID-ul sigur al utilizatorului logat
+      const resUser = await fetch(`${API_URL}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = await resUser.json();
+      if (!resUser.ok || !userData._id) {
+        alert("Eroare la identificarea utilizatorului.");
+        return;
+      }
 
-      const response = await fetch(`${API_URL}/auth/update/${userId}`, {
+      // 🔹 Debug
+      console.log("🔍 update profil", userData._id, `${API_URL}/auth/update/${userData._id}`);
+
+      // Trimitem cererea corectă
+      const response = await fetch(`${API_URL}/auth/update/${userData._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -137,8 +141,8 @@ export default function AnunturileMele() {
         body: JSON.stringify({ name, phone }),
       });
 
-      if (!response.ok) throw new Error("Eroare la actualizare profil");
       const updated = await response.json();
+      if (!response.ok) throw new Error(updated.message || "Eroare la actualizare profil");
 
       localStorage.setItem("userInfo", JSON.stringify(updated));
       setSuccessMsg("✅ Datele au fost actualizate cu succes!");
