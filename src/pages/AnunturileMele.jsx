@@ -128,7 +128,7 @@ export default function AnunturileMele() {
             headers: { Authorization: `Bearer ${token}` },
           })).json())._id;
 
-      const response = await fetch(`${API_URL}/users/update/${userId}`, {
+      const response = await fetch(`${API_URL}/auth/update/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
