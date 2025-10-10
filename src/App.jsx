@@ -44,7 +44,7 @@ function App() {
     <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
-          <Route path="/despre-noi" element={<Despre-noi />} />
+          <Route path="/despre-noi" element={<despre-noi />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
