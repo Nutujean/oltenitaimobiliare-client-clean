@@ -1,32 +1,53 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
-  const [myListings, setMyListings] = useState([]);
+  const [listings, setListings] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    title: "",
+    price: "",
+    description: "",
+    location: "",
+    category: "",
+    images: [],
+  });
+
+  // 🔹 pentru profil
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetchMyListings();
+    fetchListings();
+
+    // preluăm user info
+    const userData = JSON.parse(localStorage.getItem("userInfo"));
+    if (userData) {
+      setName(userData.name || "");
+      setPhone(userData.phone || "");
+    }
   }, []);
 
-  const fetchMyListings = async () => {
+  const fetchListings = async () => {
     try {
       const res = await fetch(`${API_URL}/listings/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor mele");
-      setMyListings(data);
+      setListings(data);
     } catch (e) {
       console.error("Eroare la încărcarea anunțurilor mele:", e);
     }
   };
 
-  const handleEdit = (listing) => {
-    setEditingId(listing._id);
-    setForm({ ...listing });
+  const handleEdit = (l) => {
+    setEditingId(l._id);
+    setForm({ ...l });
   };
 
   const handleDelete = async (id) => {
@@ -38,10 +59,10 @@ export default function AnunturileMele() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
-      alert("✅ Anunț șters cu succes!");
-      fetchMyListings();
+      alert("Anunț șters cu succes!");
+      fetchListings();
     } catch (e) {
-      alert("❌ " + e.message);
+      alert("Eroare: " + e.message);
     }
   };
 
@@ -55,11 +76,13 @@ export default function AnunturileMele() {
         },
         body: JSON.stringify(form),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la salvare");
+
       alert("✅ Anunț actualizat cu succes!");
       setEditingId(null);
-      fetchMyListings();
+      fetchListings();
     } catch (e) {
       alert("❌ " + e.message);
     }
@@ -67,106 +90,212 @@ export default function AnunturileMele() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setForm({ ...form, images: [...(form.images || []), ...newImages] });
+    const newImages = [...form.images];
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => newImages.push(ev.target.result);
+      reader.readAsDataURL(file);
+    });
+    setForm({ ...form, images: newImages });
   };
 
-  const removeImage = (index) => {
-    const updated = [...form.images];
-    updated.splice(index, 1);
-    setForm({ ...form, images: updated });
+  // 🔹 actualizare profil (nume + telefon)
+  const handleUpdateProfile = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("userInfo"));
+      if (!userData) {
+        alert("Trebuie să fii logat pentru a modifica datele.");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/users/update/${userData._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userData.token}`,
+          },
+          body: JSON.stringify({ name, phone }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Eroare la actualizare profil");
+
+      const updated = await response.json();
+      localStorage.setItem("userInfo", JSON.stringify(updated));
+      setSuccessMsg("✅ Datele au fost actualizate cu succes!");
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (error) {
+      console.error("Eroare:", error);
+      setSuccessMsg("❌ Eroare la actualizare!");
+      setTimeout(() => setSuccessMsg(""), 4000);
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Anunțurile Mele</h1>
 
-      {myListings.length === 0 ? (
-        <p className="text-gray-600">Nu ai încă anunțuri publicate.</p>
+      {/* 🔵 SECȚIUNE PROFIL */}
+      <div className="bg-gray-50 border border-gray-300 p-5 rounded-xl mb-10">
+        <h2 className="text-xl font-semibold text-blue-700 mb-4">
+          Profilul meu
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nume complet</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border p-2 rounded-md"
+              placeholder="Introdu numele tău"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Telefon</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full border p-2 rounded-md"
+              placeholder="07xxxxxxxx"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-2">
+          <button
+            onClick={handleUpdateProfile}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Salvează modificările
+          </button>
+          <button
+            onClick={() => setPhone("")}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            Șterge numărul
+          </button>
+        </div>
+
+        {successMsg && (
+          <p
+            className={`mt-3 font-medium ${
+              successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {successMsg}
+          </p>
+        )}
+      </div>
+
+      {/* 🔹 LISTA DE ANUNȚURI EXISTENTĂ */}
+      {listings.length === 0 ? (
+        <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {myListings.map((l) => (
-            <div key={l._id} className="bg-white rounded-xl shadow-md p-4 relative">
-              {editingId === l._id ? (
-                <>
-                  {/* ✏️ Editare anunț */}
-                  <input
-                    type="text"
-                    className="border p-2 w-full mb-2 rounded"
-                    value={form.title || ""}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="Titlu"
-                  />
-                  <textarea
-                    className="border p-2 w-full mb-2 rounded"
-                    value={form.description || ""}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Descriere"
-                  />
-                  <input
-                    type="number"
-                    className="border p-2 w-full mb-2 rounded"
-                    value={form.price || ""}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                    placeholder="Preț"
-                  />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {listings.map((l) =>
+            editingId === l._id ? (
+              <div key={l._id} className="bg-white p-5 rounded-xl shadow-md">
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+                <input
+                  type="number"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  placeholder="Preț (€)"
+                />
+                <textarea
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder="Locație"
+                />
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded mb-2"
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  placeholder="Categorie"
+                />
 
-                  {/* 🖼️ Imagini */}
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    {form.images?.map((img, idx) => (
-                      <div key={idx} className="relative">
-                        <img
-                          src={img}
-                          alt={`img-${idx}`}
-                          className="w-full h-32 object-cover rounded"
-                        />
-                        <button
-                          onClick={() => removeImage(idx)}
-                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                {/* Poze existente */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {form.images.map((img, idx) => (
+                    <div key={idx} className="relative">
+                      <img
+                        src={img}
+                        alt=""
+                        className="w-full h-32 object-cover rounded"
+                      />
+                      <button
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            images: form.images.filter((_, i) => i !== idx),
+                          })
+                        }
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
 
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleImageChange}
-                    className="border p-2 w-full mb-3 rounded"
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleImageChange}
+                  className="mb-3"
+                />
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleSave(l._id)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                  >
+                    Salvează
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                  >
+                    Anulează
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                key={l._id}
+                className="bg-white rounded-xl shadow-md overflow-hidden"
+              >
+                {l.images?.length > 0 && (
+                  <img
+                    src={l.images[0]}
+                    alt={l.title}
+                    className="w-full h-48 object-cover"
                   />
-
-                  <div className="flex justify-between">
-                    <button
-                      onClick={() => handleSave(l._id)}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                    >
-                      Salvează
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                    >
-                      Anulează
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* 🔹 Vizualizare normală */}
-                  {l.images?.length > 0 && (
-                    <img
-                      src={l.images[0]}
-                      alt={l.title}
-                      className="w-full h-40 object-cover rounded mb-2"
-                    />
-                  )}
-                  <h2 className="font-bold text-lg mb-1">{l.title}</h2>
-                  <p className="text-blue-600 font-semibold mb-2">{l.price} €</p>
-                  <p className="text-gray-500 line-clamp-2 mb-3">{l.description}</p>
-
-                  <div className="flex justify-between">
+                )}
+                <div className="p-4">
+                  <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
+                  <h3 className="font-bold text-xl mb-1">{l.title}</h3>
+                  <p className="text-gray-600">{l.location}</p>
+                  <div className="mt-4 flex gap-3">
                     <button
                       onClick={() => handleEdit(l)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
@@ -180,10 +309,10 @@ export default function AnunturileMele() {
                       Șterge
                     </button>
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
     </div>
