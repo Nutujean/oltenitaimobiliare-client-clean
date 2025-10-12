@@ -21,13 +21,14 @@ export default function AnunturileMele() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
+  // 🔹 Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
-  // helper fallback pentru rute
+  // 🔹 helper: fallback pentru rute API
   const apiTry = async (paths, options = {}) => {
     for (const p of paths) {
       try {
@@ -54,6 +55,7 @@ export default function AnunturileMele() {
     fetchUserProfile();
   }, []);
 
+  // 🔹 Anunțurile utilizatorului
   const fetchListings = async () => {
     try {
       const data = await apiTry(
@@ -67,6 +69,7 @@ export default function AnunturileMele() {
     }
   };
 
+  // 🔹 Profilul utilizatorului
   const fetchUserProfile = async () => {
     try {
       const data = await apiTry(
@@ -133,7 +136,7 @@ export default function AnunturileMele() {
     setForm({ ...form, images: newImages });
   };
 
-  // 🔹 Nou: alegere plan promovare clară (butoane UI)
+  // 🔹 Promovare clară prin UI
   const handlePromote = async (id, planKey) => {
     try {
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
@@ -141,7 +144,6 @@ export default function AnunturileMele() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId: id, plan: planKey }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la inițializarea plății");
       window.location.href = data.url;
@@ -190,7 +192,7 @@ export default function AnunturileMele() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Bara titlu + logout */}
+      {/* Titlu + logout */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Anunțurile Mele</h1>
         <button
@@ -257,9 +259,10 @@ export default function AnunturileMele() {
       {listings.length === 0 ? (
         <p className="text-gray-600">Nu ai încă anunțuri.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {listings.map((l) =>
             editingId === l._id ? (
+              // Formular editare
               <div key={l._id} className="bg-white p-5 rounded-xl shadow-md">
                 <input
                   type="text"
@@ -335,15 +338,31 @@ export default function AnunturileMele() {
                 </div>
               </div>
             ) : (
-              <div key={l._id} className="bg-white rounded-xl shadow-md overflow-hidden">
-                {l.images?.length > 0 && (
-                  <img src={l.images[0]} alt={l.title} className="w-full h-48 object-cover" />
+              // Card anunț dreptunghiular
+              <div
+                key={l._id}
+                className="bg-white rounded-xl shadow-md flex flex-col md:flex-row overflow-hidden relative"
+              >
+                {l.featuredUntil && new Date(l.featuredUntil) > new Date() && (
+                  <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full shadow">
+                    🎖️ Promovat
+                  </span>
                 )}
-                <div className="p-4">
-                  <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
-                  <h3 className="font-bold text-xl mb-1">{l.title}</h3>
-                  <p className="text-gray-600">{l.location}</p>
-                  <div className="mt-4 flex flex-wrap gap-3">
+                {l.images?.length > 0 && (
+                  <img
+                    src={l.images[0]}
+                    alt={l.title}
+                    className="w-full md:w-1/3 h-52 object-cover"
+                  />
+                )}
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
+                    <h3 className="font-bold text-xl mb-1">{l.title}</h3>
+                    <p className="text-gray-600 mb-2">{l.location}</p>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <button
                       onClick={() => handleEdit(l)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
@@ -358,7 +377,6 @@ export default function AnunturileMele() {
                     </button>
                   </div>
 
-                  {/* 🔹 Nou: butoane promovare */}
                   <div className="mt-3">
                     <p className="text-sm font-semibold text-blue-700 mb-1">
                       Promovează anunțul:
