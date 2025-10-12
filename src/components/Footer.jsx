@@ -1,57 +1,80 @@
 import React from "react";
 
 const Footer = () => {
+  // 📨 Funcția care trimite mesajul către backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const message = formData.get("message");
+
+    try {
+      const res = await fetch(
+        "https://oltenitaimobiliare-backend.onrender.com/api/contact",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, message }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ Mesaj trimis cu succes! Mulțumim pentru mesaj!");
+        e.target.reset();
+      } else {
+        alert("❌ " + (data.error || "Eroare la trimiterea mesajului."));
+      }
+    } catch (err) {
+      alert("Eroare la conexiune cu serverul. Încearcă din nou mai târziu.");
+    }
+  };
+
   return (
     <footer
       style={{
         backgroundColor: "#0a58ca",
         color: "white",
-        padding: "30px 15px 20px",
-        marginTop: "40px",
+        padding: "50px 20px 30px",
+        marginTop: "60px",
       }}
     >
       <div
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1200px",
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: "25px",
-          alignItems: "start",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          gap: "40px",
         }}
       >
         {/* 🏠 Descriere site */}
-        <div style={{ textAlign: "center" }}>
+        <div>
           <h3
             style={{
-              fontSize: "18px",
-              marginBottom: "8px",
+              fontSize: "20px",
+              marginBottom: "10px",
               fontWeight: "bold",
             }}
           >
             Oltenița Imobiliare 🏠
           </h3>
-          <p
-            style={{
-              lineHeight: "1.6",
-              fontSize: "14px",
-              maxWidth: "400px",
-              margin: "0 auto",
-              color: "rgba(255,255,255,0.9)",
-            }}
-          >
-            Platformă locală de anunțuri imobiliare pentru Oltenița și
+          <p style={{ lineHeight: "1.7", fontSize: "15px" }}>
+            Platforma locală de anunțuri imobiliare pentru Oltenița și
             împrejurimi. Găsește rapid apartamente, case, terenuri și spații
-            comerciale — totul simplu, rapid și sigur.
+            comerciale disponibile în zonă. Totul simplu, rapid și sigur — locul
+            unde fiecare proprietate își găsește cumpărătorul potrivit.
           </p>
         </div>
 
         {/* 🔗 Linkuri utile */}
-        <div style={{ textAlign: "center" }}>
+        <div>
           <h4
             style={{
-              marginBottom: "8px",
-              fontSize: "16px",
+              marginBottom: "12px",
+              fontSize: "18px",
               fontWeight: "bold",
             }}
           >
@@ -61,44 +84,78 @@ const Footer = () => {
             style={{
               listStyle: "none",
               padding: 0,
-              lineHeight: "1.6",
-              fontSize: "14px",
-              margin: 0,
+              lineHeight: "1.8",
+              fontSize: "15px",
             }}
           >
-            <li><a href="/despre-noi" style={linkStyle}>Despre noi</a></li>
-            <li><a href="/termeni" style={linkStyle}>Termeni și condiții</a></li>
-            <li><a href="/confidentialitate" style={linkStyle}>Confidențialitate</a></li>
-            <li><a href="/cookies" style={linkStyle}>Cookies</a></li>
-            <li><a href="/contact" style={linkStyle}>Contact</a></li>
+            <li>
+              <a href="/despre-noi" style={linkStyle}>
+                Despre noi
+              </a>
+            </li>
+            <li>
+              <a href="/termeni" style={linkStyle}>
+                Termeni și condiții
+              </a>
+            </li>
+            <li>
+              <a href="/confidentialitate" style={linkStyle}>
+                Politica de confidențialitate
+              </a>
+            </li>
+            <li>
+              <a href="/cookies" style={linkStyle}>
+                Politica cookies
+              </a>
+            </li>
+            <li>
+              <a href="/contact" style={linkStyle}>
+                Contact
+              </a>
+            </li>
           </ul>
         </div>
 
-        {/* 📬 Formular contact */}
-        <div style={{ textAlign: "center" }}>
+        {/* 📬 Formular contact direct prin backend */}
+        <div>
           <h4
             style={{
-              marginBottom: "8px",
-              fontSize: "16px",
+              marginBottom: "12px",
+              fontSize: "18px",
               fontWeight: "bold",
             }}
           >
             Trimite-ne un mesaj
           </h4>
           <form
-            action="https://formsubmit.co/oltenitaimobiliare@gmail.com"
-            method="POST"
+            onSubmit={handleSubmit}
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
-              maxWidth: "280px",
-              margin: "0 auto",
+              gap: "10px",
             }}
           >
-            <input type="text" name="name" placeholder="Numele tău" required style={inputStyle} />
-            <input type="email" name="email" placeholder="Emailul tău" required style={inputStyle} />
-            <textarea name="message" placeholder="Mesajul tău" rows="3" required style={inputStyle}></textarea>
+            <input
+              type="text"
+              name="name"
+              placeholder="Numele tău"
+              required
+              style={inputStyle}
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Emailul tău"
+              required
+              style={inputStyle}
+            />
+            <textarea
+              name="message"
+              placeholder="Mesajul tău"
+              rows="3"
+              required
+              style={inputStyle}
+            ></textarea>
             <button
               type="submit"
               style={{
@@ -106,9 +163,9 @@ const Footer = () => {
                 color: "#0a58ca",
                 border: "none",
                 borderRadius: "6px",
-                padding: "8px 0",
+                padding: "10px 0",
                 fontWeight: "bold",
-                fontSize: "14px",
+                fontSize: "15px",
                 cursor: "pointer",
               }}
             >
@@ -118,73 +175,55 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* 💙 Text subsol */}
+      {/* 💙 Text special */}
       <p
         style={{
           textAlign: "center",
-          fontSize: "14px",
-          marginTop: "25px",
-          color: "rgba(255,255,255,0.9)",
+          fontSize: "16px",
+          marginTop: "50px",
+          color: "rgba(255,255,255,0.95)",
           fontWeight: "500",
-          lineHeight: "1.4",
         }}
       >
         Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
       </p>
 
+      {/* 🔹 Linie separatoare */}
       <hr
         style={{
           border: "none",
           borderTop: "1px solid rgba(255,255,255,0.3)",
-          margin: "15px auto",
-          maxWidth: "800px",
+          margin: "20px auto",
+          maxWidth: "1000px",
         }}
       />
 
+      {/* 🔹 Copyright */}
       <p
         style={{
           textAlign: "center",
-          fontSize: "12px",
-          opacity: "0.85",
-          marginTop: "5px",
+          fontSize: "14px",
+          opacity: "0.9",
         }}
       >
-        © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile rezervate.
+        © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile
+        rezervate.
       </p>
-
-      {/* 📱 Responsive CSS */}
-      <style>
-        {`
-          @media (max-width: 768px) {
-            footer {
-              padding: 25px 10px 15px;
-            }
-            footer h3 {
-              font-size: 16px !important;
-            }
-            footer p {
-              font-size: 13px !important;
-            }
-            footer h4 {
-              font-size: 15px !important;
-            }
-          }
-        `}
-      </style>
     </footer>
   );
 };
 
+// 🔹 Stiluri generale
 const linkStyle = {
   color: "white",
   textDecoration: "none",
 };
 
 const inputStyle = {
-  padding: "8px",
-  borderRadius: "5px",
+  padding: "10px",
+  borderRadius: "6px",
   border: "none",
-  fontSize: "13px",
+  fontSize: "14px",
   outline: "none",
   width: "100%",
 };
