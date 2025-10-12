@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 const Footer = () => {
+  const [statusMsg, setStatusMsg] = useState(""); // ✅ pentru mesajul de confirmare
+
   // 📨 Funcția care trimite mesajul către backend
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,14 +24,17 @@ const Footer = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("✅ Mesaj trimis cu succes! Mulțumim pentru mesaj!");
         e.target.reset();
+        setStatusMsg("✅ Mesaj trimis cu succes! Mulțumim!");
       } else {
-        alert("❌ " + (data.error || "Eroare la trimiterea mesajului."));
+        setStatusMsg("❌ " + (data.error || "Eroare la trimiterea mesajului."));
       }
     } catch (err) {
-      alert("Eroare la conexiune cu serverul. Încearcă din nou mai târziu.");
+      setStatusMsg("❌ Eroare la conexiune cu serverul. Încearcă mai târziu.");
     }
+
+    // mesajul dispare automat după 3 secunde
+    setTimeout(() => setStatusMsg(""), 3000);
   };
 
   return (
@@ -63,9 +68,7 @@ const Footer = () => {
           </h3>
           <p style={{ lineHeight: "1.7", fontSize: "15px" }}>
             Platforma locală de anunțuri imobiliare pentru Oltenița și
-            împrejurimi. Găsește rapid apartamente, case, terenuri și spații
-            comerciale disponibile în zonă. Totul simplu, rapid și sigur — locul
-            unde fiecare proprietate își găsește cumpărătorul potrivit.
+            împrejurimi.
           </p>
         </div>
 
@@ -172,6 +175,21 @@ const Footer = () => {
               Trimite
             </button>
           </form>
+
+          {/* ✅ Mesaj de succes / eroare (elegant, jos sub formular) */}
+          {statusMsg && (
+            <p
+              style={{
+                marginTop: "10px",
+                color: statusMsg.startsWith("✅") ? "#9effb2" : "#ffcccc",
+                fontWeight: "500",
+                textAlign: "center",
+                transition: "opacity 0.3s",
+              }}
+            >
+              {statusMsg}
+            </p>
+          )}
         </div>
       </div>
 
@@ -218,7 +236,6 @@ const linkStyle = {
   color: "white",
   textDecoration: "none",
 };
-
 const inputStyle = {
   padding: "10px",
   borderRadius: "6px",
