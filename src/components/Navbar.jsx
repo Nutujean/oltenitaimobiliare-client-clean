@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "../assets/OltenitaImobiliare.png";
@@ -50,15 +51,15 @@ export default function Navbar() {
           <Link to="/" className="hover:text-gray-200">
             Acasă
           </Link>
-          <Link to="/anunturi" className="hover:text-gray-200 transition">
-            Anunțuri
-          </Link>
+
+          {/* 🔵 Buton Adaugă Anunț */}
           <Link
             to="/adauga-anunt"
             className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-3 py-1.5 rounded-lg transition"
           >
             + Adaugă anunț
           </Link>
+
           {!user ? (
             <>
               <Link to="/login" className="hover:text-gray-200">
@@ -84,16 +85,14 @@ export default function Navbar() {
       {/* 🔹 Meniu mobil */}
       {menuOpen && (
         <div className="md:hidden bg-blue-700 px-4 py-3 space-y-2 text-sm">
-          <Link to="/" onClick={() => setMenuOpen(false)} className="block hover:text-gray-200">
-            Acasă
-          </Link>
           <Link
-            to="/categorie/apartamente"
+            to="/"
             onClick={() => setMenuOpen(false)}
             className="block hover:text-gray-200"
           >
-            Anunțuri
+            Acasă
           </Link>
+
           <Link
             to="/adauga-anunt"
             onClick={() => setMenuOpen(false)}
@@ -101,6 +100,7 @@ export default function Navbar() {
           >
             + Adaugă anunț
           </Link>
+
           {!user ? (
             <>
               <Link
