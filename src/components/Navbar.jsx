@@ -50,7 +50,7 @@ export default function Navbar() {
           <Link to="/" className="hover:text-gray-200">
             Acasă
           </Link>
-          <Link to="/categorie/apartamente" className="hover:text-gray-200 transition">
+          <Link to="/anunturi" className="hover:text-gray-200 transition">
             Anunțuri
           </Link>
           <Link
