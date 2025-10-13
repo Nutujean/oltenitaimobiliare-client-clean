@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import API_URL from "../api"; // sus, ca în celelalte pagini
 
 const Footer = () => {
-  const [statusMsg, setStatusMsg] = useState(""); // ✅ pentru mesajul de confirmare
+  const [statusMsg, setStatusMsg] = useState("");
 
-  // 📨 Funcția care trimite mesajul către backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -12,15 +11,20 @@ const Footer = () => {
     const email = formData.get("email");
     const message = formData.get("message");
 
+    // ✅ verificăm emailul — obligatoriu și format valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setStatusMsg("⚠️ Introdu o adresă de email validă.");
+      setTimeout(() => setStatusMsg(""), 3000);
+      return;
+    }
+
     try {
-      const res = await fetch(
-        "https://oltenitaimobiliare-backend.onrender.com/api/contact",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, message }),
-        }
-      );
+      const res = await fetch(`${API_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
 
       const data = await res.json();
 
@@ -34,7 +38,6 @@ const Footer = () => {
       setStatusMsg("❌ Eroare la conexiune cu serverul. Încearcă mai târziu.");
     }
 
-    // mesajul dispare automat după 3 secunde
     setTimeout(() => setStatusMsg(""), 3000);
   };
 
@@ -115,7 +118,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* 📬 Formular contact direct prin backend */}
+        {/* 📬 Formular contact */}
         <div>
           <h4
             style={{
@@ -127,87 +130,62 @@ const Footer = () => {
             Trimite-ne un mesaj
           </h4>
           <form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const payload = {
-      name: form.name.value,
-      email: form.email.value,
-      message: form.message.value,
-    };
+            onSubmit={handleSubmit}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+            }}
+          >
+            <input
+              type="text"
+              name="name"
+              placeholder="Numele tău"
+              required
+              style={inputStyle}
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Emailul tău (obligatoriu)"
+              required
+              style={inputStyle}
+            />
+            <textarea
+              name="message"
+              placeholder="Mesajul tău"
+              rows="3"
+              required
+              style={inputStyle}
+            ></textarea>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: "white",
+                color: "#0a58ca",
+                border: "none",
+                borderRadius: "6px",
+                padding: "10px 0",
+                fontWeight: "bold",
+                fontSize: "15px",
+                cursor: "pointer",
+              }}
+            >
+              Trimite
+            </button>
+          </form>
 
-    try {
-      const res = await fetch("https://oltenitaimobiliare-backend.onrender.com/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("✅ Mesajul tău a fost trimis cu succes!");
-        form.reset();
-      } else {
-        alert("❌ " + (data.error || "Eroare la trimiterea mesajului"));
-      }
-    } catch (err) {
-      alert("❌ Eroare de rețea: " + err.message);
-    }
-  }}
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  }}
->
-  <input
-    type="text"
-    name="name"
-    placeholder="Numele tău"
-    required
-    style={inputStyle}
-  />
-  <input
-    type="email"
-    name="email"
-    placeholder="Emailul tău"
-    required
-    style={inputStyle}
-  />
-  <textarea
-    name="message"
-    placeholder="Mesajul tău"
-    rows="3"
-    required
-    style={inputStyle}
-  ></textarea>
-  <button
-    type="submit"
-    style={{
-      backgroundColor: "white",
-      color: "#0a58ca",
-      border: "none",
-      borderRadius: "6px",
-      padding: "10px 0",
-      fontWeight: "bold",
-      fontSize: "15px",
-      cursor: "pointer",
-    }}
-  >
-    Trimite
-  </button>
-</form>
-           
-
-          {/* ✅ Mesaj de succes / eroare (elegant, jos sub formular) */}
           {statusMsg && (
             <p
               style={{
                 marginTop: "10px",
-                color: statusMsg.startsWith("✅") ? "#9effb2" : "#ffcccc",
+                color: statusMsg.startsWith("✅")
+                  ? "#9effb2"
+                  : statusMsg.startsWith("⚠️")
+                  ? "#fff59d"
+                  : "#ffcccc",
                 fontWeight: "500",
                 textAlign: "center",
-                transition: "opacity 0.3s",
               }}
             >
               {statusMsg}
@@ -216,7 +194,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* 💙 Text special */}
       <p
         style={{
           textAlign: "center",
@@ -229,7 +206,6 @@ const Footer = () => {
         Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
       </p>
 
-      {/* 🔹 Linie separatoare */}
       <hr
         style={{
           border: "none",
@@ -239,7 +215,6 @@ const Footer = () => {
         }}
       />
 
-      {/* 🔹 Copyright */}
       <p
         style={{
           textAlign: "center",
@@ -266,7 +241,7 @@ const inputStyle = {
   fontSize: "14px",
   outline: "none",
   width: "100%",
-  color: "black", // ✅ face textul vizibil când tastezi
+  color: "black",
 };
 
 export default Footer;
