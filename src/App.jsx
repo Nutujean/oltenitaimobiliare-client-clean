@@ -5,7 +5,6 @@ import ScrollToTop from "./components/ScrollToTop";
 
 /* Pagini principale */
 import Home from "./pages/Home";
-import Contact from "./pages/Contact";
 import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
