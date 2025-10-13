@@ -48,7 +48,6 @@ function App() {
           {/* 🔹 Public */}
           <Route path="/" element={<Home />} />
           <Route path="/despre-noi" element={<DespreNoi />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
