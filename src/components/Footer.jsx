@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API_URL from "../api"; // sus, ca în celelalte pagini
 
 const Footer = () => {
   const [statusMsg, setStatusMsg] = useState(""); // ✅ pentru mesajul de confirmare
@@ -10,7 +11,6 @@ const Footer = () => {
     const name = formData.get("name");
     const email = formData.get("email");
     const message = formData.get("message");
-import API_URL from "../api"; // sus, ca în celelalte pagini
 
     try {
       const res = await fetch(
