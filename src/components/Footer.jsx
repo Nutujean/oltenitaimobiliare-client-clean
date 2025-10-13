@@ -243,6 +243,7 @@ const inputStyle = {
   fontSize: "14px",
   outline: "none",
   width: "100%",
+  color: "black", // ✅ face textul vizibil când tastezi
 };
 
 export default Footer;
