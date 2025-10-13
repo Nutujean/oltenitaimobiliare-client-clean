@@ -1,8 +1,8 @@
 import React from "react";
-import banner from "../assets/Banner BebeKing.Ro.jpg"; // 🖼️ imaginea din assets
+import banner from "../assets/banner-bebeking.jpg"; // ✅ imaginea din assets
 
 export default function PromoBanner({ inline = false }) {
-  // 🔹 Varianta mobilă — apare doar în interiorul paginii
+  // 🔹 Varianta pentru mobil (sub anunțuri)
   if (inline) {
     return (
       <div className="lg:hidden my-8 bg-white border border-blue-200 rounded-xl overflow-hidden shadow-md">
@@ -30,7 +30,7 @@ export default function PromoBanner({ inline = false }) {
     );
   }
 
-  // 🔹 Varianta desktop — banner lateral fix
+  // 🔹 Varianta pentru desktop (banner lateral)
   return (
     <div className="hidden lg:block fixed right-6 top-28 w-64 bg-white rounded-xl shadow-lg overflow-hidden border border-blue-200 hover:shadow-xl transition-all duration-300">
       <a
