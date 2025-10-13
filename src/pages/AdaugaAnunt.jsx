@@ -13,8 +13,8 @@ const CATEGORIES = [
 ];
 
 const LOCATII = [
-  "Oltenita","Chirnogi","Ulmeni","Mitreni","Clatesti","Spantov","Cascioarele",
-  "Soldanu","Negoiesti","Valea Rosie","Radovanu","Chiselet","Manastirea","Budesti",
+  "Oltenita", "Chirnogi", "Ulmeni", "Mitreni", "Clatesti", "Spantov", "Cascioarele",
+  "Soldanu", "Negoiesti", "Valea Rosie", "Radovanu", "Chiselet", "Manastirea", "Budesti","Curcani","Luica","Nana",
 ];
 
 export default function AdaugaAnunt() {
@@ -24,16 +24,11 @@ export default function AdaugaAnunt() {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
-
-  // tip ofertă + specific apart/garsonieră
   const [dealType, setDealType] = useState("vanzare");
   const [floor, setFloor] = useState("");
   const [surface, setSurface] = useState("");
   const [rooms, setRooms] = useState("");
-
-  // imagini ca URL-uri (populate prin uploader)
   const [images, setImages] = useState([]);
-
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,8 +56,7 @@ export default function AdaugaAnunt() {
         location,
         category,
         phone: phone.trim(),
-        images, // vin din uploader
-
+        images,
         dealType,
         price: price !== "" ? Number(String(price).replace(",", ".")) : undefined,
         floor: floor !== "" ? Number(floor) : undefined,
@@ -80,12 +74,15 @@ export default function AdaugaAnunt() {
       });
 
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        throw new Error(data?.error || "Eroare la crearea anunțului");
+
+      if (r.status === 403 && data?.error?.includes("gratuit")) {
+        throw new Error("Ai deja un anunț gratuit activ. Poți promova sau aștepta expirarea (10 zile).");
       }
 
-      setOk("Anunț creat cu succes!");
-      navigate("/anunturile-mele");
+      if (!r.ok) throw new Error(data?.error || "Eroare la crearea anunțului");
+
+      setOk("✅ Anunț creat cu succes!");
+      setTimeout(() => navigate("/anunturile-mele"), 1500);
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -124,7 +121,6 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* tip + categorie + locatie */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Tip ofertă</label>
@@ -182,7 +178,6 @@ export default function AdaugaAnunt() {
           />
         </div>
 
-        {/* specific pentru apart/garsonieră */}
         {["Apartamente", "Garsoniere"].includes(category) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

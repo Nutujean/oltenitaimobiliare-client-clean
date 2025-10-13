@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import PromoBanner from "../components/PromoBanner"; // 🔹 banner lateral + mobil
 
 // ✅ URL API fix: luăm direct din .env
 const API_URL =
@@ -49,6 +50,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* 🔹 Banner lateral (doar desktop) */}
+      <PromoBanner />
+
       {/* HERO */}
       <section
         className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
@@ -132,6 +136,9 @@ export default function Home() {
             ))}
           </div>
         )}
+
+        {/* 🔹 Banner mobil (sub anunțuri) */}
+        <PromoBanner inline />
       </section>
     </div>
   );
