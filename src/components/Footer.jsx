@@ -10,6 +10,7 @@ const Footer = () => {
     const name = formData.get("name");
     const email = formData.get("email");
     const message = formData.get("message");
+import API_URL from "../api"; // sus, ca în celelalte pagini
 
     try {
       const res = await fetch(
@@ -111,11 +112,6 @@ const Footer = () => {
                 Politica cookies
               </a>
             </li>
-            <li>
-              <a href="/contact" style={linkStyle}>
-                Contact
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -131,50 +127,77 @@ const Footer = () => {
             Trimite-ne un mesaj
           </h4>
           <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <input
-              type="text"
-              name="name"
-              placeholder="Numele tău"
-              required
-              style={inputStyle}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Emailul tău"
-              required
-              style={inputStyle}
-            />
-            <textarea
-              name="message"
-              placeholder="Mesajul tău"
-              rows="3"
-              required
-              style={inputStyle}
-            ></textarea>
-            <button
-              type="submit"
-              style={{
-                backgroundColor: "white",
-                color: "#0a58ca",
-                border: "none",
-                borderRadius: "6px",
-                padding: "10px 0",
-                fontWeight: "bold",
-                fontSize: "15px",
-                cursor: "pointer",
-              }}
-            >
-              Trimite
-            </button>
-          </form>
+  onSubmit={async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      name: form.name.value,
+      email: form.email.value,
+      message: form.message.value,
+    };
+
+    try {
+      const res = await fetch("https://oltenitaimobiliare-backend.onrender.com/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Mesajul tău a fost trimis cu succes!");
+        form.reset();
+      } else {
+        alert("❌ " + (data.error || "Eroare la trimiterea mesajului"));
+      }
+    } catch (err) {
+      alert("❌ Eroare de rețea: " + err.message);
+    }
+  }}
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  }}
+>
+  <input
+    type="text"
+    name="name"
+    placeholder="Numele tău"
+    required
+    style={inputStyle}
+  />
+  <input
+    type="email"
+    name="email"
+    placeholder="Emailul tău"
+    required
+    style={inputStyle}
+  />
+  <textarea
+    name="message"
+    placeholder="Mesajul tău"
+    rows="3"
+    required
+    style={inputStyle}
+  ></textarea>
+  <button
+    type="submit"
+    style={{
+      backgroundColor: "white",
+      color: "#0a58ca",
+      border: "none",
+      borderRadius: "6px",
+      padding: "10px 0",
+      fontWeight: "bold",
+      fontSize: "15px",
+      cursor: "pointer",
+    }}
+  >
+    Trimite
+  </button>
+</form>
+           
 
           {/* ✅ Mesaj de succes / eroare (elegant, jos sub formular) */}
           {statusMsg && (
