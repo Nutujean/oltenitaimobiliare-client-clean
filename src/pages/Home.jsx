@@ -7,17 +7,23 @@ const fundal = "/fundal.jpg";
 
 export default function Home() {
   const [listings, setListings] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState("");
+  const [sort, setSort] = useState("newest");
 
   useEffect(() => {
-    // 🔹 "Ping" rapid pentru a trezi backend-ul Render
+    // Ping backend to wake it up
     fetch(`${API_URL}/health`).catch(() => {});
 
     const fetchListings = async () => {
       try {
         const res = await fetch(`${API_URL}/listings`);
         const data = await res.json();
-        setListings(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setListings(data);
+          setFiltered(data);
+        }
       } catch (e) {
         console.error("Eroare la preluarea anunțurilor:", e);
       } finally {
@@ -27,6 +33,59 @@ export default function Home() {
 
     fetchListings();
   }, []);
+
+  // 🔹 Funcție pentru aplicarea filtrelor
+  const handleFilter = () => {
+    let results = [...listings];
+
+    if (location) {
+      results = results.filter(
+        (l) =>
+          l.location?.toLowerCase().includes(location.toLowerCase()) ||
+          l.location === location
+      );
+    }
+
+    switch (sort) {
+      case "newest":
+        results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "oldest":
+        results.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "cheap":
+        results.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case "expensive":
+        results.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      default:
+        break;
+    }
+
+    setFiltered(results);
+  };
+
+  const LOCATII = [
+    "Toate",
+    "Oltenita",
+    "Chirnogi",
+    "Ulmeni",
+    "Mitreni",
+    "Clatesti",
+    "Spantov",
+    "Cascioarele",
+    "Soldanu",
+    "Negoiesti",
+    "Valea Rosie",
+    "Radovanu",
+    "Curcani"
+    "Luica"
+    "Nana"
+    "Chiselet",
+    "Manastirea",
+    "Budesti",
+  ];
 
   return (
     <div>
@@ -45,16 +104,50 @@ export default function Home() {
             Găsește casa potrivită în Oltenița
           </h1>
           <p className="text-lg mb-6">Cele mai noi anunțuri imobiliare din zonă</p>
-          <Link
-            to="/anunturi"
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium"
-          >
-            Vezi Anunțurile
-          </Link>
         </div>
       </div>
 
-      {/* 🏘️ CATEGORII */}
+      {/* 🔍 Filtru căutare */}
+      <section className="-mt-8 max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 z-20 relative flex flex-col md:flex-row gap-4 items-center justify-between">
+        <select
+          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        >
+          {LOCATII.map((loc) => (
+            <option key={loc} value={loc === "Toate" ? "" : loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+        >
+          <option value="newest">Cele mai noi</option>
+          <option value="oldest">Cele mai vechi</option>
+          <option value="cheap">Preț crescător</option>
+          <option value="expensive">Preț descrescător</option>
+        </select>
+
+        <button
+          onClick={handleFilter}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg w-full md:w-auto"
+        >
+          Caută
+        </button>
+
+        <Link
+          to="/adauga-anunt"
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg w-full md:w-auto text-center"
+        >
+          + Adaugă anunț
+        </Link>
+      </section>
+
+      {/* 🏘️ Categorii */}
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
           Categorii populare
@@ -88,7 +181,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔹 Banner partener */}
+      {/* Banner partener */}
       <div className="max-w-sm mx-auto mt-10">
         <PromoBanner />
       </div>
@@ -102,16 +195,14 @@ export default function Home() {
             <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-600 border-solid"></div>
             <p className="ml-3 text-gray-500">Se încarcă anunțurile...</p>
           </div>
-        ) : listings.length === 0 ? (
-          <p className="text-gray-600">Nu există anunțuri momentan.</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-gray-600">Nu există anunțuri pentru filtrul selectat.</p>
         ) : (
           <div
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fadeIn"
-            style={{
-              animation: "fadeIn 0.6s ease-in-out",
-            }}
+            style={{ animation: "fadeIn 0.6s ease-in-out" }}
           >
-            {listings.map((l) => {
+            {filtered.map((l) => {
               const isFeatured =
                 l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
 
@@ -151,7 +242,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* 🔹 Efect fade-in definit inline */}
+      {/* 🔹 Efect fade-in */}
       <style>
         {`
           @keyframes fadeIn {
