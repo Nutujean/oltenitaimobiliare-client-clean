@@ -79,9 +79,9 @@ export default function Home() {
     "Negoiesti",
     "Valea Rosie",
     "Radovanu",
-    "Curcani"
-    "Luica"
-    "Nana"
+    "Curcani",
+    "Luica",
+    "Nana",
     "Chiselet",
     "Manastirea",
     "Budesti",
