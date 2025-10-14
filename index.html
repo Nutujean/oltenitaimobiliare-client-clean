@@ -6,7 +6,6 @@
     <meta name="description" content="Oltenița Imobiliare - Găsește casa potrivită pentru tine. Apartamente, case, terenuri și spații comerciale în Oltenița și împrejurimi.">
     <meta name="theme-color" content="#1e40af" />
     <meta name="title" content="Oltenita Imobiliare - Case, Apartamente, Terenuri în Oltenița">
-    <meta name="description" content="Cauți o locuință în Oltenița? Pe Oltenita Imobiliare găsești apartamente, case, terenuri și spații comerciale din toată zona. Adaugă sau promovează gratuit anunțul tău!">
     <meta name="keywords" content="oltenita, imobiliare, apartamente, case, terenuri, spații comerciale, anunțuri oltenița, oltenitaimobiliare">
     <meta name="author" content="Oltenita Imobiliare">
     <meta name="robots" content="index, follow">
@@ -18,27 +17,25 @@
 
     <title>Oltenița Imobiliare</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- 🔹 Fundal alb implicit (fără text de încărcare urât) -->
+    <style>
+      body {
+        background-color: #ffffff;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
   </head>
 
   <body>
-    <!-- 🔹 Loader vizibil imediat (ajută PageSpeed + SEO) -->
-    <div id="root">
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        font-family: system-ui, sans-serif;
-        color: #444;
-        text-align: center;
-      ">
-        <img src="/favicon.png" alt="Logo" width="64" height="64" style="margin-bottom: 20px; opacity: 0.8;" />
-        <p style="font-size: 18px;">Se încarcă aplicația <strong>Oltenița Imobiliare</strong>...</p>
-      </div>
-    </div>
+    <!-- 🔹 React montează aici aplicația -->
+    <div id="root"></div>
 
-    <!-- 🔹 Aplicația React (se încarcă imediat după JS) -->
+    <!-- 🔹 Scriptul aplicației React -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
