@@ -60,11 +60,6 @@ export default function Navbar() {
             + Adaugă anunț
           </Link>
 
-          {/* 🆕 Link Cum adaugi un anunț */}
-          <Link to="/cum-adaugi" className="hover:text-gray-200">
-            Cum adaugi un anunț
-          </Link>
-
           {!user ? (
             <>
               <Link to="/login" className="hover:text-gray-200">
@@ -104,15 +99,6 @@ export default function Navbar() {
             className="block bg-white text-blue-700 px-3 py-1 rounded-lg"
           >
             + Adaugă anunț
-          </Link>
-
-          {/* 🆕 Link Cum adaugi un anunț (mobil) */}
-          <Link
-            to="/cum-adaugi"
-            onClick={() => setMenuOpen(false)}
-            className="block hover:text-gray-200"
-          >
-            Cum adaugi un anunț
           </Link>
 
           {!user ? (
