@@ -100,6 +100,14 @@ const Footer = () => {
                 Despre noi
               </a>
             </li>
+
+            {/* 🆕 Link Cum adaugi un anunț */}
+            <li>
+              <a href="/cum-adaugi" style={linkStyle}>
+                Cum adaugi un anunț
+              </a>
+            </li>
+
             <li>
               <a href="/termeni" style={linkStyle}>
                 Termeni și condiții
