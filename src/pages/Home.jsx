@@ -242,6 +242,26 @@ export default function Home() {
         )}
       </div>
 
+      {/* 🗺️ Harta Oltenița */}
+      <div className="mt-16 mb-10 text-center px-4">
+        <h2 className="text-2xl font-bold text-blue-700 mb-3">
+          Zona noastră - Oltenița și împrejurimi
+        </h2>
+        <p className="text-gray-600 mb-4">
+          Caută locuințe, terenuri și spații comerciale în Oltenița și localitățile din jur.
+        </p>
+        <iframe
+          title="Harta Oltenița"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6383!3d44.0836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1974a2fa07a5d%3A0x92ad81d23c90249f!2sOlteni%C8%9Ba!5e0!3m2!1sro!2sro!4v1699999999999"
+          width="100%"
+          height="320"
+          style={{ border: 0, borderRadius: "12px" }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+
       {/* 🔹 Efect fade-in */}
       <style>
         {`

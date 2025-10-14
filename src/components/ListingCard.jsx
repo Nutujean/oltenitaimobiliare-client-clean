@@ -38,6 +38,7 @@ export default function ListingCard({ listing }) {
           className={`w-full h-48 object-cover transition-transform duration-300 ${
             isExpired ? "opacity-70 grayscale" : "hover:scale-105"
           }`}
+          loading="lazy" // ✅ Lazy loading pentru viteză
         />
       </Link>
 

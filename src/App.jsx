@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import BannerTest from "./pages/BannerTest";
+import CumAdaugi from "./pages/CumAdaugi";
 
 /* Pagini principale */
 import Home from "./pages/Home";
@@ -52,6 +53,7 @@ function App() {
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
           <Route path="/banner-test" element={<BannerTest />} />
+          <Route path="/cum-adaugi" element={<CumAdaugi />} />
 
           {/* 🔹 Autentificare */}
           <Route path="/login" element={<Login />} />
