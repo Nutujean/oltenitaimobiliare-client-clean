@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import BannerTest from "./pages/BannerTest";
 
 /* Pagini principale */
 import Home from "./pages/Home";
@@ -50,6 +51,7 @@ function App() {
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<Cookies />} />
+          <Route path="/banner-test" element={<BannerTest />} />
 
           {/* 🔹 Autentificare */}
           <Route path="/login" element={<Login />} />

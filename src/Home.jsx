@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import PromoBanner from "../components/PromoBanner"; // 🔹 banner lateral + mobil
+import PromoBanner from "../components/PromoBanner";
+import hero from "../assets/hero.jpg"; // ✅ doar această linie nouă
+import bannerBebeking from "../assets/banner-bebeking.jpg";
 
 // ✅ URL API fix: luăm direct din .env
 const API_URL =
@@ -51,12 +53,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* 🔹 Banner lateral (doar desktop) */}
-      <PromoBanner />
+      <PromoBanner inline />
 
       {/* HERO */}
       <section
         className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
-        style={{ backgroundImage: "url('/images/hero.jpg')" }}
+        style={{ backgroundImage: `url(${hero})` }} // ✅ modificarea sigură
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="relative z-10 text-center px-4">

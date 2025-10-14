@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import PromoBanner from "../components/PromoBanner";
 import API_URL from "../api";
-import fundal from "/public/fundal.jpg";
+const fundal = "/fundal.jpg";
 
 export default function Home() {
   const [listings, setListings] = useState([]);
@@ -149,6 +150,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+<div className="max-w-sm mx-auto mt-10">
+  <PromoBanner />
+</div>
 
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
