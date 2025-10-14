@@ -67,7 +67,7 @@ export default function Home() {
   };
 
   const LOCATII = [
-    "Toate",
+    "Localitate",
     "Oltenita",
     "Chirnogi",
     "Ulmeni",
