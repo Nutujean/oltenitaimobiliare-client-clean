@@ -88,7 +88,7 @@ export default function Home() {
   ];
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#f4f6fb]">
       {/* HERO cu fundal */}
       <div
         className="relative h-[60vh] flex items-center justify-center text-center text-white"

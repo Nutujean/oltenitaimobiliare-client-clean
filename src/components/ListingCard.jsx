@@ -1,12 +1,26 @@
 // src/components/ListingCard.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toggleFav, getFavIds } from "../utils/favorites"; // ✅ import funcțiile existente
 
 export default function ListingCard({ listing }) {
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    setFavorites(getFavIds());
+  }, []);
+
   const isPromoted =
     listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
   const isExpired =
     listing.expiresAt && new Date(listing.expiresAt) < new Date();
+  const isFavorite = favorites.includes(listing._id);
+
+  const handleFavorite = (e) => {
+    e.preventDefault();
+    const next = toggleFav(listing._id);
+    setFavorites(next);
+  };
 
   return (
     <div
@@ -25,6 +39,21 @@ export default function ListingCard({ listing }) {
           ⏰ EXPIRAT
         </div>
       )}
+
+      {/* ❤️ Buton Favorite */}
+      <button
+        onClick={handleFavorite}
+        className={`absolute top-3 right-3 p-2 rounded-full z-10 shadow-md transition ${
+          isFavorite
+            ? "bg-red-500 text-white hover:bg-red-600"
+            : "bg-white text-gray-600 hover:text-red-500"
+        }`}
+        title={
+          isFavorite ? "Elimină din favorite" : "Adaugă la favorite"
+        }
+      >
+        ❤️
+      </button>
 
       {/* Imagine anunț */}
       <Link to={`/anunt/${listing._id}`}>
