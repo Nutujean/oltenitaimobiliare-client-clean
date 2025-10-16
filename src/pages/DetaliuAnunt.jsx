@@ -52,7 +52,6 @@ export default function DetaliuAnunt() {
 
   const handleShare = (platform) => {
     if (platform === "facebook") {
-      // ✅ fallback iPhone: redeschide în Safari dacă aplicația Facebook blochează
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         alert(
           "Pe iPhone, aplicația Facebook poate bloca distribuirea. Apasă 'Copiază linkul' și deschide în Safari."
@@ -142,7 +141,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔍 Zoom full-screen */}
+      {/* 🔍 Zoom fullscreen cu săgeți SVG vizibile */}
       {isZoomed && images.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
@@ -151,14 +150,49 @@ export default function DetaliuAnunt() {
           <img
             src={images[currentImage]}
             alt={listing.title}
-            className="max-w-[95vw] max-h-[90vh] object-contain"
+            className="max-w-[95vw] max-h-[90vh] object-contain select-none"
           />
+
+          {/* ✕ Închide */}
           <button
             onClick={() => setIsZoomed(false)}
-            className="absolute top-6 right-6 text-white text-3xl font-bold"
+            className="absolute top-5 right-5 text-white bg-black/50 hover:bg-black/70 rounded-full w-10 h-10 flex items-center justify-center"
+            aria-label="Închide imaginea"
           >
             ✕
           </button>
+
+          {/* ⬅️ Stânga */}
+          {images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevImage();
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center"
+              aria-label="Imagine anterioară"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="white" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* ➡️ Dreapta */}
+          {images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center"
+              aria-label="Imagine următoare"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="white" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
@@ -282,7 +316,6 @@ export default function DetaliuAnunt() {
           </button>
         </div>
 
-        {/* ℹ️ Avertisment pentru iPhone */}
         <p className="text-xs text-gray-500 mt-2">
           *Pe iPhone, aplicația Facebook are restricții pentru linkuri externe.
           Dacă apare eroare, apasă „Copiază linkul” și deschide anunțul direct în Safari.
