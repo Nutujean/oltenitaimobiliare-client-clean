@@ -13,78 +13,65 @@ export default function Home() {
   const [sort, setSort] = useState("newest");
 
   useEffect(() => {
-    // Ping backend to wake it up
     fetch(`${API_URL}/health`).catch(() => {});
-
-    const fetchListings = async () => {
-      try {
-        const res = await fetch(`${API_URL}/listings`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setListings(data);
-          setFiltered(data);
-        }
-      } catch (e) {
-        console.error("Eroare la preluarea anunțurilor:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchListings();
   }, []);
 
-  // 🔹 Funcție pentru aplicarea filtrelor
+  // 🔹 Funcție pentru încărcare din backend
+  const fetchListings = async (filters = {}) => {
+    try {
+      setLoading(true);
+
+      const sortParam = filters.sort || sort || "newest";
+      const locParam = filters.location || location || "";
+
+      const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        let results = [...data];
+
+        if (locParam) {
+          results = results.filter(
+            (l) =>
+              l.location?.toLowerCase().includes(locParam.toLowerCase()) ||
+              l.location === locParam
+          );
+        }
+
+        setListings(results);
+        setFiltered(results);
+      }
+    } catch (e) {
+      console.error("Eroare la preluarea anunțurilor:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFilter = () => {
-    let results = [...listings];
-
-    if (location) {
-      results = results.filter(
-        (l) =>
-          l.location?.toLowerCase().includes(location.toLowerCase()) ||
-          l.location === location
-      );
-    }
-
-    switch (sort) {
-      case "newest":
-        results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-      case "oldest":
-        results.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        break;
-      case "cheap":
-        results.sort((a, b) => (a.price || 0) - (b.price || 0));
-        break;
-      case "expensive":
-        results.sort((a, b) => (b.price || 0) - (a.price || 0));
-        break;
-      default:
-        break;
-    }
-
-    setFiltered(results);
+    fetchListings({ sort, location });
   };
 
   const LOCATII = [
     "Localitate",
-    "Oltenita",
+    "Oltenița",
     "Chirnogi",
     "Ulmeni",
     "Mitreni",
-    "Clatesti",
-    "Spantov",
-    "Cascioarele",
-    "Soldanu",
-    "Negoiesti",
-    "Valea Rosie",
+    "Clătești",
+    "Spanțov",
+    "Căscioarele",
+    "Șoldanu",
+    "Negoești",
+    "Valea Roșie",
     "Radovanu",
     "Curcani",
     "Luica",
     "Nana",
     "Chiselet",
-    "Manastirea",
-    "Budesti",
+    "Mănăstirea",
+    "Budești",
   ];
 
   return (
@@ -115,7 +102,7 @@ export default function Home() {
           onChange={(e) => setLocation(e.target.value)}
         >
           {LOCATII.map((loc) => (
-            <option key={loc} value={loc === "Toate" ? "" : loc}>
+            <option key={loc} value={loc === "Localitate" ? "" : loc}>
               {loc}
             </option>
           ))}
@@ -127,8 +114,7 @@ export default function Home() {
           onChange={(e) => setSort(e.target.value)}
         >
           <option value="newest">Cele mai noi</option>
-          <option value="oldest">Cele mai vechi</option>
-          <option value="cheap">Preț crescător</option>
+          <option value="cheapest">Preț crescător</option>
           <option value="expensive">Preț descrescător</option>
         </select>
 
@@ -262,7 +248,6 @@ export default function Home() {
         ></iframe>
       </div>
 
-      {/* 🔹 Efect fade-in */}
       <style>
         {`
           @keyframes fadeIn {
