@@ -1,7 +1,7 @@
 // src/pages/DetaliuAnunt.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async"; // 🧠 nou
+import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
 export default function DetaliuAnunt() {
@@ -47,26 +47,35 @@ export default function DetaliuAnunt() {
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
   const shareUrl = (typeof window !== "undefined" && window.location.href) || "";
+
+  // ✅ Varianta finală — funcțională pe iPhone, Android și desktop
   const handleShare = (platform) => {
+    const url = window.location.href;
+    const encodedUrl = encodeURIComponent(url);
+    const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
+
     if (platform === "facebook") {
-      window.open(
-        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-        "_blank"
-      );
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const isMobile = /android|iphone|ipad|ipod/i.test(ua);
+
+      if (isMobile) {
+        // 👉 forțează browserul extern (Safari / Chrome)
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_system");
+      } else {
+        // desktop normal
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
+      }
     } else if (platform === "whatsapp") {
-      window.open(
-        `https://api.whatsapp.com/send?text=${encodeURIComponent(shareUrl)}`,
-        "_blank"
-      );
+      window.open(`https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`, "_blank");
     } else {
-      navigator.clipboard.writeText(shareUrl);
+      navigator.clipboard.writeText(url);
       alert("Link copiat în clipboard!");
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
-      {/* 🧠 META TAGURI SEO / SHARE */}
+      {/* 🧠 META TAGURI pentru SEO și Facebook */}
       <Helmet>
         <title>{listing?.title || "Anunț imobiliar în Oltenița"}</title>
         <meta
@@ -101,6 +110,7 @@ export default function DetaliuAnunt() {
               alt={listing.title}
               className="w-full h-full object-contain"
             />
+
             {images.length > 1 && (
               <>
                 <button
@@ -131,12 +141,10 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔹 restul rămâne identic */}
-      {/* Zoom, detalii, contact, share — exact ca înainte */}
-
       {/* 🔹 Titlu + Înapoi */}
       <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl md:text-3xl font-bold leading-tight">{listing.title}</h1>
+
         <button
           onClick={() => navigate(-1)}
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
@@ -145,8 +153,95 @@ export default function DetaliuAnunt() {
         </button>
       </div>
 
-      {/* 🔹 restul componentelor (preț, locație, descriere, contact, distribuire) neschimbate */}
-      {/* ...codul tău complet de mai jos */}
+      {/* 🔹 Preț + Promovat */}
+      <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+        <p className="text-xl md:text-2xl font-semibold text-blue-700">
+          <span className="font-bold text-gray-800">Preț:</span> {listing.price} €
+        </p>
+
+        {isFeatured && (
+          <span className="bg-green-600 text-white text-xs md:text-sm px-3 py-1 rounded shadow">
+            ⭐ Promovat până la{" "}
+            {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+          </span>
+        )}
+      </div>
+
+      {/* 🔹 Locație */}
+      {listing.location && (
+        <p className="text-gray-600 mt-1 text-sm md:text-base">📍 {listing.location}</p>
+      )}
+
+      {/* 🔹 Descriere */}
+      {listing.description && (
+        <div className="mt-5">
+          <h2 className="text-lg md:text-xl font-semibold mb-2">Descriere</h2>
+          <p className="text-gray-700 whitespace-pre-line text-sm md:text-base leading-relaxed">
+            {listing.description}
+          </p>
+        </div>
+      )}
+
+      {/* 🔹 Detalii */}
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-gray-700 text-sm md:text-base">
+        {listing.surface && <p>Suprafață: {listing.surface} mp</p>}
+        {listing.rooms && <p>Camere: {listing.rooms}</p>}
+        {listing.floor && <p>Etaj: {listing.floor}</p>}
+        {listing.dealType && <p>Tip tranzacție: {listing.dealType}</p>}
+        {listing.category && <p>Categorie: {listing.category}</p>}
+      </div>
+
+      {/* 🔹 Contact */}
+      <div className="mt-8">
+        <h2 className="text-lg md:text-xl font-semibold mb-3">Date de contact</h2>
+        {listing.user || listing.phone ? (
+          <div className="bg-white border rounded-xl shadow p-4 md:p-5 space-y-2 text-sm md:text-base">
+            {listing.user?.name && (
+              <p>
+                <strong>Nume:</strong> {listing.user.name}
+              </p>
+            )}
+            {listing.phone && (
+              <p>
+                <strong>Telefon:</strong>{" "}
+                <a
+                  href={`tel:${listing.phone}`}
+                  className="text-blue-600 font-semibold hover:underline"
+                >
+                  {listing.phone}
+                </a>
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-gray-500">Datele de contact nu sunt disponibile.</p>
+        )}
+      </div>
+
+      {/* 🔹 Distribuie */}
+      <div className="mt-8">
+        <h2 className="text-lg md:text-xl font-semibold mb-3">Distribuie anunțul</h2>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => handleShare("facebook")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base"
+          >
+            Facebook
+          </button>
+          <button
+            onClick={() => handleShare("whatsapp")}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm md:text-base"
+          >
+            WhatsApp
+          </button>
+          <button
+            onClick={() => handleShare("copy")}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm md:text-base"
+          >
+            Copiază linkul
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
