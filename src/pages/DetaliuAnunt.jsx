@@ -46,29 +46,18 @@ export default function DetaliuAnunt() {
   const isFeatured =
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
-  const shareUrl = (typeof window !== "undefined" && window.location.href) || "";
-
-  // ✅ Varianta finală — funcțională pe iPhone, Android și desktop
+  // ✅ Varianta sigură pentru iPhone — share via backend /share/:id
   const handleShare = (platform) => {
-    const url = window.location.href;
-    const encodedUrl = encodeURIComponent(url);
+    const backendShare = `https://oltenitaimobiliare-backend.onrender.com/share/${listing._id}`;
+    const encodedUrl = encodeURIComponent(backendShare);
     const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
 
     if (platform === "facebook") {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      const isMobile = /android|iphone|ipad|ipod/i.test(ua);
-
-      if (isMobile) {
-        // 👉 forțează browserul extern (Safari / Chrome)
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_system");
-      } else {
-        // desktop normal
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
-      }
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
     } else if (platform === "whatsapp") {
       window.open(`https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`, "_blank");
     } else {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(backendShare);
       alert("Link copiat în clipboard!");
     }
   };
