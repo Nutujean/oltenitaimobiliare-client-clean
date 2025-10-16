@@ -52,9 +52,12 @@ export default function DetaliuAnunt() {
 
   const handleShare = (platform) => {
     if (platform === "facebook") {
-      // ✅ dacă e iPhone → deschide direct în Safari
+      // ✅ fallback iPhone: redeschide în Safari dacă aplicația Facebook blochează
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        window.location.href = shareUrl;
+        alert(
+          "Pe iPhone, aplicația Facebook poate bloca distribuirea. Apasă 'Copiază linkul' și deschide în Safari."
+        );
+        return;
       } else {
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
@@ -66,7 +69,7 @@ export default function DetaliuAnunt() {
         `https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`,
         "_blank"
       );
-    } else {
+    } else if (platform === "copy") {
       navigator.clipboard.writeText(shareUrl);
       alert("Link copiat în clipboard!");
     }
@@ -74,7 +77,7 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
-      {/* ✅ Meta OG pentru Facebook */}
+      {/* 🧠 SEO + Open Graph */}
       <Helmet>
         <title>{listing.title} - Oltenița Imobiliare</title>
         <meta property="og:title" content={listing.title} />
@@ -95,10 +98,9 @@ export default function DetaliuAnunt() {
         />
         <meta property="og:url" content={shareUrl} />
         <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      {/* 📸 Galerie */}
+      {/* 📸 Galerie imagini */}
       <div
         className="relative w-full aspect-[16/9] max-h-[70vh] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer flex items-center justify-center"
         onClick={() => images.length > 0 && setIsZoomed(true)}
@@ -110,7 +112,6 @@ export default function DetaliuAnunt() {
               alt={listing.title}
               className="w-full h-full object-contain"
             />
-
             {images.length > 1 && (
               <>
                 <button
@@ -141,7 +142,7 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔍 Lightbox */}
+      {/* 🔍 Zoom full-screen */}
       {isZoomed && images.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
@@ -250,12 +251,42 @@ export default function DetaliuAnunt() {
             WhatsApp
           </button>
           <button
+            onClick={() =>
+              window.open(
+                `fb-messenger://share/?link=${encodeURIComponent(shareUrl)}`,
+                "_blank"
+              )
+            }
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm md:text-base"
+          >
+            Messenger
+          </button>
+          <button
+            onClick={() =>
+              window.open(
+                `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
+                  listing.title
+                )}`,
+                "_blank"
+              )
+            }
+            className="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 text-sm md:text-base"
+          >
+            Telegram
+          </button>
+          <button
             onClick={() => handleShare("copy")}
             className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm md:text-base"
           >
             Copiază linkul
           </button>
         </div>
+
+        {/* ℹ️ Avertisment pentru iPhone */}
+        <p className="text-xs text-gray-500 mt-2">
+          *Pe iPhone, aplicația Facebook are restricții pentru linkuri externe.
+          Dacă apare eroare, apasă „Copiază linkul” și deschide anunțul direct în Safari.
+        </p>
       </div>
     </div>
   );
