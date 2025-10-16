@@ -1,7 +1,7 @@
 // src/components/ListingCard.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { toggleFav, getFavIds } from "../utils/favorites"; // ✅ import funcțiile existente
+import { toggleFav, getFavIds } from "../utils/favorites"; // ✅ funcțiile de localStorage
 
 export default function ListingCard({ listing }) {
   const [favorites, setFavorites] = useState([]);
@@ -24,7 +24,7 @@ export default function ListingCard({ listing }) {
 
   return (
     <div
-      className={`relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
+      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
@@ -43,14 +43,12 @@ export default function ListingCard({ listing }) {
       {/* ❤️ Buton Favorite */}
       <button
         onClick={handleFavorite}
-        className={`absolute top-3 right-3 p-2 rounded-full z-10 shadow-md transition ${
+        className={`absolute top-3 right-3 p-2 rounded-full z-20 shadow-md transition ${
           isFavorite
             ? "bg-red-500 text-white hover:bg-red-600"
             : "bg-white text-gray-600 hover:text-red-500"
         }`}
-        title={
-          isFavorite ? "Elimină din favorite" : "Adaugă la favorite"
-        }
+        title={isFavorite ? "Elimină din favorite" : "Adaugă la favorite"}
       >
         ❤️
       </button>
