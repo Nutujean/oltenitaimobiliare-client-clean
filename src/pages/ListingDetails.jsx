@@ -52,15 +52,16 @@ export default function ListingDetails() {
         {listing.price} €
       </p>
 
-      {/* 🔵 Buton Distribuie pe Facebook (varianta corectă, compatibilă mobil) */}
+      {/* 🔵 Buton Distribuie pe Facebook (100% compatibil mobil și desktop) */}
       <a
-        href={`https://www.facebook.com/dialog/share?app_id=87741124305&display=popup&href=https://oltenitaimobiliare.ro/share/${listing._id}&redirect_uri=https://oltenitaimobiliare.ro/anunt/${listing._id}`}
+        href={`https://www.facebook.com/sharer.php?u=https://oltenitaimobiliare.ro/share/${listing._id}`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mb-6 transition"
       >
-        🔗 Distribuie pe Facebook
-      </a>
+       🔗 Distribuie pe Facebook
+     </a>
+
 
       <p className="leading-relaxed text-gray-800 whitespace-pre-line">
         {listing.description}
