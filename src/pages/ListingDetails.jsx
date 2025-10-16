@@ -48,20 +48,31 @@ export default function ListingDetails() {
         />
       )}
 
-      <p className="text-lg text-blue-700 font-semibold mb-2">
+      <p className="text-lg text-blue-700 font-semibold mb-4">
         {listing.price} €
       </p>
 
-      {/* 🔵 Buton Distribuie pe Facebook (100% compatibil mobil și desktop) */}
+      {/* 🔵 Distribuire Facebook */}
       <a
         href={`https://www.facebook.com/sharer.php?u=https://oltenitaimobiliare.ro/share/${listing._id}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mb-6 transition"
+        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mb-3 transition"
       >
-       🔗 Distribuie pe Facebook
-     </a>
+        🔗 Distribuie pe Facebook
+      </a>
 
+      {/* 🟢 Distribuire WhatsApp */}
+      <a
+        href={`https://wa.me/?text=${encodeURIComponent(
+          `Vezi acest anunț pe Oltenița Imobiliare: https://oltenitaimobiliare.ro/share/${listing._id}`
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="ml-3 inline-block bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg mb-6 transition"
+      >
+        💬 Distribuie pe WhatsApp
+      </a>
 
       <p className="leading-relaxed text-gray-800 whitespace-pre-line">
         {listing.description}
