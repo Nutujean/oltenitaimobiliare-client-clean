@@ -39,55 +39,66 @@ export default function DetaliuAnunt() {
   if (!listing) return <p className="text-center py-10">Anunțul nu există.</p>;
 
   const images = Array.isArray(listing.images) ? listing.images : [];
-
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
-
   const isFeatured =
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
-  // ✅ Varianta sigură pentru iPhone — share via backend /share/:id
-  const handleShare = (platform) => {
-    const backendShare = `https://oltenitaimobiliare.ro/share/template.html?id=${listing._id}`;
-    const encodedUrl = encodeURIComponent(backendShare);
-    const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
+  const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  const encodedUrl = encodeURIComponent(shareUrl);
+  const text = encodeURIComponent(
+    listing.title || "Vezi acest anunț imobiliar din Oltenița"
+  );
 
+  const handleShare = (platform) => {
     if (platform === "facebook") {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
+      // ✅ dacă e iPhone → deschide direct în Safari
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        window.location.href = shareUrl;
+      } else {
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+          "_blank"
+        );
+      }
     } else if (platform === "whatsapp") {
-      window.open(`https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`, "_blank");
+      window.open(
+        `https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`,
+        "_blank"
+      );
     } else {
-      navigator.clipboard.writeText(backendShare);
+      navigator.clipboard.writeText(shareUrl);
       alert("Link copiat în clipboard!");
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
-      {/* 🧠 META TAGURI pentru SEO și Facebook */}
+      {/* ✅ Meta OG pentru Facebook */}
       <Helmet>
-        <title>{listing?.title || "Anunț imobiliar în Oltenița"}</title>
-        <meta
-          name="description"
-          content={
-            listing?.description?.substring(0, 160) ||
-            "Vezi detalii despre acest anunț imobiliar din Oltenița și împrejurimi."
-          }
-        />
-        <meta property="og:title" content={listing?.title} />
+        <title>{listing.title} - Oltenița Imobiliare</title>
+        <meta property="og:title" content={listing.title} />
         <meta
           property="og:description"
-          content={listing?.description?.substring(0, 160)}
+          content={
+            listing.description?.substring(0, 150) ||
+            "Vezi detalii despre acest anunț imobiliar din Oltenița."
+          }
         />
-        <meta property="og:image" content={listing?.images?.[0]} />
         <meta
-          property="og:url"
-          content={`https://oltenitaimobiliare.ro/anunt/${listing?._id}`}
+          property="og:image"
+          content={
+            listing.images?.[0] ||
+            listing.imageUrl ||
+            "https://oltenitaimobiliare.ro/preview.jpg"
+          }
         />
+        <meta property="og:url" content={shareUrl} />
         <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      {/* 📸 Galerie poze */}
+      {/* 📸 Galerie */}
       <div
         className="relative w-full aspect-[16/9] max-h-[70vh] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer flex items-center justify-center"
         onClick={() => images.length > 0 && setIsZoomed(true)}
@@ -130,10 +141,31 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
+      {/* 🔍 Lightbox */}
+      {isZoomed && images.length > 0 && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          onClick={() => setIsZoomed(false)}
+        >
+          <img
+            src={images[currentImage]}
+            alt={listing.title}
+            className="max-w-[95vw] max-h-[90vh] object-contain"
+          />
+          <button
+            onClick={() => setIsZoomed(false)}
+            className="absolute top-6 right-6 text-white text-3xl font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 🔹 Titlu + Înapoi */}
       <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold leading-tight">{listing.title}</h1>
-
+        <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+          {listing.title}
+        </h1>
         <button
           onClick={() => navigate(-1)}
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
@@ -147,7 +179,6 @@ export default function DetaliuAnunt() {
         <p className="text-xl md:text-2xl font-semibold text-blue-700">
           <span className="font-bold text-gray-800">Preț:</span> {listing.price} €
         </p>
-
         {isFeatured && (
           <span className="bg-green-600 text-white text-xs md:text-sm px-3 py-1 rounded shadow">
             ⭐ Promovat până la{" "}
@@ -158,7 +189,9 @@ export default function DetaliuAnunt() {
 
       {/* 🔹 Locație */}
       {listing.location && (
-        <p className="text-gray-600 mt-1 text-sm md:text-base">📍 {listing.location}</p>
+        <p className="text-gray-600 mt-1 text-sm md:text-base">
+          📍 {listing.location}
+        </p>
       )}
 
       {/* 🔹 Descriere */}
@@ -185,18 +218,11 @@ export default function DetaliuAnunt() {
         <h2 className="text-lg md:text-xl font-semibold mb-3">Date de contact</h2>
         {listing.user || listing.phone ? (
           <div className="bg-white border rounded-xl shadow p-4 md:p-5 space-y-2 text-sm md:text-base">
-            {listing.user?.name && (
-              <p>
-                <strong>Nume:</strong> {listing.user.name}
-              </p>
-            )}
+            {listing.user?.name && <p><strong>Nume:</strong> {listing.user.name}</p>}
             {listing.phone && (
               <p>
                 <strong>Telefon:</strong>{" "}
-                <a
-                  href={`tel:${listing.phone}`}
-                  className="text-blue-600 font-semibold hover:underline"
-                >
+                <a href={`tel:${listing.phone}`} className="text-blue-600 font-semibold hover:underline">
                   {listing.phone}
                 </a>
               </p>
