@@ -15,7 +15,7 @@ export default function DetaliuAnunt() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // Swipe ref-uri
+  // Swipe refs
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
@@ -49,23 +49,23 @@ export default function DetaliuAnunt() {
   const isFeatured =
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
+  // ✅ URL pentru distribuire backend (Facebook citește meta-tag-urile corect)
+  const backendShareUrl = `https://oltenitaimobiliare-backend.onrender.com/share/${listing._id}`;
   const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
   const encodedUrl = encodeURIComponent(shareUrl);
   const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
 
   const handleShare = (platform) => {
     if (platform === "facebook") {
+      const finalUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        backendShareUrl
+      )}`;
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         alert(
           "Pe iPhone, aplicația Facebook poate bloca distribuirea. Apasă 'Copiază linkul' și deschide în Safari."
         );
-        return;
-      } else {
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-          "_blank"
-        );
       }
+      window.open(finalUrl, "_blank");
     } else if (platform === "whatsapp") {
       window.open(
         `https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`,
@@ -77,7 +77,7 @@ export default function DetaliuAnunt() {
     }
   };
 
-  // Detectare swipe
+  // Swipe handling
   const onTouchStart = (e) => (touchStartX.current = e.touches[0].clientX);
   const onTouchEnd = (e) => {
     touchEndX.current = e.changedTouches[0].clientX;
@@ -181,10 +181,7 @@ export default function DetaliuAnunt() {
             className="absolute top-6 right-6 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-12 h-12 flex items-center justify-center"
             aria-label="Închide imaginea"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            ✕
           </button>
 
           {/* ⬅️ Săgeată stânga */}
@@ -195,11 +192,8 @@ export default function DetaliuAnunt() {
                 prevImage();
               }}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-              aria-label="Imagine anterioară"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="white" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
+              ❮
             </button>
           )}
 
@@ -211,17 +205,13 @@ export default function DetaliuAnunt() {
                 nextImage();
               }}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-              aria-label="Imagine următoare"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="white" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              ❯
             </button>
           )}
         </div>
       )}
 
-      {/* restul conținutului rămâne identic */}
       {/* 🔹 Titlu + Înapoi */}
       <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl md:text-3xl font-bold leading-tight">{listing.title}</h1>
