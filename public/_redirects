@@ -1,3 +1,5 @@
+# 🔒 Redirecționează tot traficul HTTP către HTTPS
 http://* https://oltenitaimobiliare.ro/:splat 301!
 
-
+# 🔁 Redirecționează cererile /share/* către backend (pentru distribuire Facebook)
+ /share/* https://oltenitaimobiliare-backend.onrender.com/share/:splat 200
