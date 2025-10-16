@@ -48,7 +48,7 @@ export default function DetaliuAnunt() {
 
   // ✅ Varianta sigură pentru iPhone — share via backend /share/:id
   const handleShare = (platform) => {
-    const backendShare = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+    const backendShare = `https://oltenitaimobiliare.ro/share/template.html?id=${listing._id}`;
     const encodedUrl = encodeURIComponent(backendShare);
     const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
 
