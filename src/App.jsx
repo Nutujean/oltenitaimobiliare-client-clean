@@ -4,7 +4,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import BannerTest from "./pages/BannerTest";
 import CumAdaugi from "./pages/CumAdaugi";
-importă: import Share from "./pages/Share";
+import Share from "./pages/Share";
 
 /* Pagini principale */
 import Home from "./pages/Home";
