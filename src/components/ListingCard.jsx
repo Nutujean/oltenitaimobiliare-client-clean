@@ -22,20 +22,35 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 FUNCȚIE SHARE PE FACEBOOK – DOMENIU CURAT (.ro)
+  // 🔵 FUNCȚIE SHARE UNIVERSALĂ – compatibil iPhone, Android și Desktop
   const handleShareFacebook = (e) => {
     e.preventDefault();
 
-    // ✅ Folosim domeniul principal (cu proxy Netlify activ)
     const shareUrl = `https://oltenitaimobiliare.ro/share/${listing._id}`;
+    const shareText = encodeURIComponent(
+      "Vezi acest anunț imobiliar pe Oltenița Imobiliare 🏡"
+    );
 
-    // 🔗 Facebook Share Dialog
+    // 🧭 Detectăm dacă e iPhone / iPad / Safari
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    // 🔗 Link final pentru Facebook Share
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
-    )}`;
+    )}&quote=${shareText}`;
 
-    console.log("📤 Distribuire pe Facebook:", shareUrl);
-    window.open(facebookUrl, "_blank", "noopener,noreferrer");
+    if (isIOS) {
+      // 📱 iPhone – redirect complet (Safari nu permite popup)
+      window.location.href = facebookUrl;
+    } else {
+      // 💻 Desktop / Android – deschide fereastra mică de share
+      window.open(
+        facebookUrl,
+        "_blank",
+        "noopener,noreferrer,width=600,height=500"
+      );
+    }
   };
 
   return (
