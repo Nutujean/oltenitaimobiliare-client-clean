@@ -22,6 +22,16 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
+  // 🔵 FUNCȚIE SHARE PE FACEBOOK
+  const handleShareFacebook = (e) => {
+    e.preventDefault();
+    const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`;
+    window.open(facebookUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div
       className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
@@ -65,7 +75,7 @@ export default function ListingCard({ listing }) {
           className={`w-full h-48 object-cover transition-transform duration-300 ${
             isExpired ? "opacity-70 grayscale" : "hover:scale-105"
           }`}
-          loading="lazy" // ✅ Lazy loading pentru viteză
+          loading="lazy"
         />
       </Link>
 
@@ -94,17 +104,28 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* Buton vezi detalii */}
-        <Link
-          to={`/anunt/${listing._id}`}
-          className={`block text-center font-medium mt-3 py-2 rounded-lg ${
-            isExpired
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700 transition"
-          }`}
-        >
-          {isExpired ? "Expirat" : "Vezi detalii"}
-        </Link>
+        {/* Butoane acțiune */}
+        <div className="flex justify-between items-center mt-3 gap-2">
+          <Link
+            to={`/anunt/${listing._id}`}
+            className={`flex-1 text-center font-medium py-2 rounded-lg ${
+              isExpired
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 transition"
+            }`}
+          >
+            {isExpired ? "Expirat" : "Vezi detalii"}
+          </Link>
+
+          {/* 🔵 Buton Share Facebook */}
+          <button
+            onClick={handleShareFacebook}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+            title="Distribuie pe Facebook"
+          >
+            🔗 Share
+          </button>
+        </div>
       </div>
     </div>
   );
