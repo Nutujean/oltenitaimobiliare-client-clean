@@ -1,5 +1,6 @@
-# 🔒 Redirecționează tot traficul HTTP către HTTPS
+# 🔒 Forțează HTTPS
 http://* https://oltenitaimobiliare.ro/:splat 301!
-
-# 🔁 Redirecționează cererile /share/* către backend (pentru distribuire Facebook)
- /share/:id https://oltenitaimobiliare-backend.onrender.com/share/:id 200
+# 🔁 Proxy pentru distribuire Facebook (păstrează domeniul .ro)
+/share/:id https://oltenitaimobiliare-backend.onrender.com/share/:id 200
+# 🔄 Restul aplicației React
+/* /index.html 200
