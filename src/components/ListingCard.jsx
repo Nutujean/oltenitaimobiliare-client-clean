@@ -22,13 +22,18 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 FUNCȚIE SHARE PE FACEBOOK
+  // 🔵 FUNCȚIE SHARE PE FACEBOOK – FIX FINAL
   const handleShareFacebook = (e) => {
     e.preventDefault();
+
+    // ✅ Domeniul corect (frontend public)
     const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+
+    // ✅ Facebook share dialog
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
     )}`;
+
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -120,10 +125,18 @@ export default function ListingCard({ listing }) {
           {/* 🔵 Buton Share Facebook */}
           <button
             onClick={handleShareFacebook}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+            className="bg-[#1877F2] hover:bg-[#145DBF] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md flex items-center gap-1"
             title="Distribuie pe Facebook"
           >
-            🔗 Share
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-4 h-4"
+            >
+              <path d="M22 12a10 10 0 1 0-11.5 9.9v-7H8v-2.9h2.5V9.5c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6v1.9H17l-.4 2.9h-2.9v7A10 10 0 0 0 22 12Z" />
+            </svg>
+            Distribuie
           </button>
         </div>
       </div>
