@@ -1,7 +1,7 @@
 // src/components/ListingCard.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { toggleFav, getFavIds } from "../utils/favorites"; // ✅ funcțiile de localStorage
+import { toggleFav, getFavIds } from "../utils/favorites";
 
 export default function ListingCard({ listing }) {
   const [favorites, setFavorites] = useState([]);
@@ -22,18 +22,19 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 FUNCȚIE SHARE PE FACEBOOK – FIX FINAL
+  // 🔵 FUNCȚIE SHARE PE FACEBOOK – FINAL FIX
   const handleShareFacebook = (e) => {
     e.preventDefault();
 
     // ✅ Domeniul corect (frontend public)
     const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-    // ✅ Facebook share dialog
+    // ✅ Facebook Share Dialog
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
     )}`;
 
+    console.log("🔗 Link partajat:", shareUrl); // pentru debug
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
