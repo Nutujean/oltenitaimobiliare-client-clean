@@ -22,19 +22,19 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 FUNCȚIE SHARE PE FACEBOOK – VARIANTĂ CURATĂ (cu proxy Netlify)
+  // 🔵 FUNCȚIE SHARE PE FACEBOOK – DOMENIU CURAT (.ro)
   const handleShareFacebook = (e) => {
     e.preventDefault();
 
-    // Domeniul principal (Netlify proxy → backend)
+    // ✅ Folosim domeniul principal (cu proxy Netlify activ)
     const shareUrl = `https://oltenitaimobiliare.ro/share/${listing._id}`;
 
-    // Facebook Share Dialog
+    // 🔗 Facebook Share Dialog
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
     )}`;
 
-    console.log("📤 Share către Facebook:", shareUrl);
+    console.log("📤 Distribuire pe Facebook:", shareUrl);
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
