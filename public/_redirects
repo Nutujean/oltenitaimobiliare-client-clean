@@ -2,6 +2,7 @@
 http://* https://oltenitaimobiliare.ro/:splat 301!
 
 # 🔁 Proxy pentru distribuire Facebook (păstrează domeniul .ro)
+# "!" forțează Netlify să trimită cererea direct către backend fără a trece prin React
 /share/:id https://oltenitaimobiliare-backend.onrender.com/share/:id 200!
 
 # 🔄 Restul aplicației React
