@@ -2,4 +2,4 @@
 http://* https://oltenitaimobiliare.ro/:splat 301!
 
 # 🔁 Redirecționează cererile /share/* către backend (pentru distribuire Facebook)
- /share/* https://oltenitaimobiliare-backend.onrender.com/share/:splat 200
+ /share/:id https://oltenitaimobiliare-backend.onrender.com/share/:id 200
