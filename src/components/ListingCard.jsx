@@ -22,29 +22,26 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 FUNCȚIE SHARE UNIVERSALĂ – compatibil iPhone, Android și Desktop
+  // 🔵 FUNCȚIE SHARE UNIVERSALĂ – versiunea care arată imaginea garantat
   const handleShareFacebook = (e) => {
     e.preventDefault();
 
-    const shareUrl = `https://oltenitaimobiliare.ro/share/${listing._id}`;
+    // ⚙️ link direct către backend Render (servește meta-tags complete)
+    const shareUrl = `https://oltenitaimobiliare-backend.onrender.com/share/${listing._id}`;
     const shareText = encodeURIComponent(
       "Vezi acest anunț imobiliar pe Oltenița Imobiliare 🏡"
     );
 
-    // 🧭 Detectăm dacă e iPhone / iPad / Safari
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    // 🔗 Link final pentru Facebook Share
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
     )}&quote=${shareText}`;
 
     if (isIOS) {
-      // 📱 iPhone – redirect complet (Safari nu permite popup)
       window.location.href = facebookUrl;
     } else {
-      // 💻 Desktop / Android – deschide fereastra mică de share
       window.open(
         facebookUrl,
         "_blank",
@@ -59,7 +56,6 @@ export default function ListingCard({ listing }) {
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -71,7 +67,6 @@ export default function ListingCard({ listing }) {
         </div>
       )}
 
-      {/* ❤️ Buton Favorite */}
       <button
         onClick={handleFavorite}
         className={`absolute top-3 right-3 p-2 rounded-full z-20 shadow-md transition ${
@@ -84,7 +79,6 @@ export default function ListingCard({ listing }) {
         ❤️
       </button>
 
-      {/* Imagine anunț */}
       <Link to={`/anunt/${listing._id}`}>
         <img
           src={
@@ -100,7 +94,6 @@ export default function ListingCard({ listing }) {
         />
       </Link>
 
-      {/* Detalii anunț */}
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
           {listing.title}
@@ -109,14 +102,12 @@ export default function ListingCard({ listing }) {
           {listing.location || "Oltenița și împrejurimi"}
         </p>
 
-        {/* Preț */}
         {listing.price && (
           <p className="text-blue-700 font-bold text-lg">
             {listing.price.toLocaleString("ro-RO")} €
           </p>
         )}
 
-        {/* Detalii rapide */}
         <div className="text-xs text-gray-500 flex flex-wrap gap-3">
           {listing.category && <span>🏠 {listing.category}</span>}
           {listing.dealType === "inchiriere" && <span>📅 Închiriere</span>}
@@ -125,7 +116,6 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* Butoane acțiune */}
         <div className="flex justify-between items-center mt-3 gap-2">
           <Link
             to={`/anunt/${listing._id}`}
@@ -138,7 +128,7 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔵 Buton Share Facebook */}
+          {/* 🔵 Share Facebook */}
           <button
             onClick={handleShareFacebook}
             className="bg-[#1877F2] hover:bg-[#145DBF] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md flex items-center gap-1"
