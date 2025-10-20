@@ -1,0 +1,26 @@
+<?php
+// ===============================================================
+// Oltenița Imobiliare - Proxy pentru distribuire Facebook
+// ===============================================================
+// Acest fișier redirecționează cererile de tip:
+//   https://oltenitaimobiliare.ro/share.php?id=XXXXXXXXXXXXXXX
+// către backendul Render, care conține meta-tag-urile corecte OG
+// ===============================================================
+
+// Preluăm ID-ul din URL
+$id = isset($_GET['id']) ? trim($_GET['id']) : null;
+
+// Dacă lipsește ID-ul, trimitem mesaj de eroare
+if (!$id) {
+  header("HTTP/1.1 400 Bad Request");
+  echo "<h2>ID lipsă</h2><p>Oltenița Imobiliare</p>";
+  exit;
+}
+
+// Redirecționare permanentă către backendul Render (unde se generează meta-tagurile OG)
+$backendUrl = "https://oltenitaimobiliare-backend.onrender.com/share/" . urlencode($id);
+
+// ✅ Important: 302 temporar, ca Facebook să citească meta-tagurile de la Render
+header("Location: $backendUrl", true, 302);
+exit;
+?>
