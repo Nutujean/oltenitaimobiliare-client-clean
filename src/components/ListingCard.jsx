@@ -39,6 +39,15 @@ export default function ListingCard({ listing }) {
     alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
   };
 
+  // 🔵 Deschidere sigură Facebook (fără blocare de popup)
+  const openFacebookShare = () => {
+    window.open(
+      facebookShare,
+      "_blank",
+      "noopener,noreferrer,width=600,height=500"
+    );
+  };
+
   return (
     <div
       className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
@@ -126,14 +135,12 @@ export default function ListingCard({ listing }) {
           {!isExpired && (
             <div className="flex justify-between items-center gap-2 mt-2">
               {/* 📘 Facebook */}
-              <a
-                href={facebookShare}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={openFacebookShare}
                 className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF]"
               >
                 📘 Facebook
-              </a>
+              </button>
 
               {/* 💬 WhatsApp */}
               <a
