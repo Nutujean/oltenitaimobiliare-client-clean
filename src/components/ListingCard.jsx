@@ -1,4 +1,3 @@
-// src/components/ListingCard.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
@@ -22,14 +21,18 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ Linkurile pentru distribuire
+  // ✅ URL corect pentru distribuire (cu meta OG din backend)
   const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+  // 🔵 Linkuri pentru rețele
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    shareUrl
+  )}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
 
-  // ✅ Pentru TikTok doar copiem linkul (nu are API direct)
+  // 🟣 Pentru TikTok doar copiem linkul
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
@@ -121,6 +124,7 @@ export default function ListingCard({ listing }) {
           {/* 🔹 Butoane de distribuire */}
           {!isExpired && (
             <div className="flex justify-between items-center gap-2 mt-2">
+              {/* 📘 Facebook */}
               <a
                 href={facebookShare}
                 target="_blank"
@@ -129,6 +133,8 @@ export default function ListingCard({ listing }) {
               >
                 📘 Facebook
               </a>
+
+              {/* 💬 WhatsApp */}
               <a
                 href={whatsappShare}
                 target="_blank"
@@ -137,6 +143,8 @@ export default function ListingCard({ listing }) {
               >
                 💬 WhatsApp
               </a>
+
+              {/* 🎵 TikTok */}
               <button
                 onClick={copyLink}
                 className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-800"
