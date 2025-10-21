@@ -219,6 +219,7 @@ export default function DetaliuAnunt() {
     </button>
   </div>
 </div>
-
+</div>
   );
 }
+
