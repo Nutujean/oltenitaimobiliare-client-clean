@@ -1,4 +1,4 @@
-// 🧩 FINAL VERSION – Facebook share fix + TikTok visible + OG sync
+// 🧩 FINAL VERSION — Facebook share fix (works in all browsers)
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
@@ -22,18 +22,28 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ URL-ul principal de share
+  // ✅ URL-ul de bază pentru share
   const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`;
 
-  // 🔵 Linkuri pentru rețele sociale
-  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-    shareUrl
-  )}`;
+  // ✅ Funcție sigură pentru deschiderea ferestrei Facebook
+  const openFacebookShare = (e) => {
+    e.preventDefault();
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`;
+    window.open(
+      url,
+      "_blank",
+      "width=600,height=500,noopener,noreferrer"
+    );
+  };
+
+  // 💬 WhatsApp
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
 
-  // 🟣 Copiere pentru TikTok
+  // 🎵 TikTok
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
@@ -45,7 +55,7 @@ export default function ListingCard({ listing }) {
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ Etichete PROMOVAT / EXPIRAT */}
+      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -126,14 +136,12 @@ export default function ListingCard({ listing }) {
           {!isExpired && (
             <div className="grid grid-cols-3 gap-2 mt-2">
               {/* 📘 Facebook */}
-              <a
-                href={facebookShare}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={openFacebookShare}
                 className="bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF] w-full"
               >
                 📘 Facebook
-              </a>
+              </button>
 
               {/* 💬 WhatsApp */}
               <a
