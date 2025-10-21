@@ -9,11 +9,9 @@ export default function DetaliuAnunt() {
 
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-
-  const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
 
   useEffect(() => window.scrollTo(0, 0), [id]);
 
@@ -43,7 +41,7 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ FIX FINAL pentru iPhone Facebook (deep link OLX-style)
+  // ✅ FIX Facebook iPhone + Android Zoom
   const handleShare = (platform) => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
@@ -55,18 +53,14 @@ export default function DetaliuAnunt() {
           backendShareUrl
         )}`;
 
-        if (isFacebookApp && /iPhone|iPad|iPod/i.test(ua)) {
-          // 👉 Forțează Safari / app extern (funcționează din WebView)
-          const deepLink = `fb://facewebmodal/f?href=${encodeURIComponent(fbShareUrl)}`;
-          window.location.href = deepLink;
+        if (isFacebookApp) {
+          alert("⚠️ Deschide pagina în Safari pentru a distribui acest anunț pe Facebook.");
           return;
         }
 
         if (isMobile) {
-          // ✅ Safari / Chrome mobil
           window.open(fbShareUrl, "_blank");
         } else {
-          // ✅ Desktop popup clasic
           window.open(fbShareUrl, "_blank", "width=600,height=400");
         }
         break;
@@ -127,7 +121,7 @@ export default function DetaliuAnunt() {
       {/* Imagine principală */}
       <div
         className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
-        onClick={() => images.length > 0 && setCurrentImage(currentImage)}
+        onClick={() => images.length > 0 && setIsZoomed(true)}
       >
         {images.length ? (
           <>
@@ -165,6 +159,42 @@ export default function DetaliuAnunt() {
           </div>
         )}
       </div>
+
+      {/* ZOOM pe imagine */}
+      {isZoomed && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          onClick={() => setIsZoomed(false)}
+        >
+          <img
+            src={images[currentImage]}
+            alt={listing.title}
+            className="max-w-[90%] max-h-[80%] object-contain"
+          />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full"
+              >
+                ❮
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full"
+              >
+                ❯
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Titlu + preț */}
       <div className="mt-5 text-center sm:text-left">
@@ -204,23 +234,18 @@ export default function DetaliuAnunt() {
         </h3>
 
         <div className="flex gap-3 flex-wrap">
-          {/* Facebook */}
           <button
             onClick={() => handleShare("facebook")}
             className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
           >
             📘 Facebook
           </button>
-
-          {/* WhatsApp */}
           <button
             onClick={() => handleShare("whatsapp")}
             className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
           >
             💬 WhatsApp
           </button>
-
-          {/* TikTok */}
           <button
             onClick={() => handleShare("tiktok")}
             className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
