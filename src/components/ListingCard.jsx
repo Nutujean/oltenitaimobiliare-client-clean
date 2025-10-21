@@ -22,10 +22,10 @@ export default function ListingCard({ listing }) {
   };
 
   // ✅ URL corect pentru distribuire (cu meta OG din backend)
-  const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
+  const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}`;
 
   // 🔵 Linkuri pentru rețele
-  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
