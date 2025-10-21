@@ -1,4 +1,3 @@
-// 🧩 FINAL VERSION — Facebook share fix (works in all browsers)
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
@@ -22,40 +21,35 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ URL-ul de bază pentru share
-  const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`;
+  /* ============================================================
+     🌍 URL-uri pentru partajare
+     ============================================================ */
 
-  // ✅ Funcție sigură pentru deschiderea ferestrei Facebook
-  const openFacebookShare = (e) => {
-    e.preventDefault();
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      shareUrl
-    )}`;
-    window.open(
-      url,
-      "_blank",
-      "width=600,height=500,noopener,noreferrer"
-    );
-  };
+  // 🟦 Facebook → redirect backend (sigur, fără share_channel)
+  const facebookShare = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
 
   // 💬 WhatsApp
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
-    `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
+    `🏡 ${listing.title} – vezi detalii: https://oltenitaimobiliare.ro/anunt/${listing._id}`
   )}`;
 
-  // 🎵 TikTok
+  // 🎵 TikTok (copiem linkul în clipboard)
   const copyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
+    const link = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+    navigator.clipboard.writeText(link);
     alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
   };
 
+  /* ============================================================
+     🖼️ CARD LISTING
+     ============================================================ */
   return (
     <div
-      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-visible ${
+      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
+      {/* 🏷️ PROMOVAT / EXPIRAT */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -119,7 +113,7 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* 🔹 Acțiuni */}
+        {/* 🔹 Butoane acțiune */}
         <div className="flex flex-col gap-2 mt-3">
           <Link
             to={`/anunt/${listing._id}`}
@@ -132,23 +126,25 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔹 Butoane de distribuire */}
+          {/* 🔹 Distribuire rețele */}
           {!isExpired && (
-            <div className="grid grid-cols-3 gap-2 mt-2">
+            <div className="flex justify-between items-center gap-2 mt-2">
               {/* 📘 Facebook */}
-              <button
-                onClick={openFacebookShare}
-                className="bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF] w-full"
+              <a
+                href={facebookShare}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF]"
               >
                 📘 Facebook
-              </button>
+              </a>
 
               {/* 💬 WhatsApp */}
               <a
                 href={whatsappShare}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#1DA851] w-full"
+                className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#1DA851]"
               >
                 💬 WhatsApp
               </a>
@@ -156,7 +152,7 @@ export default function ListingCard({ listing }) {
               {/* 🎵 TikTok */}
               <button
                 onClick={copyLink}
-                className="bg-black text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-800 w-full"
+                className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-800"
               >
                 🎵 TikTok
               </button>
