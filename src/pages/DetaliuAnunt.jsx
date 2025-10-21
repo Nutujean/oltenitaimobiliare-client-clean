@@ -51,10 +51,22 @@ export default function DetaliuAnunt() {
 
     switch (platform) {
       case "facebook": {
-        const fbGoUrl = `https://share.oltenitaimobiliare.ro/go/fb/${listing._id}`;
-        window.location.href = fbGoUrl;
-        break;
-      }
+  const fbGoUrl = `https://share.oltenitaimobiliare.ro/go/facebook/${listing._id}`;
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    // Forțează deschiderea în Safari complet
+    window.open(fbGoUrl, "_blank");
+  } else {
+    // Desktop - popup clasic
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        `https://share.oltenitaimobiliare.ro/share/${listing._id}`
+      )}`,
+      "_blank",
+      "width=600,height=400"
+    );
+  }
+  break;
+}
 
       case "whatsapp": {
         const waUrl = `https://wa.me/?text=${encodeURIComponent(
