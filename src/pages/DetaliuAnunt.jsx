@@ -43,43 +43,43 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție finală cu redirect backend (compatibil iPhone, Android, Desktop)
+  // ✅ Fix complet — funcționează și pe desktop, și pe iPhone
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     switch (platform) {
       case "facebook": {
-  const fbGoUrl = `https://share.oltenitaimobiliare.ro/go/facebook/${listing._id}`;
-  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-    // Forțează deschiderea în Safari complet
-    window.open(fbGoUrl, "_blank");
-  } else {
-    // Desktop - popup clasic
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        `https://share.oltenitaimobiliare.ro/share/${listing._id}`
-      )}`,
-      "_blank",
-      "width=600,height=400"
-    );
-  }
-  break;
-}
+        if (isMobile) {
+          window.open(`https://share.oltenitaimobiliare.ro/go/facebook/${listing._id}`, "_blank");
+        } else {
+          window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+              backendShareUrl
+            )}`,
+            "_blank",
+            "width=600,height=400"
+          );
+        }
+        break;
+      }
 
       case "whatsapp": {
-        const waUrl = `https://wa.me/?text=${encodeURIComponent(
-          `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
-        )}`;
-        window.location.href = waUrl;
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(
+            `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
+          )}`,
+          "_blank"
+        );
         break;
       }
 
       case "tiktok": {
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          alert("🔗 Linkul a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
         } else {
           window.open(
             `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
@@ -211,7 +211,7 @@ export default function DetaliuAnunt() {
           </button>
           <button
             onClick={() => handleShare("tiktok")}
-            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900"
+            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
           >
             🎵 TikTok
           </button>
