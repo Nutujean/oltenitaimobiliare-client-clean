@@ -1,3 +1,4 @@
+// 🧩 FINAL VERSION – Facebook share fix + TikTok visible + OG sync
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
@@ -21,25 +22,22 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ URL-uri pentru share
+  // ✅ URL-ul principal de share
   const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`;
 
-  // 🔵 Facebook — corect URL-encoded
+  // 🔵 Linkuri pentru rețele sociale
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
     shareUrl
   )}`;
-
-  // 💬 WhatsApp
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
 
-  // 🎵 TikTok
+  // 🟣 Copiere pentru TikTok
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
-   alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
-};
-
+    alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
+  };
 
   return (
     <div
@@ -47,7 +45,7 @@ export default function ListingCard({ listing }) {
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
+      {/* 🏷️ Etichete PROMOVAT / EXPIRAT */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -88,7 +86,7 @@ export default function ListingCard({ listing }) {
         />
       </Link>
 
-      {/* 📄 Detalii */}
+      {/* 📋 Detalii */}
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
           {listing.title}
@@ -124,7 +122,7 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔹 Distribuire */}
+          {/* 🔹 Butoane de distribuire */}
           {!isExpired && (
             <div className="grid grid-cols-3 gap-2 mt-2">
               {/* 📘 Facebook */}
