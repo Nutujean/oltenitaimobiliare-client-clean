@@ -48,8 +48,9 @@ export default function DetaliuAnunt() {
   const isFeatured =
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
-  // ✅ URL-uri pentru share
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
+  // ✅ URL-uri pentru share (iPhone compatibil)
+  // Facebook citește direct domeniul principal, fără redirecție
+  const backendShareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
   // ✅ Funcție compatibilă desktop + iPhone (fără blocaje Facebook)
@@ -175,6 +176,24 @@ export default function DetaliuAnunt() {
       <p className="text-gray-600 mt-3 text-sm md:text-base">
         📍 {listing.location}
       </p>
+
+      {/* 🔸 Informații suplimentare - păstrăm click-abil telefon și nume */}
+      {listing.contactName && (
+        <p className="mt-2 text-gray-800 font-medium">
+          👤 {listing.contactName}
+        </p>
+      )}
+      {listing.phone && (
+        <p className="mt-1">
+          📞{" "}
+          <a
+            href={`tel:${listing.phone}`}
+            className="text-blue-600 font-semibold hover:underline"
+          >
+            {listing.phone}
+          </a>
+        </p>
+      )}
 
       <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">
         {listing.description}
