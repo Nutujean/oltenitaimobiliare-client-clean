@@ -52,34 +52,37 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție actualizată cu TikTok complet
+  // ✅ Funcție compatibilă desktop + iPhone (fără blocaje Facebook)
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     switch (platform) {
-      case "facebook":
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-            backendShareUrl
-          )}`,
-          "_blank",
-          "width=600,height=400"
-        );
+      case "facebook": {
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          backendShareUrl
+        )}`;
+        if (isMobile) {
+          // 📱 redirecționare directă pentru iPhone / Android
+          window.location.href = fbUrl;
+        } else {
+          // 💻 pop-up pentru desktop
+          window.open(fbUrl, "_blank", "width=600,height=400");
+        }
         break;
+      }
 
-      case "whatsapp":
-        window.open(
-          `https://wa.me/?text=${encodeURIComponent(
-            `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
-          )}`,
-          "_blank"
-        );
+      case "whatsapp": {
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(
+          `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
+        )}`;
+        window.location.href = waUrl;
         break;
+      }
 
       case "tiktok":
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          alert("🔗 Linkul a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
         } else {
           window.open(
             `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
@@ -160,12 +163,16 @@ export default function DetaliuAnunt() {
       </div>
 
       {/* Titlu + preț */}
-      <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold">{listing.title}</h1>
-        <p className="text-xl font-semibold text-blue-700">{listing.price} €</p>
+      <div className="mt-5 text-center sm:text-left">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+          {listing.title}
+        </h1>
+        <p className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-lg font-semibold mt-1">
+          💰 {listing.price} €
+        </p>
       </div>
 
-      <p className="text-gray-600 mt-1 text-sm md:text-base">
+      <p className="text-gray-600 mt-3 text-sm md:text-base">
         📍 {listing.location}
       </p>
 
