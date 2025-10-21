@@ -43,11 +43,11 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Fix complet pentru Facebook iPhone (Safari & aplicație)
+  // ✅ FIX FINAL pentru iPhone Facebook (deep link OLX-style)
   const handleShare = (platform) => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-    const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua) && /iPhone|iPad|iPod/i.test(ua);
+    const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
 
     switch (platform) {
       case "facebook": {
@@ -55,14 +55,18 @@ export default function DetaliuAnunt() {
           backendShareUrl
         )}`;
 
-        if (isFacebookApp) {
-          // În aplicația Facebook iOS → deschidem direct Safari extern
-          window.open(fbShareUrl, "_system");
-        } else if (isMobile) {
-          // Mobil normal (Safari / Chrome)
+        if (isFacebookApp && /iPhone|iPad|iPod/i.test(ua)) {
+          // 👉 Forțează Safari / app extern (funcționează din WebView)
+          const deepLink = `fb://facewebmodal/f?href=${encodeURIComponent(fbShareUrl)}`;
+          window.location.href = deepLink;
+          return;
+        }
+
+        if (isMobile) {
+          // ✅ Safari / Chrome mobil
           window.open(fbShareUrl, "_blank");
         } else {
-          // Desktop - popup clasic
+          // ✅ Desktop popup clasic
           window.open(fbShareUrl, "_blank", "width=600,height=400");
         }
         break;
