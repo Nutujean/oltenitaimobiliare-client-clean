@@ -22,18 +22,31 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ Distribuire corectă pe Facebook (cu backend share activ)
+  // ✅ Distribuire Facebook
   const handleShareFacebook = (e) => {
     e.preventDefault();
-    const shareUrl = `https://oltenitaimobiliare.ro/share/${listing._id}`;
+    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
     )}`;
-    window.open(
-      facebookUrl,
-      "_blank",
-      "noopener,noreferrer,width=600,height=500"
-    );
+    window.open(facebookUrl, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
+  // ✅ Distribuire WhatsApp
+  const handleShareWhatsApp = (e) => {
+    e.preventDefault();
+    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
+    const msg = `🏡 ${listing.title}\n🔗 ${shareUrl}`;
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, "_blank");
+  };
+
+  // ✅ Copiere link TikTok / clipboard
+  const handleCopyLink = (e) => {
+    e.preventDefault();
+    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
+    navigator.clipboard.writeText(shareUrl);
+    alert("🔗 Link copiat! Poți lipi direct în TikTok, Facebook sau mesaj.");
   };
 
   return (
@@ -106,11 +119,11 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* Butoane */}
-        <div className="flex justify-between items-center mt-3 gap-2">
+        {/* 🔘 Butoane principale */}
+        <div className="flex flex-col gap-2 mt-3">
           <Link
             to={`/anunt/${listing._id}`}
-            className={`flex-1 text-center font-medium py-2 rounded-lg ${
+            className={`text-center font-medium py-2 rounded-lg ${
               isExpired
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700 transition"
@@ -119,22 +132,27 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔵 Distribuie Facebook */}
-          <button
-            onClick={handleShareFacebook}
-            className="bg-[#1877F2] hover:bg-[#145DBF] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md flex items-center gap-1"
-            title="Distribuie pe Facebook"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-4 h-4"
+          {/* 🔗 Distribuire Social Media */}
+          <div className="flex flex-wrap gap-2 justify-between">
+            <button
+              onClick={handleShareFacebook}
+              className="flex-1 bg-[#1877F2] hover:bg-[#145DBF] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
             >
-              <path d="M22 12a10 10 0 1 0-11.5 9.9v-7H8v-2.9h2.5V9.5c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6v1.9H17l-.4 2.9h-2.9v7A10 10 0 0 0 22 12Z" />
-            </svg>
-            Distribuie
-          </button>
+              📘 Facebook
+            </button>
+            <button
+              onClick={handleShareWhatsApp}
+              className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+            >
+              💬 WhatsApp
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+            >
+              🎵 TikTok / Copiază
+            </button>
+          </div>
         </div>
       </div>
     </div>
