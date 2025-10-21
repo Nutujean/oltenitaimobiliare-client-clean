@@ -198,27 +198,27 @@ export default function DetaliuAnunt() {
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
           Distribuie anunțul
         </h3>
-        <div className="flex gap-3 flex-wrap">
-          <button
-            onClick={() => handleShare("facebook")}
-            className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
-          >
-            📘 Facebook
-          </button>
-          <button
-            onClick={() => handleShare("whatsapp")}
-            className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
-          >
-            💬 WhatsApp
-          </button>
-          <button
-            onClick={() => handleShare("tiktok")}
-            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-          >
-            🎵 TikTok
-          </button>
-        </div>
-      </div>
-    </div>
+      <div className="flex gap-3 flex-wrap">
+        <button
+           onClick={() => handleShare("facebook")}
+           className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
+    >
+      📘 Facebook
+    </button>
+    <button
+      onClick={() => handleShare("whatsapp")}
+      className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
+    >
+      💬 WhatsApp
+    </button>
+    <button
+      onClick={() => handleShare("tiktok")}
+      className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+    >
+      🎵 TikTok
+    </button>
+  </div>
+</div>
+
   );
 }
