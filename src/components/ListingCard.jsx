@@ -22,30 +22,25 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ URL corect pentru distribuire (cu meta OG din backend)
+  // ✅ URL de distribuire corect pentru backend OG
   const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`;
 
-  // 🔵 Linkuri pentru rețele
-  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-    shareUrl
-  )}`;
+  // 🔵 Linkuri pentru WhatsApp și TikTok
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
 
-  // 🟣 Pentru TikTok doar copiem linkul
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
   };
 
-  // 🔵 Deschidere sigură Facebook (fără blocare de popup)
+  // 🔵 Deschidere sigură Facebook (forțat, funcționează pe iPhone și desktop)
   const openFacebookShare = () => {
-    window.open(
-      facebookShare,
-      "_blank",
-      "noopener,noreferrer,width=600,height=500"
-    );
+    const fullUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`
+    )}`;
+    window.open(fullUrl, "_blank", "noopener,noreferrer,width=600,height=500");
   };
 
   return (
