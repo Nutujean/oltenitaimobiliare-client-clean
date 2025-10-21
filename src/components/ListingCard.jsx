@@ -1,3 +1,4 @@
+// src/components/ListingCard.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
@@ -22,12 +23,12 @@ export default function ListingCard({ listing }) {
   };
 
   // ✅ URL corect pentru distribuire (cu meta OG din backend)
-  const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}`;
+  const shareUrl = `https://share.oltenitaimobiliare.ro/share/fb/${listing._id}?v=${Date.now()}`;
 
   // 🔵 Linkuri pentru rețele
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-  `${shareUrl}?v=${Date.now()}`
-)}`;
+    shareUrl
+  )}`;
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
     `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
   )}`;
