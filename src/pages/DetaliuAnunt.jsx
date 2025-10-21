@@ -15,7 +15,6 @@ export default function DetaliuAnunt() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // swipe
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
@@ -53,7 +52,10 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
+  // ✅ Funcție actualizată cu TikTok complet
   const handleShare = (platform) => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     switch (platform) {
       case "facebook":
         window.open(
@@ -64,6 +66,7 @@ export default function DetaliuAnunt() {
           "width=600,height=400"
         );
         break;
+
       case "whatsapp":
         window.open(
           `https://wa.me/?text=${encodeURIComponent(
@@ -72,10 +75,19 @@ export default function DetaliuAnunt() {
           "_blank"
         );
         break;
+
       case "tiktok":
-        navigator.clipboard.writeText(publicUrl);
-        alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
+        if (isMobile) {
+          navigator.clipboard.writeText(publicUrl);
+          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+        } else {
+          window.open(
+            `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
+            "_blank"
+          );
+        }
         break;
+
       default:
         break;
     }
