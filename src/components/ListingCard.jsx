@@ -22,7 +22,7 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // ✅ Distribuire Facebook
+  // 🔵 Facebook Share
   const handleShareFacebook = (e) => {
     e.preventDefault();
     const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
@@ -32,21 +32,25 @@ export default function ListingCard({ listing }) {
     window.open(facebookUrl, "_blank", "noopener,noreferrer,width=600,height=500");
   };
 
-  // ✅ Distribuire WhatsApp
+  // 🟢 WhatsApp Share
   const handleShareWhatsApp = (e) => {
     e.preventDefault();
-    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-    const msg = `🏡 ${listing.title}\n🔗 ${shareUrl}`;
-    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, "_blank");
+    const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+    const text = `🏡 ${listing.title} - Vezi detalii: ${shareUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, "_blank");
   };
 
-  // ✅ Copiere link TikTok / clipboard
-  const handleCopyLink = (e) => {
+  // 🎵 TikTok (copiere link)
+  const handleCopyTikTok = async (e) => {
     e.preventDefault();
-    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-    navigator.clipboard.writeText(shareUrl);
-    alert("🔗 Link copiat! Poți lipi direct în TikTok, Facebook sau mesaj.");
+    try {
+      const link = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+      await navigator.clipboard.writeText(link);
+      alert("🔗 Link copiat! Poți lipi direct în descrierea de pe TikTok.");
+    } catch {
+      alert("❌ Nu s-a putut copia linkul.");
+    }
   };
 
   return (
@@ -119,7 +123,7 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* 🔘 Butoane principale */}
+        {/* 🔘 Butoane */}
         <div className="flex flex-col gap-2 mt-3">
           <Link
             to={`/anunt/${listing._id}`}
@@ -132,25 +136,25 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔗 Distribuire Social Media */}
-          <div className="flex flex-wrap gap-2 justify-between">
+          {/* 🔗 Butoane Share */}
+          <div className="flex justify-between gap-2">
             <button
               onClick={handleShareFacebook}
-              className="flex-1 bg-[#1877F2] hover:bg-[#145DBF] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+              className="flex-1 bg-[#1877F2] hover:bg-[#145DBF] text-white py-2 rounded-lg text-sm font-medium shadow-md"
             >
               📘 Facebook
             </button>
             <button
               onClick={handleShareWhatsApp}
-              className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+              className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white py-2 rounded-lg text-sm font-medium shadow-md"
             >
               💬 WhatsApp
             </button>
             <button
-              onClick={handleCopyLink}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-md"
+              onClick={handleCopyTikTok}
+              className="flex-1 bg-[#000000] hover:bg-[#222222] text-white py-2 rounded-lg text-sm font-medium shadow-md"
             >
-              🎵 TikTok / Copiază
+              🎵 TikTok
             </button>
           </div>
         </div>
