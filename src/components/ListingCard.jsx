@@ -22,35 +22,17 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 Facebook Share
-  const handleShareFacebook = (e) => {
-    e.preventDefault();
-    const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      shareUrl
-    )}`;
-    window.open(facebookUrl, "_blank", "noopener,noreferrer,width=600,height=500");
-  };
+  // ✅ Linkurile pentru distribuire
+  const shareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
+    `🏡 ${listing.title} – vezi detalii: ${shareUrl}`
+  )}`;
 
-  // 🟢 WhatsApp Share
-  const handleShareWhatsApp = (e) => {
-    e.preventDefault();
-    const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
-    const text = `🏡 ${listing.title} - Vezi detalii: ${shareUrl}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, "_blank");
-  };
-
-  // 🎵 TikTok (copiere link)
-  const handleCopyTikTok = async (e) => {
-    e.preventDefault();
-    try {
-      const link = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
-      await navigator.clipboard.writeText(link);
-      alert("🔗 Link copiat! Poți lipi direct în descrierea de pe TikTok.");
-    } catch {
-      alert("❌ Nu s-a putut copia linkul.");
-    }
+  // ✅ Pentru TikTok doar copiem linkul (nu are API direct)
+  const copyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
   };
 
   return (
@@ -123,7 +105,7 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* 🔘 Butoane */}
+        {/* 🔹 Butoane acțiune */}
         <div className="flex flex-col gap-2 mt-3">
           <Link
             to={`/anunt/${listing._id}`}
@@ -136,27 +118,33 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔗 Butoane Share */}
-          <div className="flex justify-between gap-2">
-            <button
-              onClick={handleShareFacebook}
-              className="flex-1 bg-[#1877F2] hover:bg-[#145DBF] text-white py-2 rounded-lg text-sm font-medium shadow-md"
-            >
-              📘 Facebook
-            </button>
-            <button
-              onClick={handleShareWhatsApp}
-              className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white py-2 rounded-lg text-sm font-medium shadow-md"
-            >
-              💬 WhatsApp
-            </button>
-            <button
-              onClick={handleCopyTikTok}
-              className="flex-1 bg-[#000000] hover:bg-[#222222] text-white py-2 rounded-lg text-sm font-medium shadow-md"
-            >
-              🎵 TikTok
-            </button>
-          </div>
+          {/* 🔹 Butoane de distribuire */}
+          {!isExpired && (
+            <div className="flex justify-between items-center gap-2 mt-2">
+              <a
+                href={facebookShare}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF]"
+              >
+                📘 Facebook
+              </a>
+              <a
+                href={whatsappShare}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#1DA851]"
+              >
+                💬 WhatsApp
+              </a>
+              <button
+                onClick={copyLink}
+                className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-800"
+              >
+                🎵 TikTok
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
