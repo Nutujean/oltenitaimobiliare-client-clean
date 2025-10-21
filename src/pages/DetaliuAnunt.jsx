@@ -1,3 +1,4 @@
+// src/pages/DetaliuAnunt.jsx
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -13,16 +14,11 @@ export default function DetaliuAnunt() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // detect pentru UI (fb webview)
   const [isFacebookAppWebView, setIsFacebookAppWebView] = useState(false);
-
-  const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
 
   useEffect(() => window.scrollTo(0, 0), [id]);
 
   useEffect(() => {
-    // detectăm Facebook In-App Browser (WebView)
     const ua = navigator.userAgent || navigator.vendor || window.opera || "";
     const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
     setIsFacebookAppWebView(Boolean(isFacebookApp));
@@ -55,7 +51,6 @@ export default function DetaliuAnunt() {
   const backendFbDirect = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // handle share (Facebook / WhatsApp / TikTok)
   const handleShare = (platform) => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
@@ -66,13 +61,7 @@ export default function DetaliuAnunt() {
         const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           backendShareUrl
         )}`;
-
-        // dacă suntem în webview Facebook, afișăm banner (user poate apăsa butonul "Deschide în Safari")
-        if (isFacebookApp) {
-          // nu facem alte acțiuni aici — bannerul vizibil va ghida userul
-          return;
-        }
-
+        if (isFacebookApp) return; // lăsăm bannerul să ghideze utilizatorul
         if (isMobile) {
           window.open(fbShareUrl, "_blank");
         } else {
@@ -80,7 +69,6 @@ export default function DetaliuAnunt() {
         }
         break;
       }
-
       case "whatsapp": {
         window.open(
           `https://wa.me/?text=${encodeURIComponent(
@@ -90,7 +78,6 @@ export default function DetaliuAnunt() {
         );
         break;
       }
-
       case "tiktok": {
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
@@ -103,27 +90,24 @@ export default function DetaliuAnunt() {
         }
         break;
       }
-
       default:
         break;
     }
   };
 
-  // butonul din banner: deschide în Safari (sau tab nou)
   const openInSafari = () => {
-    // deschidem pagina backend fb (cea care returneaza OG / redirect corect)
-    // window.open cu "_blank" va oferi utilizatorului opțiunea de a alege Safari sau deschide Safari direct în funcție de webview.
     window.open(backendFbDirect, "_blank");
   };
 
   return (
     <div className="relative">
-      {/* Banner vizibil DOAR când suntem în Facebook WebView */}
+      {/* 🔶 Banner pentru utilizatorii iPhone în aplicația Facebook */}
       {isFacebookAppWebView && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-50 border-b border-yellow-200 text-yellow-900 p-3 flex items-center justify-between gap-3">
-          <div className="text-sm">
-            ⚠️ Distribuirea din aplicația Facebook poate genera eroarea "Something went wrong".
-            Pentru a partaja corect, deschide pagina în Safari.
+          <div className="text-sm leading-snug">
+            ⚠️ Distribuirea pe Facebook nu funcționează din aplicația Facebook pe iPhone.
+            <br />
+            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest anunț.
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -136,7 +120,7 @@ export default function DetaliuAnunt() {
               onClick={() => setIsFacebookAppWebView(false)}
               className="text-sm px-2 py-1 rounded-md hover:underline"
             >
-              Închide
+              ✕
             </button>
           </div>
         </div>
@@ -207,7 +191,7 @@ export default function DetaliuAnunt() {
           )}
         </div>
 
-        {/* ZOOM modal */}
+        {/* Zoom */}
         {isZoomed && (
           <div
             className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
