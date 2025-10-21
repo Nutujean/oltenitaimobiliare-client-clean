@@ -49,7 +49,7 @@ export default function DetaliuAnunt() {
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
   // ✅ URL-uri pentru share
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
   // ✅ Funcție actualizată cu TikTok complet
