@@ -22,34 +22,18 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  // 🔵 Distribuire universală – compatibil iPhone, Android și Desktop
+  // ✅ Distribuire corectă pe Facebook (cu backend share activ)
   const handleShareFacebook = (e) => {
     e.preventDefault();
-
-    // ✅ URL de share – backend (servește meta-tagurile OG)
-    const shareUrl = `https://oltenitaimobiliare-backend.onrender.com/share/${listing._id}`;
-    const shareText = encodeURIComponent(
-      "Vezi acest anunț imobiliar pe Oltenița Imobiliare 🏡"
-    );
-
-    const isIOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
+    const shareUrl = `https://oltenitaimobiliare.ro/share/${listing._id}`;
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl
-    )}&quote=${shareText}`;
-
-    if (isIOS) {
-      // 📱 iPhone – redirecționează complet (Safari blochează popup)
-      window.location.href = facebookUrl;
-    } else {
-      // 💻 Desktop / Android – deschide popup elegant
-      window.open(
-        facebookUrl,
-        "_blank",
-        "noopener,noreferrer,width=600,height=500"
-      );
-    }
+    )}`;
+    window.open(
+      facebookUrl,
+      "_blank",
+      "noopener,noreferrer,width=600,height=500"
+    );
   };
 
   return (
@@ -108,14 +92,12 @@ export default function ListingCard({ listing }) {
           {listing.location || "Oltenița și împrejurimi"}
         </p>
 
-        {/* Preț */}
         {listing.price && (
           <p className="text-blue-700 font-bold text-lg">
             {listing.price.toLocaleString("ro-RO")} €
           </p>
         )}
 
-        {/* Detalii rapide */}
         <div className="text-xs text-gray-500 flex flex-wrap gap-3">
           {listing.category && <span>🏠 {listing.category}</span>}
           {listing.dealType === "inchiriere" && <span>📅 Închiriere</span>}
