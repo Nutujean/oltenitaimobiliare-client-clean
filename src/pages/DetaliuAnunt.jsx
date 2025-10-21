@@ -46,7 +46,7 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție fixată: merge și pe desktop, și pe iPhone
+  // ✅ Funcție fixată pentru Facebook pe iPhone
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
@@ -56,11 +56,15 @@ export default function DetaliuAnunt() {
           backendShareUrl
         )}`;
 
-        if (isMobile) {
-          // Pe iPhone / Android deschidem direct domeniul .ro
+        // 🔹 Nou: iPhone → copiere link + mesaj (evită eroarea)
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          navigator.clipboard.writeText(publicUrl);
+          alert("📋 Linkul a fost copiat! Deschide aplicația Facebook și lipește linkul într-o postare.");
+        } else if (isMobile) {
+          // Android – merge direct
           window.location.href = fbShareUrl;
         } else {
-          // Pe desktop deschidem pop-up (cu preview complet)
+          // Desktop – pop-up normal
           window.open(fbShareUrl, "_blank", "width=600,height=400");
         }
         break;
