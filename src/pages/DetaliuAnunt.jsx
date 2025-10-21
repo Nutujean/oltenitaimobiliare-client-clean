@@ -18,9 +18,7 @@ export default function DetaliuAnunt() {
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
+  useEffect(() => window.scrollTo(0, 0), [id]);
 
   useEffect(() => {
     (async () => {
@@ -45,29 +43,25 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  const isFeatured =
-    listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
-
-  // ✅ URL-uri pentru share (iPhone compatibil)
-  // Facebook citește direct domeniul principal, fără redirecție
-  const backendShareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție compatibilă desktop + iPhone (fără blocaje Facebook)
+  // ✅ Funcție fixată: merge și pe desktop, și pe iPhone
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     switch (platform) {
       case "facebook": {
-        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           backendShareUrl
         )}`;
+
         if (isMobile) {
-          // 📱 redirecționare directă pentru iPhone / Android
-          window.location.href = fbUrl;
+          // Pe iPhone / Android deschidem direct domeniul .ro
+          window.location.href = fbShareUrl;
         } else {
-          // 💻 pop-up pentru desktop
-          window.open(fbUrl, "_blank", "width=600,height=400");
+          // Pe desktop deschidem pop-up (cu preview complet)
+          window.open(fbShareUrl, "_blank", "width=600,height=400");
         }
         break;
       }
@@ -80,10 +74,10 @@ export default function DetaliuAnunt() {
         break;
       }
 
-      case "tiktok":
+      case "tiktok": {
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
         } else {
           window.open(
             `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
@@ -91,6 +85,7 @@ export default function DetaliuAnunt() {
           );
         }
         break;
+      }
 
       default:
         break;
@@ -173,15 +168,10 @@ export default function DetaliuAnunt() {
         </p>
       </div>
 
-      <p className="text-gray-600 mt-3 text-sm md:text-base">
-        📍 {listing.location}
-      </p>
+      <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
 
-      {/* 🔸 Informații suplimentare - păstrăm click-abil telefon și nume */}
       {listing.contactName && (
-        <p className="mt-2 text-gray-800 font-medium">
-          👤 {listing.contactName}
-        </p>
+        <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>
       )}
       {listing.phone && (
         <p className="mt-1">
@@ -199,12 +189,11 @@ export default function DetaliuAnunt() {
         {listing.description}
       </div>
 
-      {/* 🔹 Distribuie anunțul */}
+      {/* Distribuie */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
           Distribuie anunțul
         </h3>
-
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => handleShare("facebook")}
@@ -212,14 +201,12 @@ export default function DetaliuAnunt() {
           >
             📘 Facebook
           </button>
-
           <button
             onClick={() => handleShare("whatsapp")}
             className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
           >
             💬 WhatsApp
           </button>
-
           <button
             onClick={() => handleShare("tiktok")}
             className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
