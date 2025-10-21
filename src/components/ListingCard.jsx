@@ -21,35 +21,16 @@ export default function ListingCard({ listing }) {
     setFavorites(next);
   };
 
-  /* ============================================================
-     🌍 URL-uri pentru partajare
-     ============================================================ */
+  // 🔹 URL principal al anunțului
+  const adUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // 🟦 Facebook → redirect backend (sigur, fără share_channel)
-  const facebookShare = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
-
-  // 💬 WhatsApp
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(
-    `🏡 ${listing.title} – vezi detalii: https://oltenitaimobiliare.ro/anunt/${listing._id}`
-  )}`;
-
-  // 🎵 TikTok (copiem linkul în clipboard)
-  const copyLink = () => {
-    const link = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
-    navigator.clipboard.writeText(link);
-    alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
-  };
-
-  /* ============================================================
-     🖼️ CARD LISTING
-     ============================================================ */
   return (
     <div
       className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ PROMOVAT / EXPIRAT */}
+      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -126,22 +107,30 @@ export default function ListingCard({ listing }) {
             {isExpired ? "Expirat" : "Vezi detalii"}
           </Link>
 
-          {/* 🔹 Distribuire rețele */}
+          {/* 🔹 Butoane de distribuire */}
           {!isExpired && (
             <div className="flex justify-between items-center gap-2 mt-2">
               {/* 📘 Facebook */}
-              <a
-                href={facebookShare}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() =>
+                  window.open(
+                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                      `https://share.oltenitaimobiliare.ro/fb/${listing._id}`
+                    )}`,
+                    "_blank",
+                    "width=600,height=400"
+                  )
+                }
                 className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#145DBF]"
               >
                 📘 Facebook
-              </a>
+              </button>
 
               {/* 💬 WhatsApp */}
               <a
-                href={whatsappShare}
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `🏡 ${listing.title} – vezi detalii: ${adUrl}`
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-[#1DA851]"
@@ -151,7 +140,10 @@ export default function ListingCard({ listing }) {
 
               {/* 🎵 TikTok */}
               <button
-                onClick={copyLink}
+                onClick={() => {
+                  navigator.clipboard.writeText(adUrl);
+                  alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
+                }}
                 className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-800"
               >
                 🎵 TikTok
