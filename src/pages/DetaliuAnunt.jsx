@@ -43,17 +43,16 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție finală — Facebook se deschide corect și pe iPhone
+  // ✅ Funcție finală cu redirect backend (compatibil iPhone, Android, Desktop)
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     switch (platform) {
       case "facebook": {
-        const fbShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-        window.open(fbShareUrl, "_blank"); // 🔹 tab nou – funcționează pe toate device-urile
+        const fbGoUrl = `https://share.oltenitaimobiliare.ro/go/fb/${listing._id}`;
+        window.location.href = fbGoUrl;
         break;
       }
 
@@ -200,28 +199,9 @@ export default function DetaliuAnunt() {
           </button>
           <button
             onClick={() => handleShare("tiktok")}
-            className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900 transition"
+            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 48 48"
-              width="20"
-              height="20"
-            >
-              <path
-                fill="#25F4EE"
-                d="M41.5 15.5c-4.6 0-8.4-3.8-8.4-8.4V6h-5.2v24.9c0 3-2.5 5.5-5.5 5.5s-5.5-2.5-5.5-5.5 2.5-5.5 5.5-5.5c.4 0 .8.1 1.2.1v-5.4c-.4 0-.8-.1-1.2-.1-6 0-10.9 4.9-10.9 10.9S16.4 41 22.4 41 33.3 36.1 33.3 30.1V19.9c2.2 1.5 4.9 2.4 7.8 2.4v-6.8h.4z"
-              />
-              <path
-                fill="#FE2C55"
-                d="M33.1 18.7v-3.3c1.8 1.2 4 1.9 6.3 1.9v-3.7c-1.7 0-3.3-.5-4.6-1.3v10.1c-1.6 0-3.2-.4-4.6-1.2v8.9c0 6-4.9 10.9-10.9 10.9S8.4 36.1 8.4 30.1s4.9-10.9 10.9-10.9c.4 0 .8 0 1.2.1v-5.4c-.4 0-.8 0-.1..."
-              />
-              <path
-                fill="#000000"
-                d="M40.2 17.3c-4.6 0-8.4-3.8-8.4-8.4V6h-5.2v24.9c0 3-2.5 5.5-5.5 5.5s-5.5-2.5-5.5-5.5 2.5-5.5 5.5-5.5c.4 0 .8.1 1.2.1v-5.4c-.4 0-.8-.1-1.2-.1-6 0-10.9 4.9-10.9 10.9S15.2 42 21.2 42 32.1 37.1 32.1 31.1V20.9c2.2 1.5 4.9 2.4 7.8 2.4v-6z"
-              />
-            </svg>
-            <span>TikTok</span>
+            🎵 TikTok
           </button>
         </div>
       </div>
