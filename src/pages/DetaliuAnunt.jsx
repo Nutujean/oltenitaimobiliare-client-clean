@@ -46,14 +46,14 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Funcție actualizată (stil OLX) – Facebook merge și pe iPhone
+  // ✅ Funcție finală — Facebook se deschide corect și pe iPhone
   const handleShare = (platform) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     switch (platform) {
       case "facebook": {
         const fbShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-        window.location.href = fbShareUrl; // 🔹 deschidere directă – funcționează și pe iPhone
+        window.open(fbShareUrl, "_blank"); // 🔹 tab nou – funcționează pe toate device-urile
         break;
       }
 
