@@ -15,7 +15,7 @@ export default function DetaliuAnunt() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // Swipe refs
+  // swipe
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
@@ -31,7 +31,7 @@ export default function DetaliuAnunt() {
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
         setListing(data);
       } catch (e) {
-        setErr(e.message || "Eroare la încărcarea anunțului");
+        setErr(e.message);
       } finally {
         setLoading(false);
       }
@@ -49,51 +49,40 @@ export default function DetaliuAnunt() {
   const isFeatured =
     listing.featuredUntil && new Date(listing.featuredUntil).getTime() > Date.now();
 
-  // ✅ URL pentru distribuire backend (Facebook citește meta-tag-urile corect)
-  const backendShareUrl = `https://oltenitaimobiliare-backend.onrender.com/share/${listing._id}`;
-  const shareUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
-  const encodedUrl = encodeURIComponent(shareUrl);
-  const text = encodeURIComponent(listing.title || "Vezi acest anunț imobiliar din Oltenița");
+  // ✅ URL-uri pentru share
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
   const handleShare = (platform) => {
-    if (platform === "facebook") {
-      const finalUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        backendShareUrl
-      )}`;
-      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        alert(
-          "Pe iPhone, aplicația Facebook poate bloca distribuirea. Apasă 'Copiază linkul' și deschide în Safari."
+    switch (platform) {
+      case "facebook":
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+            backendShareUrl
+          )}`,
+          "_blank",
+          "width=600,height=400"
         );
-      }
-      window.open(finalUrl, "_blank");
-    } else if (platform === "whatsapp") {
-      window.open(
-        `https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`,
-        "_blank"
-      );
-    } else if (platform === "copy") {
-      navigator.clipboard.writeText(shareUrl);
-      alert("Link copiat în clipboard!");
-    }
-  };
-
-  // Swipe handling
-  const onTouchStart = (e) => (touchStartX.current = e.touches[0].clientX);
-  const onTouchEnd = (e) => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    handleSwipe();
-  };
-  const handleSwipe = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextImage();
-      else prevImage();
+        break;
+      case "whatsapp":
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(
+            `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
+          )}`,
+          "_blank"
+        );
+        break;
+      case "tiktok":
+        navigator.clipboard.writeText(publicUrl);
+        alert("🔗 Link copiat! Poți să-l pui în TikTok sau oriunde dorești.");
+        break;
+      default:
+        break;
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
-      {/* 🧠 SEO + Open Graph */}
       <Helmet>
         <title>{listing.title} - Oltenița Imobiliare</title>
         <meta property="og:title" content={listing.title} />
@@ -112,21 +101,21 @@ export default function DetaliuAnunt() {
             "https://oltenitaimobiliare.ro/preview.jpg"
           }
         />
-        <meta property="og:url" content={shareUrl} />
+        <meta property="og:url" content={publicUrl} />
         <meta property="og:type" content="article" />
       </Helmet>
 
-      {/* 📸 Galerie imagini */}
+      {/* Imagine principală */}
       <div
-        className="relative w-full aspect-[16/9] max-h-[70vh] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer flex items-center justify-center"
+        className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
         onClick={() => images.length > 0 && setIsZoomed(true)}
       >
-        {images.length > 0 ? (
+        {images.length ? (
           <>
             <img
               src={images[currentImage]}
               alt={listing.title}
-              className="w-full h-full object-contain select-none"
+              className="w-full h-full object-contain"
             />
             {images.length > 1 && (
               <>
@@ -135,7 +124,7 @@ export default function DetaliuAnunt() {
                     e.stopPropagation();
                     prevImage();
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60 z-[3]"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full"
                 >
                   ❮
                 </button>
@@ -144,7 +133,7 @@ export default function DetaliuAnunt() {
                     e.stopPropagation();
                     nextImage();
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60 z-[3]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full"
                 >
                   ❯
                 </button>
@@ -158,146 +147,46 @@ export default function DetaliuAnunt() {
         )}
       </div>
 
-      {/* 🔍 Zoom fullscreen cu săgeți vizibile + swipe */}
-      {isZoomed && images.length > 0 && (
-        <div
-          className="fixed inset-0 bg-black/95 flex items-center justify-center z-[9999]"
-          onClick={() => setIsZoomed(false)}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-        >
-          <img
-            src={images[currentImage]}
-            alt={listing.title}
-            className="max-w-[95vw] max-h-[90vh] object-contain select-none z-[2]"
-          />
-
-          {/* ✕ Închide */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsZoomed(false);
-            }}
-            className="absolute top-6 right-6 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-12 h-12 flex items-center justify-center"
-            aria-label="Închide imaginea"
-          >
-            ✕
-          </button>
-
-          {/* ⬅️ Săgeată stânga */}
-          {images.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-            >
-              ❮
-            </button>
-          )}
-
-          {/* ➡️ Săgeată dreapta */}
-          {images.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-[3] bg-black/70 hover:bg-black/90 rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-            >
-              ❯
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* 🔹 Titlu + Înapoi */}
+      {/* Titlu + preț */}
       <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold leading-tight">{listing.title}</h1>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
-        >
-          ← Înapoi
-        </button>
+        <h1 className="text-2xl md:text-3xl font-bold">{listing.title}</h1>
+        <p className="text-xl font-semibold text-blue-700">{listing.price} €</p>
       </div>
 
-      {/* 🔹 Preț + Promovat */}
-      <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
-        <p className="text-xl md:text-2xl font-semibold text-blue-700">
-          <span className="font-bold text-gray-800">Preț:</span> {listing.price} €
-        </p>
-        {isFeatured && (
-          <span className="bg-green-600 text-white text-xs md:text-sm px-3 py-1 rounded shadow">
-            ⭐ Promovat până la{" "}
-            {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
-          </span>
-        )}
+      <p className="text-gray-600 mt-1 text-sm md:text-base">
+        📍 {listing.location}
+      </p>
+
+      <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">
+        {listing.description}
       </div>
 
-      {listing.location && (
-        <p className="text-gray-600 mt-1 text-sm md:text-base">
-          📍 {listing.location}
-        </p>
-      )}
+      {/* 🔹 Distribuie anunțul */}
+      <div className="mt-8 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          Distribuie anunțul
+        </h3>
 
-      {listing.description && (
-        <div className="mt-5">
-          <h2 className="text-lg md:text-xl font-semibold mb-2">Descriere</h2>
-          <p className="text-gray-700 whitespace-pre-line text-sm md:text-base leading-relaxed">
-            {listing.description}
-          </p>
-        </div>
-      )}
-
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-gray-700 text-sm md:text-base">
-        {listing.surface && <p>Suprafață: {listing.surface} mp</p>}
-        {listing.rooms && <p>Camere: {listing.rooms}</p>}
-        {listing.floor && <p>Etaj: {listing.floor}</p>}
-        {listing.dealType && <p>Tip tranzacție: {listing.dealType}</p>}
-        {listing.category && <p>Categorie: {listing.category}</p>}
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-lg md:text-xl font-semibold mb-3">Date de contact</h2>
-        {listing.user || listing.phone ? (
-          <div className="bg-white border rounded-xl shadow p-4 md:p-5 space-y-2 text-sm md:text-base">
-            {listing.user?.name && <p><strong>Nume:</strong> {listing.user.name}</p>}
-            {listing.phone && (
-              <p>
-                <strong>Telefon:</strong>{" "}
-                <a href={`tel:${listing.phone}`} className="text-blue-600 font-semibold hover:underline">
-                  {listing.phone}
-                </a>
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500">Datele de contact nu sunt disponibile.</p>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-lg md:text-xl font-semibold mb-3">Distribuie anunțul</h2>
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => handleShare("facebook")}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base"
+            className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
           >
-            Facebook
+            📘 Facebook
           </button>
+
           <button
             onClick={() => handleShare("whatsapp")}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm md:text-base"
+            className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
           >
-            WhatsApp
+            💬 WhatsApp
           </button>
+
           <button
-            onClick={() => handleShare("copy")}
-            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm md:text-base"
+            onClick={() => handleShare("tiktok")}
+            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
           >
-            Copiază linkul
+            🎵 TikTok
           </button>
         </div>
       </div>
