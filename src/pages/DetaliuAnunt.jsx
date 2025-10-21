@@ -1,17 +1,14 @@
-// src/pages/DetaliuAnunt.jsx
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
 export default function DetaliuAnunt() {
   const { id: rawId } = useParams();
   const id = rawId?.split("-").pop();
-  const navigate = useNavigate();
 
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -46,30 +43,30 @@ export default function DetaliuAnunt() {
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  // ✅ Fix complet — funcționează și pe desktop, și pe iPhone
+  // ✅ Fix complet pentru Facebook iPhone (Safari & aplicație)
   const handleShare = (platform) => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua) && /iPhone|iPad|iPod/i.test(ua);
 
     switch (platform) {
       case "facebook": {
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-  const fbRedirectUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+        const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          backendShareUrl
+        )}`;
 
-  if (isMobile) {
-    // Pe iPhone / Android -> forțăm deschiderea backendului direct (funcționează și în Safari, și în aplicația Facebook)
-    window.location.href = fbRedirectUrl;
-  } else {
-    // Desktop -> deschidem popup Facebook clasic
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        backendShareUrl
-      )}`,
-      "_blank",
-      "width=600,height=400"
-    );
-  }
-  break;
-}
+        if (isFacebookApp) {
+          // În aplicația Facebook iOS → deschidem direct Safari extern
+          window.open(fbShareUrl, "_system");
+        } else if (isMobile) {
+          // Mobil normal (Safari / Chrome)
+          window.open(fbShareUrl, "_blank");
+        } else {
+          // Desktop - popup clasic
+          window.open(fbShareUrl, "_blank", "width=600,height=400");
+        }
+        break;
+      }
 
       case "whatsapp": {
         window.open(
@@ -84,7 +81,7 @@ export default function DetaliuAnunt() {
       case "tiktok": {
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
         } else {
           window.open(
             `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
@@ -126,7 +123,7 @@ export default function DetaliuAnunt() {
       {/* Imagine principală */}
       <div
         className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
-        onClick={() => images.length > 0 && setIsZoomed(true)}
+        onClick={() => images.length > 0 && setCurrentImage(currentImage)}
       >
         {images.length ? (
           <>
@@ -201,24 +198,38 @@ export default function DetaliuAnunt() {
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
           Distribuie anunțul
         </h3>
+
         <div className="flex gap-3 flex-wrap">
+          {/* Facebook */}
           <button
             onClick={() => handleShare("facebook")}
             className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
           >
             📘 Facebook
           </button>
+
+          {/* WhatsApp */}
           <button
             onClick={() => handleShare("whatsapp")}
             className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
           >
             💬 WhatsApp
           </button>
+
+          {/* TikTok */}
           <button
             onClick={() => handleShare("tiktok")}
-            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+            className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
           >
-            🎵 TikTok
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 256 256"
+              fill="currentColor"
+              className="w-5 h-5"
+            >
+              <path d="M168 32a48 48 0 0 0 48 48v32a80 80 0 0 1-80-80zM64 120a56 56 0 0 1 55.6-56H120V32h32v128a56 56 0 1 1-88-40zm56 56a24 24 0 0 0 24-24v-32a56 56 0 0 1-32 103.2A56 56 0 0 1 64 168h32a24 24 0 0 0 24 24z" />
+            </svg>
+            TikTok
           </button>
         </div>
       </div>
