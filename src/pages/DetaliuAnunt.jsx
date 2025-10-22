@@ -171,6 +171,9 @@ export default function DetaliuAnunt() {
               availability: "https://schema.org/InStock",
               itemCondition: "https://schema.org/NewCondition",
               url: publicUrl,
+              datePublished:
+                listing.createdAt ||
+                new Date().toISOString().split("T")[0], // data publicării
               itemOffered: {
                 "@type": "Product",
                 name: listing.title,
