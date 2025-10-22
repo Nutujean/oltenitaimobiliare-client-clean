@@ -165,21 +165,26 @@ export default function DetaliuAnunt() {
               description: listing.description?.substring(0, 160),
               price: listing.price,
               priceCurrency: "EUR",
+              priceValidUntil: new Date(
+                Date.now() + 180 * 24 * 60 * 60 * 1000
+              ).toISOString().split("T")[0], // 6 luni valabilitate
               availability: "https://schema.org/InStock",
+              itemCondition: "https://schema.org/NewCondition",
               url: publicUrl,
               itemOffered: {
                 "@type": "Product",
                 name: listing.title,
                 image: listing.images?.[0],
                 description: listing.description?.substring(0, 160),
-              },
-              seller: {
-                "@type": "Person",
-                name: listing.contactName || "Proprietar",
-                telephone: listing.phone || "",
-              },
-            })}
-          </script>
+                brand: "Oltenița Imobiliare",
+             },
+             seller: {
+               "@type": "Person",
+               name: listing.contactName || "Proprietar",
+               telephone: listing.phone || "",
+            },
+          })}
+        </script>
         </Helmet>
 
         {/* Imagine principală */}
