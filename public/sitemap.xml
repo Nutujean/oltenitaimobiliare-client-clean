@@ -1,23 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Pagini principale -->
   <url>
     <loc>https://oltenitaimobiliare.ro/</loc>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
-    <loc>https://oltenitaimobiliare.ro/despre</loc>
-    <priority>0.5</priority>
+    <loc>https://oltenitaimobiliare.ro/despre-noi</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://oltenitaimobiliare.ro/contact</loc>
-    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
+
   <url>
-    <loc>https://oltenitaimobiliare.ro/categorie/apartamente</loc>
+    <loc>https://oltenitaimobiliare.ro/termeni</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://oltenitaimobiliare.ro/confidentialitate</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Categorii -->
+  <url>
+    <loc>https://oltenitaimobiliare.ro/apartamente</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
-    <loc>https://oltenitaimobiliare.ro/categorie/case</loc>
+    <loc>https://oltenitaimobiliare.ro/case</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://oltenitaimobiliare.ro/terenuri</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://oltenitaimobiliare.ro/garsoniere</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://oltenitaimobiliare.ro/spatii-comerciale</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://oltenitaimobiliare.ro/garaje</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Listări dinamice -->
+  <url>
+    <loc>https://oltenitaimobiliare.ro/anunturi</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>
