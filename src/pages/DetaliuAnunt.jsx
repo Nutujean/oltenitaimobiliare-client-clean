@@ -61,7 +61,7 @@ export default function DetaliuAnunt() {
         const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           backendShareUrl
         )}`;
-        if (isFacebookApp) return; // lăsăm bannerul să ghideze utilizatorul
+        if (isFacebookApp) return;
         if (isMobile) {
           window.open(fbShareUrl, "_blank");
         } else {
@@ -129,6 +129,14 @@ export default function DetaliuAnunt() {
       <div className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${isFacebookAppWebView ? "pt-28" : ""}`}>
         <Helmet>
           <title>{listing.title} - Oltenița Imobiliare</title>
+          <meta
+            name="description"
+            content={`${listing.title} – ${listing.location}. ${listing.description?.substring(0, 150)}...`}
+          />
+          <meta
+            name="keywords"
+            content={`Oltenița, imobiliare, ${listing.location}, apartamente, case, terenuri`}
+          />
           <meta property="og:title" content={listing.title} />
           <meta
             property="og:description"
@@ -147,6 +155,31 @@ export default function DetaliuAnunt() {
           />
           <meta property="og:url" content={publicUrl} />
           <meta property="og:type" content="article" />
+
+          {/* 🏠 Schema.org SEO JSON-LD */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Offer",
+              name: listing.title,
+              description: listing.description?.substring(0, 160),
+              price: listing.price,
+              priceCurrency: "EUR",
+              availability: "https://schema.org/InStock",
+              url: publicUrl,
+              itemOffered: {
+                "@type": "Product",
+                name: listing.title,
+                image: listing.images?.[0],
+                description: listing.description?.substring(0, 160),
+              },
+              seller: {
+                "@type": "Person",
+                name: listing.contactName || "Proprietar",
+                telephone: listing.phone || "",
+              },
+            })}
+          </script>
         </Helmet>
 
         {/* Imagine principală */}
