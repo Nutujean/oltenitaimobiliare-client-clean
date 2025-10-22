@@ -38,7 +38,7 @@ import ToateAnunturile from "./pages/ToateAnunturile";
 import Case from "./pages/Case";
 import Apartamente from "./pages/Apartamente";
 import Terenuri from "./pages/Terenuri";
-import SpatiiComerciale from "./pages/SpatiiComerciale";
+import SpatiiComerciale from "./pages/SpatiiComerciale.jsx";
 import Garsoniere from "./pages/Garsoniere";
 import Garaje from "./pages/Garaje";
 
