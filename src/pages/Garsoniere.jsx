@@ -1,50 +1,41 @@
 import { useEffect, useState } from "react";
 import API_URL from "../api";
 import ListingCard from "../components/ListingCard";
-import { Helmet } from "react-helmet-async";
 
 export default function Garsoniere() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     (async () => {
-      const res = await fetch(`${API_URL}/listings`);
-      const data = await res.json();
-      setListings(data.filter((x) => x.category === "garsoniere"));
-      setLoading(false);
+      try {
+        const res = await fetch(`${API_URL}/listings?category=Garsoniere`);
+        const data = await res.json();
+        setListings(data);
+      } catch (err) {
+        console.error("Eroare la preluarea anunțurilor:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
+  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
+
   return (
     <div className="max-w-6xl mx-auto px-4 pt-24 pb-10">
-      <Helmet>
-        <title>Garsoniere de vânzare în Oltenița – Oltenița Imobiliare</title>
-        <meta
-          name="description"
-          content="Vezi cele mai noi garsoniere de vânzare în Oltenița. Locuințe moderne, vile și case tradiționale – anunțuri actualizate zilnic."
-        />
-      </Helmet>
-
-      <h1 className="text-3xl font-bold mb-4 text-gray-900">
-        🏠 Garsoniere de vânzare în Oltenița
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+        Garsoniere de vânzare și închiriere
       </h1>
-      <p className="text-gray-600 mb-6">
-        Descoperă cele mai recente anunțuri cu garsoniere de vânzare în Oltenița și
-        împrejurimi. Alege spatiul potrivit pentru tine din ofertele locale.
-      </p>
 
-      {loading ? (
-        <p>Se încarcă...</p>
-      ) : listings.length > 0 ? (
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {listings.map((l) => (
-            <ListingCard key={l._id} listing={l} />
+      {listings.length === 0 ? (
+        <p className="text-center text-gray-500">Momentan nu există garsoniere disponibile.</p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {listings.map((listing) => (
+            <ListingCard key={listing._id} listing={listing} />
           ))}
         </div>
-      ) : (
-        <p>Momentan nu există garsoniere disponibile.</p>
       )}
     </div>
   );
