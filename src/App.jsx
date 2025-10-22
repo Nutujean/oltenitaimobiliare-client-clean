@@ -34,6 +34,14 @@ import DetaliuAnunt from "./pages/DetaliuAnunt";
 import Categories from "./pages/Categories";
 import ToateAnunturile from "./pages/ToateAnunturile";
 
+/* ✅ Pagini SEO dedicate */
+import Case from "./pages/Case";
+import Apartamente from "./pages/Apartamente";
+import Terenuri from "./pages/Terenuri";
+import SpatiiComerciale from "./pages/SpatiiComerciale";
+import Garsoniere from "./pages/Garsoniere";
+import Garaje from "./pages/Garaje";
+
 /* 404 */
 import NotFound from "./pages/NotFound";
 
@@ -76,14 +84,16 @@ function App() {
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
           <Route path="/anunturi" element={<ToateAnunturile />} />
+
+          {/* 🔹 Categoriile SEO */}
           <Route path="/case" element={<Case />} />
           <Route path="/apartamente" element={<Apartamente />} />
           <Route path="/terenuri" element={<Terenuri />} />
-          <Route path="/spatii comerciale" element={<Spatii comerciale />} />
+          <Route path="/spatii-comerciale" element={<SpatiiComerciale />} />
           <Route path="/garsoniere" element={<Garsoniere />} />
           <Route path="/garaje" element={<Garaje />} />
 
-          {/* 🔹 Categorii */}
+          {/* 🔹 Categorii dinamice */}
           <Route path="/categorie/:slug" element={<Categories />} />
 
           {/* 🔹 404 */}
