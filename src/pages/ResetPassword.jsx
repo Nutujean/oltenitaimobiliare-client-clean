@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import API_URL from "../api";
 
 export default function ResetPassword() {
   const loc = useLocation();
   const nav = useNavigate();
   const params = new URLSearchParams(loc.search);
-  const initialToken = params.get("token") || "";
+  const { token: urlToken } = useParams(); // ✅ token din /reset-password/:token
+  const queryToken = params.get("token");  // ✅ token din ?token=abc
+  const initialToken = urlToken || queryToken || "";
 
   const [token, setToken] = useState(initialToken);
   const [pass1, setPass1] = useState("");
