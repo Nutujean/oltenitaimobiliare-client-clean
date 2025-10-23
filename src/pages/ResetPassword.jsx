@@ -20,9 +20,16 @@ export default function ResetPassword() {
 
   useEffect(() => {
     const check = async () => {
-      if (!token) { setValid(false); return; }
+      if (!token) {
+        setValid(false);
+        return;
+      }
       try {
-        const r = await fetch(`${API_URL}/auth/check-reset-token?token=${encodeURIComponent(token)}`);
+        const r = await fetch(
+          `https://oltenitaimobiliare-backend.onrender.com/api/auth/check-reset-token?token=${encodeURIComponent(
+            token
+          )}`
+        );
         setValid(r.ok);
       } catch {
         setValid(false);
@@ -33,17 +40,22 @@ export default function ResetPassword() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setErr(""); setMsg("");
-    if (pass1.length < 6) return setErr("Parola trebuie să aibă minim 6 caractere.");
+    setErr("");
+    setMsg("");
+    if (pass1.length < 6)
+      return setErr("Parola trebuie să aibă minim 6 caractere.");
     if (pass1 !== pass2) return setErr("Parolele nu coincid.");
 
     setLoading(true);
     try {
-      const r = await fetch(`${API_URL}/auth/reset-password/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: pass1 }),
-    });
+      const r = await fetch(
+        `https://oltenitaimobiliare-backend.onrender.com/api/auth/reset-password/${token}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: pass1 }),
+        }
+      );
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data?.error || "Eroare la resetarea parolei");
 
@@ -60,13 +72,26 @@ export default function ResetPassword() {
     <div className="max-w-md mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold mb-6">Resetează parola</h1>
 
-      {msg && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">{msg}</div>}
-      {err && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">{err}</div>}
+      {msg && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+          {msg}
+        </div>
+      )}
+      {err && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {err}
+        </div>
+      )}
 
-      <form onSubmit={submit} className="space-y-4 bg-white rounded-xl shadow p-5">
+      <form
+        onSubmit={submit}
+        className="space-y-4 bg-white rounded-xl shadow p-5"
+      >
         {!initialToken && (
           <div>
-            <label className="block text-sm font-medium mb-1">Token din email</label>
+            <label className="block text-sm font-medium mb-1">
+              Token din email
+            </label>
             <input
               className="w-full border rounded px-3 py-2"
               value={token}
@@ -78,7 +103,13 @@ export default function ResetPassword() {
 
         {valid === false && (
           <div className="text-sm text-red-600">
-            Token invalid sau expirat. <Link to="/forgot-password" className="text-blue-600 hover:underline">Trimite alt link</Link>
+            Token invalid sau expirat.{" "}
+            <Link
+              to="/forgot-password"
+              className="text-blue-600 hover:underline"
+            >
+              Trimite alt link
+            </Link>
           </div>
         )}
 
@@ -95,7 +126,9 @@ export default function ResetPassword() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Confirmă parola</label>
+          <label className="block text-sm font-medium mb-1">
+            Confirmă parola
+          </label>
           <input
             type="password"
             className="w-full border rounded px-3 py-2"
@@ -115,7 +148,9 @@ export default function ResetPassword() {
         </button>
 
         <div className="text-sm text-gray-600">
-          <Link to="/login" className="text-blue-600 hover:underline">Înapoi la autentificare</Link>
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Înapoi la autentificare
+          </Link>
         </div>
       </form>
     </div>
