@@ -39,11 +39,11 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const r = await fetch(`${API_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password: pass1 }),
-      });
+      const r = await fetch(`${API_URL}/auth/reset-password/${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pass1 }),
+    });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data?.error || "Eroare la resetarea parolei");
 
