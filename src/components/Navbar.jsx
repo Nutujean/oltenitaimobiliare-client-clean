@@ -20,6 +20,16 @@ export default function Navbar() {
     navigate("/");
   };
 
+  // ✅ Funcție pentru butonul „Adaugă anunț”
+  const handleAddClick = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/adauga-anunt");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <nav className="bg-gradient-to-r from-blue-800 via-blue-700 to-blue-500 shadow-lg fixed top-0 left-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center text-white">
@@ -52,13 +62,13 @@ export default function Navbar() {
             Acasă
           </Link>
 
-          {/* 🔵 Buton Adaugă Anunț */}
-          <Link
-            to="/adauga-anunt"
+          {/* 🔵 Buton Adaugă Anunț (cu verificare login) */}
+          <button
+            onClick={handleAddClick}
             className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-3 py-1.5 rounded-lg transition"
           >
             + Adaugă anunț
-          </Link>
+          </button>
 
           {!user ? (
             <>
@@ -93,13 +103,16 @@ export default function Navbar() {
             Acasă
           </Link>
 
-          <Link
-            to="/adauga-anunt"
-            onClick={() => setMenuOpen(false)}
-            className="block bg-white text-blue-700 px-3 py-1 rounded-lg"
+          {/* 🔵 Buton mobil Adaugă anunț (cu verificare login) */}
+          <button
+            onClick={() => {
+              handleAddClick();
+              setMenuOpen(false);
+            }}
+            className="block w-full text-left bg-white text-blue-700 px-3 py-1 rounded-lg"
           >
             + Adaugă anunț
-          </Link>
+          </button>
 
           {!user ? (
             <>
