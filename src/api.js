@@ -1,4 +1,4 @@
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://oltenitaimobiliare-backend.onrender.com/api";
+  "https://share.oltenitaimobiliare.ro/api";
 export default API_URL;
