@@ -71,7 +71,6 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/verifica-email" element={<VerificaEmail />} />
-          <Route path="/activate/:token" element={<ActivateAccount />} />
           <Route path="/verifica-cod" element={<VerificaCod />} />
 
           {/* 🔹 Utilizator */}
