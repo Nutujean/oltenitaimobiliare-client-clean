@@ -19,6 +19,8 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerificaEmail from "./pages/VerificaEmail";
+import VerificaCod from "./pages/VerificaCod";
+
 
 /* Utilizator */
 import Profil from "./pages/Profil";
