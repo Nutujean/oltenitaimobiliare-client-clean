@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // asigură-te că ai acest context
 import axios from "axios";
 
 const AdaugaAnunt = () => {
