@@ -16,7 +16,7 @@ export default function LoginSMS() {
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
-    const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
+    const normalized = phone.replace(/\D/g, "").replace(/^0/, "40");
     setMessage("⏳ Se trimite SMS...");
 
     try {
