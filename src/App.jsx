@@ -13,14 +13,8 @@ import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
 
-/* Autentificare */
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import VerificaEmail from "./pages/VerificaEmail";
-import VerificaCod from "./pages/VerificaCod";
-
+/* Autentificare prin SMS */
+import Login from "./pages/LoginSMS";
 
 /* Utilizator */
 import Profil from "./pages/Profil";
@@ -67,13 +61,8 @@ function App() {
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
 
-          {/* 🔹 Autentificare */}
+          {/* 🔹 Autentificare (doar prin SMS) */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/verifica-email" element={<VerificaEmail />} />
-          <Route path="/verifica-cod" element={<VerificaCod />} />
 
           {/* 🔹 Utilizator */}
           <Route path="/profil" element={<Profil />} />
