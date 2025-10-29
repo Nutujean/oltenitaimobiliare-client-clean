@@ -4,20 +4,20 @@ import { useNavigate } from "react-router-dom";
 export default function LoginSMS() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState(1);
   const [message, setMessage] = useState("");
+  const [step, setStep] = useState(1);
   const navigate = useNavigate();
 
-  // ✅ backend-ul live (Render)
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  // ✅ Trimitere cod SMS
+  /* =======================================================
+     1️⃣  Trimite codul OTP prin SMS
+  ======================================================= */
   const sendOtp = async () => {
-    if (!phone) return setMessage("Introdu numărul de telefon.");
+    if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
-    // curățăm tot ce nu e cifră și transformăm 07... în 407...
     const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
-    setMessage("Se trimite SMS...");
+    setMessage("⏳ Se trimite SMS...");
 
     try {
       const res = await fetch(`${API}/send-otp`, {
@@ -27,25 +27,26 @@ export default function LoginSMS() {
       });
 
       const data = await res.json();
-
       if (data.success) {
         setMessage("📲 Codul a fost trimis. Verifică telefonul tău!");
         setStep(2);
       } else {
-        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
+        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
       }
     } catch (err) {
-      console.error("Eroare trimitere OTP:", err);
+      console.error("❌ Eroare trimitere OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
 
-  // ✅ Verificare cod OTP
+  /* =======================================================
+     2️⃣  Verifică codul OTP primit
+  ======================================================= */
   const verifyOtp = async () => {
-    if (!code) return setMessage("Introdu codul primit prin SMS.");
+    if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
 
     const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
-    setMessage("Se verifică...");
+    setMessage("⏳ Se verifică codul...");
 
     try {
       const res = await fetch(`${API}/verify-otp`, {
@@ -55,25 +56,26 @@ export default function LoginSMS() {
       });
 
       const data = await res.json();
-
       if (data.success) {
-        // ✅ Salvăm token și redirectăm
         localStorage.setItem("token", data.token);
         localStorage.setItem("userPhone", data.user.phone);
         setMessage("✅ Verificare reușită! Redirecționare...");
         setTimeout(() => navigate("/profil"), 1500);
       } else {
-        setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
+        setMessage("❌ " + (data.error || "Cod incorect sau expirat."));
       }
     } catch (err) {
-      console.error("Eroare verificare OTP:", err);
+      console.error("❌ Eroare verificare OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
 
+  /* =======================================================
+     🧩 INTERFAȚA VIZUALĂ
+  ======================================================= */
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
-      <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
+      <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
           🔐 Autentificare prin SMS
         </h2>
@@ -111,7 +113,6 @@ export default function LoginSMS() {
             >
               Verifică codul
             </button>
-
             <button
               onClick={() => {
                 setStep(1);
