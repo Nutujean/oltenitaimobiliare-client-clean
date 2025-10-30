@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "build"
 
 # ✅ Obligă Netlify să refacă tot buildul de fiecare dată
 [build.processing]
@@ -13,11 +13,10 @@
 [build.environment]
   NODE_VERSION = "18"
   VITE_API_URL = "https://oltenitaimobiliare-backend.onrender.com/api"
-  # Forțăm un build curat la fiecare commit
   CI = "false"
   NETLIFY_USE_YARN = "false"
 
-# ✅ Asigură routing corect pentru aplicația React/Vite
+# ✅ Asigură routing corect pentru aplicația React
 [[redirects]]
   from = "/*"
   to = "/index.html"
