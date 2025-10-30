@@ -14,7 +14,7 @@ import Confidentialitate from "./pages/Confidentialitate";
 import Cookies from "./pages/Cookies";
 
 /* Autentificare prin SMS */
-import Login from "./pages/LoginSMS";
+import LoginSMS from "./pages/LoginSMS";
 
 /* Utilizator */
 import Profil from "./pages/Profil";
@@ -61,8 +61,9 @@ function App() {
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
 
-          {/* 🔹 Autentificare (doar prin SMS) */}
-          <Route path="/login" element={<Login />} />
+          {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
+          <Route path="/login" element={<LoginSMS />} />
+          <Route path="/inregistrare" element={<LoginSMS />} />
 
           {/* 🔹 Utilizator */}
           <Route path="/profil" element={<Profil />} />
