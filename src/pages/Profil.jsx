@@ -1,65 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API_URL from "../api";
 
 export default function Profil() {
-  const [me, setMe] = useState(null);
-  const [err, setErr] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // 🔐 Deconectare
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("userPhone");
     navigate("/login");
   };
 
+  // ✅ La încărcare — verificăm dacă există token
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      setErr("Nu ești autentificat.");
-      setLoading(false);
+    const storedPhone = localStorage.getItem("userPhone");
+
+    if (!token || !storedPhone) {
+      navigate("/login");
       return;
     }
 
-    const run = async () => {
-      try {
-        const r = await fetch(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (r.status === 401) {
-          throw new Error("Sesiune expirată sau token invalid. Autentifică-te din nou.");
-        }
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Eroare la profil");
-        setMe(data);
-      } catch (e) {
-        setErr(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    run();
-  }, []);
+    setPhone(storedPhone);
+    setLoading(false);
+  }, [navigate]);
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 py-10">Se încarcă...</div>;
-  }
-
-  if (err) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
-          {err}
-        </div>
-        <Link
-          to="/login"
-          className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700"
-        >
-          Mergi la autentificare
-        </Link>
-      </div>
-    );
   }
 
   return (
@@ -70,14 +39,20 @@ export default function Profil() {
           onClick={logout}
           className="bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200"
         >
-          Ieșire
+          🚪 Deconectare
         </button>
       </div>
 
-      <div className="bg-white shadow rounded-xl p-4 space-y-2">
-        <p><strong>Nume:</strong> {me?.name || "-"}</p>
-        <p><strong>Email:</strong> {me?.email}</p>
-        <p><strong>Creat:</strong> {new Date(me?.createdAt).toLocaleString()}</p>
+      <div className="bg-white shadow rounded-xl p-4 space-y-2 text-gray-700">
+        <p>
+          <strong>Telefon:</strong> {phone}
+        </p>
+        <p>
+          <strong>Autentificare:</strong> prin SMS
+        </p>
+        <p>
+          <strong>Status:</strong> Cont activ ✅
+        </p>
       </div>
 
       <div className="mt-6">
