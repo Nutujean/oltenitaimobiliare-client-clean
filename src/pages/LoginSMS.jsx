@@ -46,10 +46,11 @@ export default function LoginSMS() {
   const verifyOtp = async () => {
     if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
 
+      // Normalizează corect numărul pentru SMSLink (+40 format)
       const normalized = phone
-        .replace(/[^\d+]/g, "")  // eliminăm tot ce nu e cifră sau +
-        .replace(/^0/, "+40")    // dacă începe cu 0 → +40
-        .replace(/^40/, "+40");  // dacă începe cu 40 → +40
+        .replace(/[^\d]/g, "") // păstrează doar cifrele
+        .replace(/^0/, "+40")  // dacă începe cu 0 → +40
+        .replace(/^40/, "+40"); // dacă începe cu 40 → +40
     setMessage("⏳ Se verifică codul...");
 
     try {
