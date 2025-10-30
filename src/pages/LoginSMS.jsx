@@ -47,9 +47,9 @@ export default function LoginSMS() {
     if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
 
       const normalized = phone
-        .replace(/[^\d+]/g, "") // păstrăm doar cifre și + 
-        .replace(/^0/, "+40")   // dacă începe cu 0, adăugăm +40
-        .replace(/^40/, "+40"); // dacă începe cu 40, punem +40
+        .replace(/[^\d+]/g, "")  // eliminăm tot ce nu e cifră sau +
+        .replace(/^0/, "+40")    // dacă începe cu 0 → +40
+        .replace(/^40/, "+40");  // dacă începe cu 40 → +40
     setMessage("⏳ Se verifică codul...");
 
     try {
