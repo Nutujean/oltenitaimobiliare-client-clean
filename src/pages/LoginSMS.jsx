@@ -11,12 +11,12 @@ export default function LoginSMS() {
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
   /* =======================================================
-     1️⃣ Trimitere cod OTP
+     1️⃣ Trimite OTP pentru logare
   ======================================================= */
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
-    const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
+    const normalized = phone.replace(/[^\d]/g, "");
     setMessage("⏳ Se trimite SMS...");
 
     try {
@@ -29,60 +29,42 @@ export default function LoginSMS() {
       const data = await res.json();
 
       if (data.success) {
-        setMessage("📲 Codul a fost trimis prin SMS. Verifică telefonul tău!");
+        setMessage(`✅ Cod trimis către ${normalized}`);
         setStep(2);
       } else {
         setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
       }
     } catch (err) {
-      console.error("Eroare la trimiterea OTP:", err);
-      setMessage("❌ Eroare server. Încearcă din nou.");
+      setMessage("❌ Eroare server: " + err.message);
     }
   };
 
   /* =======================================================
-     2️⃣ Verificare cod OTP
+     2️⃣ Verifică codul OTP
   ======================================================= */
   const verifyOtp = async () => {
     if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
-
-      // 🧹 Normalizează numărul pentru SMSLink (obligatoriu cu +40)
-      const normalized = phone
-       .replace(/[^\d]/g, "")      // păstrează doar cifre
-       .replace(/^0/, "+40")       // dacă începe cu 0 → +40
-       .replace(/^4/, "+4")        // dacă începe cu 4 → +4
-       .replace(/^40/, "+40");     // dacă începe cu 40 → +40
-
-    console.log("📞 Trimitem SMS către:", normalized);
     setMessage("⏳ Se verifică codul...");
 
     try {
       const res = await fetch(`${API}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalized, code }),
+        body: JSON.stringify({ phone, code }),
       });
 
       const data = await res.json();
 
       if (data.success) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userPhone", data.user.phone);
-        localStorage.setItem("userName", data.user.name);
-
-        if (data.user.name.startsWith("Utilizator ")) {
-          setMessage("👋 Bine ai venit! Completează-ți profilul.");
-          setTimeout(() => navigate("/profil"), 1500);
-        } else {
-          setMessage("✅ Autentificare reușită! Redirecționare...");
-          setTimeout(() => navigate("/profil"), 1000);
-        }
+        localStorage.setItem("userPhone", phone);
+        setMessage("✅ Logare reușită! Redirecționare...");
+        setTimeout(() => navigate("/profil"), 1500);
       } else {
-        setMessage("❌ " + (data.error || "Cod incorect sau expirat."));
+        setMessage("❌ Cod incorect sau expirat.");
       }
     } catch (err) {
-      console.error("Eroare verificare OTP:", err);
-      setMessage("❌ Eroare server la verificarea codului.");
+      setMessage("❌ Eroare server: " + err.message);
     }
   };
 
@@ -90,7 +72,7 @@ export default function LoginSMS() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
-          🔐 Autentificare / Înregistrare prin SMS
+          🔐 Autentificare prin SMS
         </h2>
 
         {step === 1 && (
@@ -106,7 +88,7 @@ export default function LoginSMS() {
               onClick={sendOtp}
               className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              Trimite codul de verificare
+              Trimite codul
             </button>
           </>
         )}
@@ -115,7 +97,7 @@ export default function LoginSMS() {
           <>
             <input
               type="text"
-              placeholder="Introdu codul primit prin SMS"
+              placeholder="Introdu codul primit"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500 focus:outline-none"
@@ -124,18 +106,7 @@ export default function LoginSMS() {
               onClick={verifyOtp}
               className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
             >
-              Verifică și conectează-te
-            </button>
-
-            <button
-              onClick={() => {
-                setStep(1);
-                setCode("");
-                setMessage("");
-              }}
-              className="text-sm text-gray-600 mt-3 underline"
-            >
-              Retrimite codul
+              Verifică codul
             </button>
           </>
         )}
