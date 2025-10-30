@@ -5,25 +5,19 @@ export default function LoginSMS() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState(1);
-  const [toast, setToast] = useState(null);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  // 🔔 Afișează notificare
-  const showToast = (text, type = "info") => {
-    setToast({ text, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
   /* =======================================================
-     1️⃣ Trimite codul OTP
+     1️⃣ Trimitere cod OTP
   ======================================================= */
   const sendOtp = async () => {
-    if (!phone) return showToast("📱 Introdu numărul de telefon.", "error");
+    if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
-    const normalized = phone.replace(/\D/g, "").replace(/^0/, "40");
-    showToast("⏳ Se trimite SMS...");
+    const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
+    setMessage("⏳ Se trimite SMS...");
 
     try {
       const res = await fetch(`${API}/send-otp`, {
@@ -31,27 +25,29 @@ export default function LoginSMS() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: normalized }),
       });
+
       const data = await res.json();
 
       if (data.success) {
-        showToast("📲 Codul a fost trimis. Verifică telefonul!", "success");
+        setMessage("📲 Codul a fost trimis prin SMS. Verifică telefonul tău!");
         setStep(2);
       } else {
-        showToast(data.error || "❌ Eroare la trimiterea SMS-ului", "error");
+        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
       }
     } catch (err) {
-      showToast("❌ Eroare server: " + err.message, "error");
+      console.error("Eroare la trimiterea OTP:", err);
+      setMessage("❌ Eroare server. Încearcă din nou.");
     }
   };
 
   /* =======================================================
-     2️⃣ Verifică codul OTP (login/register)
+     2️⃣ Verificare cod OTP
   ======================================================= */
   const verifyOtp = async () => {
-    if (!code) return showToast("🔢 Introdu codul primit prin SMS.", "error");
+    if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
 
-    const normalized = phone.replace(/\D/g, "").replace(/^0/, "40");
-    showToast("🔍 Se verifică codul...");
+    const normalized = phone.replace(/\D/g, "").replace(/^0/, "4");
+    setMessage("⏳ Se verifică codul...");
 
     try {
       const res = await fetch(`${API}/verify-otp`, {
@@ -59,26 +55,32 @@ export default function LoginSMS() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: normalized, code }),
       });
+
       const data = await res.json();
 
       if (data.success) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userPhone", data.user.phone);
-        showToast("✅ Autentificare reușită! Redirecționare...", "success");
-        setTimeout(() => navigate("/profil"), 1500);
+        localStorage.setItem("userName", data.user.name);
+
+        if (data.user.name.startsWith("Utilizator ")) {
+          setMessage("👋 Bine ai venit! Completează-ți profilul.");
+          setTimeout(() => navigate("/profil"), 1500);
+        } else {
+          setMessage("✅ Autentificare reușită! Redirecționare...");
+          setTimeout(() => navigate("/profil"), 1000);
+        }
       } else {
-        showToast(data.error || "❌ Cod incorect sau expirat", "error");
+        setMessage("❌ " + (data.error || "Cod incorect sau expirat."));
       }
     } catch (err) {
-      showToast("❌ Eroare server: " + err.message, "error");
+      console.error("Eroare verificare OTP:", err);
+      setMessage("❌ Eroare server la verificarea codului.");
     }
   };
 
-  /* =======================================================
-     🧩 UI
-  ======================================================= */
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4 relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
           🔐 Autentificare / Înregistrare prin SMS
@@ -106,7 +108,7 @@ export default function LoginSMS() {
           <>
             <input
               type="text"
-              placeholder="Introdu codul primit"
+              placeholder="Introdu codul primit prin SMS"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500 focus:outline-none"
@@ -115,35 +117,28 @@ export default function LoginSMS() {
               onClick={verifyOtp}
               className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
             >
-              Verifică codul
+              Verifică și conectează-te
             </button>
+
             <button
               onClick={() => {
                 setStep(1);
                 setCode("");
+                setMessage("");
               }}
               className="text-sm text-gray-600 mt-3 underline"
             >
-              ↩️ Retrimite codul
+              Retrimite codul
             </button>
           </>
         )}
-      </div>
 
-      {/* 🔔 TOAST vizual */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-white shadow-lg ${
-            toast.type === "success"
-              ? "bg-green-600"
-              : toast.type === "error"
-              ? "bg-red-600"
-              : "bg-blue-600"
-          }`}
-        >
-          {toast.text}
-        </div>
-      )}
+        {message && (
+          <p className="mt-4 text-center text-gray-700 whitespace-pre-line">
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
