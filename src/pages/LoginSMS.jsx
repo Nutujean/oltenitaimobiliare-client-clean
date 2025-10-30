@@ -10,60 +10,72 @@ export default function LoginSMS() {
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
+  // 🔧 helper: normalizează numărul la format 07xxxxxxxx
+  const to07 = (value) => {
+    let d = String(value || "").replace(/\D/g, "");
+    if (d.startsWith("00407")) d = d.slice(3);
+    if (d.startsWith("407")) d = d.slice(1);
+    if (d.startsWith("07") && d.length === 10) return d;
+    return null;
+  };
+
   /* =======================================================
-     1️⃣ Trimite OTP pentru logare
+     1️⃣  Trimite codul OTP
   ======================================================= */
   const sendOtp = async () => {
-    if (!phone) return setMessage("📱 Introdu numărul de telefon.");
+    const n07 = to07(phone);
+    if (!n07) return setMessage("❌ Număr invalid (folosește 07xxxxxxxx)");
 
-    const normalized = phone.replace(/[^\d]/g, "");
     setMessage("⏳ Se trimite SMS...");
 
     try {
       const res = await fetch(`${API}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalized }),
+        body: JSON.stringify({ phone: n07 }),
       });
-
       const data = await res.json();
 
       if (data.success) {
-        setMessage(`✅ Cod trimis către ${normalized}`);
+        setMessage("📲 Cod trimis! Verifică telefonul tău.");
         setStep(2);
       } else {
-        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
+        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
       }
     } catch (err) {
+      console.error("Eroare trimitere OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
 
   /* =======================================================
-     2️⃣ Verifică codul OTP
+     2️⃣  Verifică OTP
   ======================================================= */
   const verifyOtp = async () => {
-    if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
-    setMessage("⏳ Se verifică codul...");
+    const n07 = to07(phone);
+    if (!n07) return setMessage("❌ Număr invalid (folosește 07xxxxxxxx)");
+    if (!code) return setMessage("❌ Introdu codul primit prin SMS.");
+
+    setMessage("⏳ Se verifică...");
 
     try {
       const res = await fetch(`${API}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code }),
+        body: JSON.stringify({ phone: n07, code }),
       });
 
       const data = await res.json();
-
       if (data.success) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userPhone", phone);
-        setMessage("✅ Logare reușită! Redirecționare...");
+        localStorage.setItem("userPhone", data.user.phone);
+        setMessage("✅ Autentificare reușită! Redirecționare...");
         setTimeout(() => navigate("/profil"), 1500);
       } else {
-        setMessage("❌ Cod incorect sau expirat.");
+        setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
       }
     } catch (err) {
+      console.error("Eroare verificare OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
@@ -88,7 +100,7 @@ export default function LoginSMS() {
               onClick={sendOtp}
               className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              Trimite codul
+              Trimite codul de verificare
             </button>
           </>
         )}
@@ -107,6 +119,16 @@ export default function LoginSMS() {
               className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
             >
               Verifică codul
+            </button>
+            <button
+              onClick={() => {
+                setStep(1);
+                setCode("");
+                setMessage("");
+              }}
+              className="text-sm text-gray-600 mt-3 underline"
+            >
+              Retrimite codul
             </button>
           </>
         )}
