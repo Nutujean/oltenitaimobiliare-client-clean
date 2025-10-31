@@ -2,58 +2,81 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function RegisterSMS() {
-  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+  const [step, setStep] = useState(1);
   const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
+
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
+  /* =======================================================
+     1️⃣ Trimitere cod OTP
+  ======================================================= */
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
+
+    const normalized = phone.replace(/\D/g, "");
+    if (!/^07\d{8}$/.test(normalized))
+      return setMessage("⚠️ Număr invalid. Folosește formatul 07xxxxxxxx");
+
     setMessage("⏳ Se trimite SMS...");
+
     try {
       const res = await fetch(`${API}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone: normalized }),
       });
+
       const data = await res.json();
       if (data.success) {
+        setMessage("✅ Cod trimis! Verifică SMS-ul.");
         setStep(2);
-        setMessage("📲 Codul OTP a fost trimis.");
-      } else setMessage("❌ " + data.error);
-    } catch {
-      setMessage("❌ Eroare server la trimiterea OTP.");
+      } else {
+        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
+      }
+    } catch (err) {
+      setMessage("❌ Eroare server: " + err.message);
     }
   };
 
-  const registerUser = async () => {
-    if (!code) return setMessage("Introdu codul primit prin SMS.");
+  /* =======================================================
+     2️⃣ Verificare OTP + creare cont
+  ======================================================= */
+  const verifyOtp = async () => {
+    if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
+    setMessage("🔍 Verificare cod...");
+
     try {
-      const res = await fetch(`${API}/register`, {
+      const res = await fetch(`${API}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, code }),
+        body: JSON.stringify({ phone, code, name, email }),
       });
+
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("token", data.token);
-        navigate("/profil");
-      } else setMessage("❌ " + data.error);
-    } catch {
-      setMessage("❌ Eroare server la înregistrare.");
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        setMessage("🎉 Cont creat cu succes! Redirecționare...");
+        setTimeout(() => navigate("/profil"), 2000);
+      } else {
+        setMessage("❌ " + (data.error || "Cod invalid sau expirat."));
+      }
+    } catch (err) {
+      setMessage("❌ Eroare server: " + err.message);
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
-      <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border">
+      <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
-          📝 Înregistrare prin SMS
+          📝 Înregistrare cont nou
         </h2>
 
         {step === 1 && (
@@ -61,29 +84,29 @@ export default function RegisterSMS() {
             <input
               type="text"
               placeholder="Nume complet"
-              className="border p-3 w-full mb-3 rounded-lg"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-3 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <input
               type="email"
               placeholder="Adresa de email"
-              className="border p-3 w-full mb-3 rounded-lg"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-3 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <input
               type="tel"
               placeholder="07xxxxxxxx"
-              className="border p-3 w-full mb-4 rounded-lg"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <button
               onClick={sendOtp}
-              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold"
+              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              Trimite codul
+              Trimite codul de verificare
             </button>
           </>
         )}
@@ -92,16 +115,27 @@ export default function RegisterSMS() {
           <>
             <input
               type="text"
-              placeholder="Introdu codul OTP"
-              className="border p-3 w-full mb-3 rounded-lg"
+              placeholder="Introdu codul primit"
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
             <button
-              onClick={registerUser}
-              className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold"
+              onClick={verifyOtp}
+              className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
             >
-              Finalizează înregistrarea
+              Verifică și finalizează înregistrarea
+            </button>
+
+            <button
+              onClick={() => {
+                setStep(1);
+                setCode("");
+                setMessage("");
+              }}
+              className="text-sm text-gray-600 mt-3 underline"
+            >
+              Retrimite codul
             </button>
           </>
         )}
