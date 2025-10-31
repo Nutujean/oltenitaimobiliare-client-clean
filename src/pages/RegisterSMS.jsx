@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function RegisterSMS() {
@@ -8,12 +8,13 @@ export default function RegisterSMS() {
   const [code, setCode] = useState("");
   const [step, setStep] = useState(1);
   const [message, setMessage] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
   /* =======================================================
-     1️⃣ Trimitere cod OTP
+     1️⃣ Trimite cod OTP (cu timer de 60s)
   ======================================================= */
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
@@ -23,6 +24,7 @@ export default function RegisterSMS() {
       return setMessage("⚠️ Număr invalid. Folosește formatul 07xxxxxxxx");
 
     setMessage("⏳ Se trimite SMS...");
+    setCooldown(60);
 
     try {
       const res = await fetch(`${API}/send-otp`, {
@@ -37,9 +39,11 @@ export default function RegisterSMS() {
         setStep(2);
       } else {
         setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului."));
+        setCooldown(0);
       }
     } catch (err) {
       setMessage("❌ Eroare server: " + err.message);
+      setCooldown(0);
     }
   };
 
@@ -48,7 +52,7 @@ export default function RegisterSMS() {
   ======================================================= */
   const verifyOtp = async () => {
     if (!code) return setMessage("🔢 Introdu codul primit prin SMS.");
-    setMessage("🔍 Verificare cod...");
+    setMessage("🔍 Se verifică codul...");
 
     try {
       const res = await fetch(`${API}/verify-otp`, {
@@ -71,6 +75,16 @@ export default function RegisterSMS() {
       setMessage("❌ Eroare server: " + err.message);
     }
   };
+
+  /* =======================================================
+     🕒 Timer retrimitere cod
+  ======================================================= */
+  useEffect(() => {
+    if (cooldown > 0) {
+      const t = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [cooldown]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -102,11 +116,19 @@ export default function RegisterSMS() {
               onChange={(e) => setPhone(e.target.value)}
               className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
+
             <button
               onClick={sendOtp}
-              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              disabled={cooldown > 0}
+              className={`w-full py-3 rounded-lg font-semibold transition ${
+                cooldown > 0
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
-              Trimite codul de verificare
+              {cooldown > 0
+                ? `Retrimite în ${cooldown}s`
+                : "Trimite codul de verificare"}
             </button>
           </>
         )}
@@ -133,9 +155,14 @@ export default function RegisterSMS() {
                 setCode("");
                 setMessage("");
               }}
-              className="text-sm text-gray-600 mt-3 underline"
+              disabled={cooldown > 0}
+              className={`text-sm mt-3 underline ${
+                cooldown > 0 ? "text-gray-400" : "text-gray-600"
+              }`}
             >
-              Retrimite codul
+              {cooldown > 0
+                ? `Retrimite în ${cooldown}s`
+                : "Retrimite codul"}
             </button>
           </>
         )}
