@@ -16,6 +16,7 @@ import Cookies from "./pages/Cookies";
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
 import RegisterSMS from "./pages/RegisterSMS";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 /* Utilizator */
 import Profil from "./pages/Profil";
@@ -65,6 +66,14 @@ function App() {
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS />} />
           <Route path="/inregistrare" element={<RegisterSMS />} />
+          <Route
+            path="/profil"
+            element={
+              <ProtectedRoute>
+                <Profil />
+              </ProtectedRoute>
+            }
+          />
 
           {/* 🔹 Utilizator */}
           <Route path="/profil" element={<Profil />} />

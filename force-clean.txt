@@ -1,0 +1,1 @@
+"remove netlify.toml $(date /t) $(time /t)" 
