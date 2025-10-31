@@ -8,7 +8,7 @@ const AdaugaAnunt = () => {
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
-    titlu: "",
+    title: "",
     descriere: "",
     pret: "",
     localitate: "",
@@ -32,11 +32,16 @@ const AdaugaAnunt = () => {
     "Spanțov",
     "Radovanu",
     "Ulmeni",
-    "Frumușani",
+    "Clatesti",
+    "Negoiesti",
+    "Soldanu",
+    "Luica",
+    "Nana",
+    "Chiselet",
     "Căscioarele",
-    "Tămădău Mare",
+    "Manastirea",
     "Valea Roșie",
-    "Dor Mărunt",
+    "Mitreni",
     "Călărași",
   ];
 
@@ -93,7 +98,7 @@ const AdaugaAnunt = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.titlu || !form.categorie || !form.localitate) {
+    if (!form.title || !form.categorie || !form.localitate) {
       setMessage("⚠️ Completează toate câmpurile obligatorii!");
       return;
     }
@@ -162,7 +167,7 @@ const AdaugaAnunt = () => {
       >
         <input
           type="text"
-          name="titlu"
+          name="title"
           placeholder="Titlul anunțului"
           value={form.titlu}
           onChange={handleChange}
