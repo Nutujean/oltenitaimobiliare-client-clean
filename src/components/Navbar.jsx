@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "../assets/OltenitaImobiliare.png";
@@ -20,7 +19,6 @@ export default function Navbar() {
     navigate("/");
   };
 
-  // ✅ Funcție pentru butonul „Adaugă anunț”
   const handleAddClick = () => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -33,7 +31,7 @@ export default function Navbar() {
   return (
     <nav className="bg-gradient-to-r from-blue-800 via-blue-700 to-blue-500 shadow-lg fixed top-0 left-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center text-white">
-        {/* 🏠 LOGO + TITLU */}
+        {/* 🏠 LOGO */}
         <Link to="/" className="flex items-center gap-2 group">
           <img
             src={logo}
@@ -48,7 +46,7 @@ export default function Navbar() {
           </h1>
         </Link>
 
-        {/* 🔹 Buton mobil */}
+        {/* 🔹 Meniu mobil */}
         <button
           className="md:hidden text-white text-2xl"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -62,7 +60,7 @@ export default function Navbar() {
             Acasă
           </Link>
 
-          {/* 🔵 Buton Adaugă Anunț (cu verificare login) */}
+          {/* 🔵 Adaugă anunț */}
           <button
             onClick={handleAddClick}
             className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-3 py-1.5 rounded-lg transition"
@@ -75,7 +73,7 @@ export default function Navbar() {
               <Link to="/login" className="hover:text-gray-200">
                 Login
               </Link>
-              <Link to="/inregistrare" className="hover:text-gray-200">
+              <Link to="/register" className="hover:text-gray-200">
                 Înregistrare
               </Link>
             </>
@@ -92,7 +90,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 🔹 Meniu mobil */}
+      {/* 🔹 Meniu mobil dropdown */}
       {menuOpen && (
         <div className="md:hidden bg-blue-700 px-4 py-3 space-y-2 text-sm">
           <Link
@@ -103,7 +101,6 @@ export default function Navbar() {
             Acasă
           </Link>
 
-          {/* 🔵 Buton mobil Adaugă anunț (cu verificare login) */}
           <button
             onClick={() => {
               handleAddClick();
@@ -124,7 +121,7 @@ export default function Navbar() {
                 Login
               </Link>
               <Link
-                to="/inregistrare"
+                to="/register"
                 onClick={() => setMenuOpen(false)}
                 className="block hover:text-gray-200"
               >
