@@ -13,20 +13,18 @@ const AdaugaAnunt = () => {
     pret: "",
     localitate: "",
     suprafata: "",
-    categorii: [],
+    categorie: "",
     imagini: [],
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔒 Redirect dacă nu e logat
+  // 🔒 Dacă nu e logat, redirecționează
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-    }
+    if (!token) navigate("/login");
   }, [token, navigate]);
 
-  // ✅ Localități permise
+  // ✅ Localitățile permise
   const localitati = [
     "Oltenița",
     "Chirnogi",
@@ -34,20 +32,15 @@ const AdaugaAnunt = () => {
     "Spanțov",
     "Radovanu",
     "Ulmeni",
-    "Clatesti",
-    "Negoiesti",
-    "Soldanu",
-    "Luica",
-    "Nana",
-    "Chiselet",
+    "Frumușani",
     "Căscioarele",
-    "Manastirea",
+    "Tămădău Mare",
     "Valea Roșie",
-    "Mitreni",
+    "Dor Mărunt",
     "Călărași",
   ];
 
-  // ✅ Categorii posibile
+  // ✅ Categorii — dropdown simplu
   const categoriiOptiuni = [
     "Apartamente",
     "Garsoniere",
@@ -57,19 +50,8 @@ const AdaugaAnunt = () => {
     "Garaje",
   ];
 
-  // 🔄 Actualizare câmpuri simple
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  // 🔘 Bifare/debifare categorii
-  const handleCategorieToggle = (cat) => {
-    setForm((prev) => {
-      const categorii = prev.categorii.includes(cat)
-        ? prev.categorii.filter((c) => c !== cat)
-        : [...prev.categorii, cat];
-      return { ...prev, categorii };
-    });
   };
 
   // 🖼️ Upload imagini
@@ -107,10 +89,11 @@ const AdaugaAnunt = () => {
     }
   };
 
-  // 📤 Submit formular
+  // 📤 Submit anunț
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.titlu || !form.localitate || !form.categorii.length) {
+
+    if (!form.titlu || !form.categorie || !form.localitate) {
       setMessage("⚠️ Completează toate câmpurile obligatorii!");
       return;
     }
@@ -119,10 +102,17 @@ const AdaugaAnunt = () => {
       setLoading(true);
       setMessage("");
 
+      const payload = {
+        ...form,
+        user: user?._id || undefined,
+      };
+
       const res = await axios.post(
         "https://api.oltenitaimobiliare.ro/api/listings",
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       if (res.data && res.data._id) {
@@ -132,7 +122,7 @@ const AdaugaAnunt = () => {
         setMessage("❌ Eroare la adăugarea anunțului.");
       }
     } catch (err) {
-      console.error("❌ Eroare server:", err);
+      console.error("❌ Backend error:", err.response?.data || err.message);
       setMessage("❌ Eroare la adăugarea anunțului (verifică backend-ul).");
     } finally {
       setLoading(false);
@@ -150,7 +140,9 @@ const AdaugaAnunt = () => {
       {/* ✅ Banner user logat */}
       {user && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6 flex justify-between items-center">
-          <span>🔑 Ești logat ca: <strong>{user.phone}</strong></span>
+          <span>
+            🔑 Ești logat ca: <strong>{user.phone}</strong>
+          </span>
           <button
             onClick={handleLogout}
             className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded"
@@ -160,16 +152,21 @@ const AdaugaAnunt = () => {
         </div>
       )}
 
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Adaugă un anunț nou</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">
+        Adaugă un anunț nou
+      </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white shadow-md rounded-xl p-6 border border-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 bg-white shadow-md rounded-xl p-6 border border-gray-100"
+      >
         <input
           type="text"
           name="titlu"
           placeholder="Titlul anunțului"
           value={form.titlu}
           onChange={handleChange}
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          className="border border-gray-300 rounded-lg w-full p-3"
         />
 
         <textarea
@@ -178,7 +175,7 @@ const AdaugaAnunt = () => {
           value={form.descriere}
           onChange={handleChange}
           rows="4"
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          className="border border-gray-300 rounded-lg w-full p-3"
         />
 
         <input
@@ -213,24 +210,22 @@ const AdaugaAnunt = () => {
           className="border border-gray-300 rounded-lg w-full p-3"
         />
 
-        {/* ✅ Categorii bifabile */}
-        <div>
-          <p className="font-semibold text-gray-700 mb-2">Categorie:</p>
-          <div className="flex flex-wrap gap-3">
-            {categoriiOptiuni.map((cat) => (
-              <label key={cat} className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={form.categorii.includes(cat)}
-                  onChange={() => handleCategorieToggle(cat)}
-                />
-                {cat}
-              </label>
-            ))}
-          </div>
-        </div>
+        {/* ✅ Dropdown categorie */}
+        <select
+          name="categorie"
+          value={form.categorie}
+          onChange={handleChange}
+          className="border border-gray-300 rounded-lg w-full p-3"
+        >
+          <option value="">Selectează categoria</option>
+          {categoriiOptiuni.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
 
-        {/* 🖼️ Upload poze */}
+        {/* 🖼️ Upload imagini */}
         <div>
           <p className="font-semibold text-gray-700 mb-2">Imagini:</p>
           <input type="file" multiple onChange={handleImageUpload} />
