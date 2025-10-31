@@ -21,24 +21,48 @@ export default function AnunturileMele() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // 🔹 Logout
+  // 🔹 Localități permise (poți ajusta lista)
+  const localitati = [
+    "Oltenița",
+    "Chirnogi",
+    "Curcani",
+    "Spanțov",
+    "Radovanu",
+    "Ulmeni",
+    "Clatesti",
+    "Negoiesti",
+    "Soldanu",
+    "Luica",
+    "Nana",
+    "Chiselet",
+    "Căscioarele",
+    "Manastirea",
+    "Valea Roșie",
+    "Mitreni",
+  ];
+
+  // 🔹 Categorii (ca pe site)
+  const categorii = [
+    "Apartamente",
+    "Garsoniere",
+    "Case",
+    "Terenuri",
+    "Spatii comerciale",
+    "Garaje",
+  ];
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
-  // 🔹 helper: fallback pentru rute API
+  // helper fallback pentru rute
   const apiTry = async (paths, options = {}) => {
     for (const p of paths) {
       try {
         const res = await fetch(`${API_URL}${p}`, options);
-        let data = {};
-        try {
-          data = await res.json();
-        } catch (_) {
-          data = {};
-        }
+        const data = await res.json().catch(() => ({}));
         if (res.ok) return data;
         if (res.status === 404) continue;
         throw new Error(data.message || data.error || `Eroare ${res.status}`);
@@ -55,7 +79,6 @@ export default function AnunturileMele() {
     fetchUserProfile();
   }, []);
 
-  // 🔹 Anunțurile utilizatorului
   const fetchListings = async () => {
     try {
       const data = await apiTry(
@@ -69,7 +92,6 @@ export default function AnunturileMele() {
     }
   };
 
-  // 🔹 Profilul utilizatorului
   const fetchUserProfile = async () => {
     try {
       const data = await apiTry(
@@ -86,7 +108,14 @@ export default function AnunturileMele() {
 
   const handleEdit = (l) => {
     setEditingId(l._id);
-    setForm({ ...l });
+    setForm({
+      title: l.title || "",
+      price: l.price || "",
+      description: l.description || "",
+      location: l.location || "",
+      category: l.category || "",
+      images: Array.isArray(l.images) ? l.images : [],
+    });
   };
 
   const handleDelete = async (id) => {
@@ -96,7 +125,7 @@ export default function AnunturileMele() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
       alert("Anunț șters cu succes!");
       fetchListings();
@@ -107,6 +136,12 @@ export default function AnunturileMele() {
 
   const handleSave = async (id) => {
     try {
+      // mică validare
+      if (!form.title?.trim()) return alert("Titlul este obligatoriu.");
+      if (!form.price) return alert("Prețul este obligatoriu.");
+      if (!form.location) return alert("Selectează localitatea.");
+      if (!form.category) return alert("Selectează categoria.");
+
       const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "PUT",
         headers: {
@@ -115,11 +150,12 @@ export default function AnunturileMele() {
         },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Eroare la salvare");
-      alert("✅ Anunț actualizat cu succes!");
       setEditingId(null);
       fetchListings();
+      setSuccessMsg("✅ Anunț actualizat cu succes!");
+      setTimeout(() => setSuccessMsg(""), 3000);
     } catch (e) {
       alert("❌ " + e.message);
     }
@@ -130,13 +166,15 @@ export default function AnunturileMele() {
     const newImages = [...form.images];
     files.forEach((file) => {
       const reader = new FileReader();
-      reader.onload = (ev) => newImages.push(ev.target.result);
+      reader.onload = (ev) => {
+        newImages.push(ev.target.result);
+        setForm((f) => ({ ...f, images: newImages }));
+      };
       reader.readAsDataURL(file);
     });
-    setForm({ ...form, images: newImages });
   };
 
-  // 🔹 Promovare clară prin UI
+  // 🔵 Promovare — păstrat exact ca la tine
   const handlePromote = async (id, planKey) => {
     try {
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
@@ -158,7 +196,6 @@ export default function AnunturileMele() {
         alert("Trebuie să fii logat pentru a modifica datele.");
         return;
       }
-
       const me = await apiTry(
         ["/users/profile", "/auth/profile"],
         { headers: { Authorization: `Bearer ${token}` } }
@@ -167,7 +204,6 @@ export default function AnunturileMele() {
         alert("Eroare la identificarea utilizatorului.");
         return;
       }
-
       const updated = await apiTry(
         [`/users/update/${me._id}`, `/auth/update/${me._id}`],
         {
@@ -179,14 +215,13 @@ export default function AnunturileMele() {
           body: JSON.stringify({ name, phone }),
         }
       );
-
       localStorage.setItem("userInfo", JSON.stringify(updated || {}));
       setSuccessMsg("✅ Datele au fost actualizate cu succes!");
-      setTimeout(() => setSuccessMsg(""), 4000);
+      setTimeout(() => setSuccessMsg(""), 3000);
     } catch (error) {
       console.error("Eroare:", error);
       setSuccessMsg("❌ Eroare la actualizare!");
-      setTimeout(() => setSuccessMsg(""), 4000);
+      setTimeout(() => setSuccessMsg(""), 3000);
     }
   };
 
@@ -204,7 +239,7 @@ export default function AnunturileMele() {
       </div>
 
       {/* Profil utilizator */}
-      <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-10 shadow-sm">
+      <div className="bg-blue-50 border border-blue-300 p-5 rounded-xl mb-6 shadow-sm">
         <h2 className="text-xl font-semibold text-blue-800 mb-4">Profilul meu</h2>
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           <div>
@@ -245,11 +280,7 @@ export default function AnunturileMele() {
         </div>
 
         {successMsg && (
-          <p
-            className={`mt-3 font-medium ${
-              successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"
-            }`}
-          >
+          <p className={`mt-3 font-medium ${successMsg.includes("Eroare") ? "text-red-600" : "text-green-600"}`}>
             {successMsg}
           </p>
         )}
@@ -257,12 +288,17 @@ export default function AnunturileMele() {
 
       {/* Lista anunțuri */}
       {listings.length === 0 ? (
-        <p className="text-gray-600">Nu ai încă anunțuri.</p>
+        <p className="text-gray-600">
+          Nu ai încă anunțuri.{" "}
+          <button onClick={() => navigate("/adauga-anunt")} className="text-blue-600 underline">
+            Adaugă unul acum.
+          </button>
+        </p>
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {listings.map((l) =>
             editingId === l._id ? (
-              // Formular editare
+              // ✏️ Formular editare
               <div key={l._id} className="bg-white p-5 rounded-xl shadow-md">
                 <input
                   type="text"
@@ -285,32 +321,39 @@ export default function AnunturileMele() {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Descriere"
                 />
-                <input
-                  type="text"
+
+                {/* 🔽 Localitate */}
+                <select
                   className="w-full border p-2 rounded mb-2"
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  placeholder="Locație"
-                />
-                <input
-                  type="text"
+                >
+                  <option value="">Selectează localitatea</option>
+                  {localitati.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+
+                {/* 🔽 Categorie */}
+                <select
                   className="w-full border p-2 rounded mb-2"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  placeholder="Categorie"
-                />
+                >
+                  <option value="">Selectează categoria</option>
+                  {categorii.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
 
                 {/* Poze existente */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  {form.images.map((img, idx) => (
+                  {form.images?.map((img, idx) => (
                     <div key={idx} className="relative">
                       <img src={img} alt="" className="w-full h-32 object-cover rounded" />
                       <button
                         onClick={() =>
-                          setForm({
-                            ...form,
-                            images: form.images.filter((_, i) => i !== idx),
-                          })
+                          setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))
                         }
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs"
                       >
@@ -338,23 +381,18 @@ export default function AnunturileMele() {
                 </div>
               </div>
             ) : (
-              // Card anunț dreptunghiular
-              <div
-                key={l._id}
-                className="bg-white rounded-xl shadow-md flex flex-col md:flex-row overflow-hidden relative"
-              >
+              // 🧩 Card anunț + Promovare (păstrat)
+              <div key={l._id} className="bg-white rounded-xl shadow-md flex flex-col md:flex-row overflow-hidden relative">
                 {l.featuredUntil && new Date(l.featuredUntil) > new Date() && (
                   <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full shadow">
                     🎖️ Promovat
                   </span>
                 )}
-                {l.images?.length > 0 && (
-                  <img
-                    src={l.images[0]}
-                    alt={l.title}
-                    className="w-full md:w-1/3 h-52 object-cover"
-                  />
+
+                {l.images?.[0] && (
+                  <img src={l.images[0]} alt={l.title} className="w-full md:w-1/3 h-52 object-cover" />
                 )}
+
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
                     <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
@@ -377,10 +415,9 @@ export default function AnunturileMele() {
                     </button>
                   </div>
 
+                  {/* ⭐ Promovare — EXACT ca înainte */}
                   <div className="mt-3">
-                    <p className="text-sm font-semibold text-blue-700 mb-1">
-                      Promovează anunțul:
-                    </p>
+                    <p className="text-sm font-semibold text-blue-700 mb-1">Promovează anunțul:</p>
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handlePromote(l._id, "featured7")}
