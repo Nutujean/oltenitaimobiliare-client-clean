@@ -225,7 +225,10 @@ export default function AnunturileMele() {
     }
   };
 
-  return (
-    // restul codului rămâne IDENTIC
+    return (
+    <div className="max-w-6xl mx-auto p-6">
+      {/* restul codului JSX original */}
+    </div>
   );
 }
+
