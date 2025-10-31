@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const AdaugaAnunt = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
-  // 🔹 Verifică autentificarea imediat
   useEffect(() => {
-    if (!user) {
+    if (!token) {
       navigate("/login");
     }
-  }, [user, navigate]);
+  }, [token, navigate]);
 
   const [formData, setFormData] = useState({
     titlu: "",
