@@ -73,7 +73,7 @@ export default function Navbar() {
               <Link to="/login" className="hover:text-gray-200">
                 Login
               </Link>
-              <Link to="/register" className="hover:text-gray-200">
+              <Link to="/inregistrare" className="hover:text-gray-200">
                 Înregistrare
               </Link>
             </>
@@ -121,7 +121,7 @@ export default function Navbar() {
                 Login
               </Link>
               <Link
-                to="/register"
+                to="/inregistrare"
                 onClick={() => setMenuOpen(false)}
                 className="block hover:text-gray-200"
               >

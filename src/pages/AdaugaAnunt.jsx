@@ -13,20 +13,20 @@ const AdaugaAnunt = () => {
     pret: "",
     localitate: "",
     suprafata: "",
-    categorie: "",
+    categorii: [],
+    imagini: [],
   });
-
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ Dacă nu e logat, redirecționăm
+  // 🔒 Redirect dacă nu e logat
   useEffect(() => {
     if (!token) {
       navigate("/login");
     }
   }, [token, navigate]);
 
-  // ✅ Localitățile permise (zona Oltenița)
+  // ✅ Localități permise
   const localitati = [
     "Oltenița",
     "Chirnogi",
@@ -34,26 +34,83 @@ const AdaugaAnunt = () => {
     "Spanțov",
     "Radovanu",
     "Ulmeni",
-    "Chiselet",
-    "Mitreni",
     "Clatesti",
-    "Cascioarele",
-    "Valea Rosie",
-    "Soldanu",
-    "Nana",
-    "Luica",
     "Negoiesti",
-    "Budesti",
+    "Soldanu",
+    "Luica",
+    "Nana",
+    "Chiselet",
+    "Căscioarele",
+    "Manastirea",
+    "Valea Roșie",
+    "Mitreni",
+    "Călărași",
   ];
 
+  // ✅ Categorii posibile
+  const categoriiOptiuni = [
+    "Apartamente",
+    "Garsoniere",
+    "Case",
+    "Terenuri",
+    "Spatii comerciale",
+    "Garaje",
+  ];
+
+  // 🔄 Actualizare câmpuri simple
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // 🔘 Bifare/debifare categorii
+  const handleCategorieToggle = (cat) => {
+    setForm((prev) => {
+      const categorii = prev.categorii.includes(cat)
+        ? prev.categorii.filter((c) => c !== cat)
+        : [...prev.categorii, cat];
+      return { ...prev, categorii };
+    });
+  };
+
+  // 🖼️ Upload imagini
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    try {
+      setLoading(true);
+      const uploaded = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "oltenita_imobiliare");
+
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/oltenitaimobiliare/image/upload",
+          { method: "POST", body: formData }
+        );
+
+        const data = await res.json();
+        uploaded.push(data.secure_url);
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        imagini: [...prev.imagini, ...uploaded],
+      }));
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      setMessage("Eroare la încărcarea imaginilor.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 📤 Submit formular
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!form.titlu || !form.localitate) {
+    if (!form.titlu || !form.localitate || !form.categorii.length) {
       setMessage("⚠️ Completează toate câmpurile obligatorii!");
       return;
     }
@@ -71,10 +128,12 @@ const AdaugaAnunt = () => {
       if (res.data && res.data._id) {
         setMessage("✅ Anunț adăugat cu succes!");
         setTimeout(() => navigate("/anunturile-mele"), 1500);
+      } else {
+        setMessage("❌ Eroare la adăugarea anunțului.");
       }
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Eroare la adăugarea anunțului.");
+      console.error("❌ Eroare server:", err);
+      setMessage("❌ Eroare la adăugarea anunțului (verifică backend-ul).");
     } finally {
       setLoading(false);
     }
@@ -91,7 +150,7 @@ const AdaugaAnunt = () => {
       {/* ✅ Banner user logat */}
       {user && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6 flex justify-between items-center">
-          <span>🔑 Ești logat ca: <strong>{user.phone || "Utilizator"}</strong></span>
+          <span>🔑 Ești logat ca: <strong>{user.phone}</strong></span>
           <button
             onClick={handleLogout}
             className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded"
@@ -128,15 +187,14 @@ const AdaugaAnunt = () => {
           placeholder="Preț (EUR)"
           value={form.pret}
           onChange={handleChange}
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          className="border border-gray-300 rounded-lg w-full p-3"
         />
 
-        {/* 🔹 Localitate — doar din lista Oltenița și împrejurimi */}
         <select
           name="localitate"
           value={form.localitate}
           onChange={handleChange}
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          className="border border-gray-300 rounded-lg w-full p-3"
         >
           <option value="">Selectează localitatea</option>
           {localitati.map((loc) => (
@@ -152,17 +210,41 @@ const AdaugaAnunt = () => {
           placeholder="Suprafață (mp)"
           value={form.suprafata}
           onChange={handleChange}
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+          className="border border-gray-300 rounded-lg w-full p-3"
         />
 
-        <input
-          type="text"
-          name="categorie"
-          placeholder="Categorie (casă, teren, etc.)"
-          value={form.categorie}
-          onChange={handleChange}
-          className="border border-gray-300 rounded-lg w-full p-3 focus:ring-2 focus:ring-blue-500 outline-none"
-        />
+        {/* ✅ Categorii bifabile */}
+        <div>
+          <p className="font-semibold text-gray-700 mb-2">Categorie:</p>
+          <div className="flex flex-wrap gap-3">
+            {categoriiOptiuni.map((cat) => (
+              <label key={cat} className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={form.categorii.includes(cat)}
+                  onChange={() => handleCategorieToggle(cat)}
+                />
+                {cat}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* 🖼️ Upload poze */}
+        <div>
+          <p className="font-semibold text-gray-700 mb-2">Imagini:</p>
+          <input type="file" multiple onChange={handleImageUpload} />
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {form.imagini.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt="preview"
+                className="rounded-lg border h-24 w-full object-cover"
+              />
+            ))}
+          </div>
+        </div>
 
         <button
           type="submit"
