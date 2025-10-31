@@ -139,8 +139,8 @@ export default function AnunturileMele() {
       if (!form.price) return alert("Prețul este obligatoriu.");
       if (!form.location) return alert("Selectează localitatea.");
       if (!form.category) return alert("Selectează categoria.");
-      if (form.phone && (!/^(0|\+4)\d{9}$/.test(form.phone) || form.phone.replace(/\D/g, "").length < 10)) {
-        return alert("Numărul de telefon trebuie să aibă cel puțin 10 cifre și format valid (ex: 07xxxxxxxx).");
+      if (!/^\d{10}$/.test(form.phone)) {
+        return alert("Numărul de telefon trebuie să conțină exact 10 cifre (ex: 07xxxxxxxx).");
       }
 
       const res = await fetch(`${API_URL}/listings/${id}`, {
