@@ -156,8 +156,7 @@ export default function AnunturileMele() {
                     >
                       🗑️ Șterge
                     </button>
-                  </div>
-
+                  </
                   {/* 🔹 Promovare (Stripe) */}
                   {!estePromovat ? (
                     <div className="mt-3 border-t pt-3">
