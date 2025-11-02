@@ -8,6 +8,7 @@ export default function AdaugaAnunt() {
   const [categorie, setCategorie] = useState("");
   const [telefon, setTelefon] = useState("");
   const [email, setEmail] = useState("");
+  const [dealType, setDealType] = useState(""); // 🆕 tip tranzacție
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ export default function AdaugaAnunt() {
       return;
     }
 
-    // 🔹 Validare telefon (10 cifre, ex: 07xxxxxxxx)
+    // 🔹 Validare telefon
     const phoneRegex = /^0\d{9}$/;
     if (!phoneRegex.test(telefon)) {
       alert("⚠️ Te rugăm să introduci un număr de telefon valid (10 cifre, ex: 07xxxxxxxx)!");
@@ -34,12 +35,13 @@ export default function AdaugaAnunt() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          titlu,
-          descriere,
-          pret,
-          categorie,
-          telefon,
-          email,
+          title: titlu,
+          description: descriere,
+          price: pret,
+          category: categorie,
+          phone: telefon,
+          userEmail: email,
+          intent: dealType, // 🆕 trimitem tipul tranzacției
         }),
       });
 
@@ -53,6 +55,7 @@ export default function AdaugaAnunt() {
       setCategorie("");
       setTelefon("");
       setEmail("");
+      setDealType("");
     } catch (err) {
       alert("❌ " + err.message);
     }
@@ -103,7 +106,21 @@ export default function AdaugaAnunt() {
         <option value="Case">Case</option>
         <option value="Terenuri">Terenuri</option>
         <option value="Garaje">Garaje</option>
-        <option value="Spatiu comercial">Spațiu comercial</option>
+        <option value="Spațiu comercial">Spațiu comercial</option>
+      </select>
+
+      {/* 🔹 Tip tranzacție */}
+      <select
+        value={dealType}
+        onChange={(e) => setDealType(e.target.value)}
+        required
+        className="w-full border border-gray-300 rounded-lg p-2"
+      >
+        <option value="">Selectează tipul tranzacției</option>
+        <option value="vand">Vând</option>
+        <option value="inchiriez">Închiriez</option>
+        <option value="cumpar">Cumpăr</option>
+        <option value="schimb">Schimb</option>
       </select>
 
       {/* Email */}
@@ -128,6 +145,7 @@ export default function AdaugaAnunt() {
         className="w-full border p-2 rounded"
       />
 
+      {/* Buton Salvare */}
       <button
         type="submit"
         className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700 transition"
