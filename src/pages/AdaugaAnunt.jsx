@@ -124,16 +124,19 @@ export default function AdaugaAnunt() {
           placeholder="Descriere"
           required
           className="w-full border p-2 rounded min-h-[100px]"
-        />
-
+        /> 
+        
         <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Preț (€)"
-          required
-          className="w-full border p-2 rounded"
-        />
+         type="number"
+         value={price}
+         onChange={(e) => setPrice(e.target.value)}
+         placeholder="Preț (obligatoriu, în €)"
+         required
+         min="1"
+         step="1"
+         className="w-full border p-2 rounded"
+         title="Introduceți un preț în euro (număr mai mare de 0)"
+       />
 
         <select
           value={location}
@@ -189,7 +192,8 @@ export default function AdaugaAnunt() {
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Telefon (07xxxxxxxx)"
           required
-          pattern="^0\\d{9}$"
+          pattern="^0[0-9]{9}$"
+          title="Introduceți un număr valid de 10 cifre (ex: 07xxxxxxxx)"
           className="w-full border p-2 rounded"
         />
 
