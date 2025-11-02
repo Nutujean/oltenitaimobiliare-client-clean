@@ -8,7 +8,7 @@ export default function AdaugaAnunt() {
   const [categorie, setCategorie] = useState("");
   const [telefon, setTelefon] = useState("");
   const [email, setEmail] = useState("");
-  const [dealType, setDealType] = useState(""); // 🆕 tip tranzacție
+  const [dealType, setDealType] = useState(""); // 🆕 Tip anunț
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,28 +20,36 @@ export default function AdaugaAnunt() {
       return;
     }
 
-    // 🔹 Validare telefon
+    // 🔹 Validare telefon (10 cifre, ex: 07xxxxxxxx)
     const phoneRegex = /^0\d{9}$/;
     if (!phoneRegex.test(telefon)) {
-      alert("⚠️ Te rugăm să introduci un număr de telefon valid (10 cifre, ex: 07xxxxxxxx)!");
+      alert(
+        "⚠️ Te rugăm să introduci un număr de telefon valid (10 cifre, ex: 07xxxxxxxx)!"
+      );
+      return;
+    }
+
+    // 🔹 Validare tip anunț
+    if (!dealType) {
+      alert("⚠️ Selectează tipul tranzacției (ex: Vând, Închiriez)");
       return;
     }
 
     try {
       const res = await fetch(`${API_URL}/listings`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          title: titlu,
-          description: descriere,
-          price: pret,
-          category: categorie,
-          phone: telefon,
-          userEmail: email,
-          intent: dealType, // 🆕 trimitem tipul tranzacției
+          titlu,
+          descriere,
+          pret,
+          categorie,
+          telefon,
+          email,
+          dealType, // 🆕 adăugat în payload
         }),
       });
 
@@ -106,20 +114,20 @@ export default function AdaugaAnunt() {
         <option value="Case">Case</option>
         <option value="Terenuri">Terenuri</option>
         <option value="Garaje">Garaje</option>
-        <option value="Spațiu comercial">Spațiu comercial</option>
+        <option value="Spatiu comercial">Spațiu comercial</option>
       </select>
 
-      {/* 🔹 Tip tranzacție */}
+      {/* 🆕 Tip anunț */}
       <select
         value={dealType}
         onChange={(e) => setDealType(e.target.value)}
         required
-        className="w-full border border-gray-300 rounded-lg p-2"
+        className="w-full border border-gray-300 rounded p-2"
       >
         <option value="">Selectează tipul tranzacției</option>
-        <option value="vand">Vând</option>
-        <option value="inchiriez">Închiriez</option>
-        <option value="cumpar">Cumpăr</option>
+        <option value="vanzare">Vând</option>
+        <option value="inchiriere">Închiriez</option>
+        <option value="cumparare">Cumpăr</option>
         <option value="schimb">Schimb</option>
       </select>
 
@@ -140,12 +148,11 @@ export default function AdaugaAnunt() {
         onChange={(e) => setTelefon(e.target.value)}
         placeholder="Număr de telefon (07xxxxxxxx)"
         required
-        pattern="^0\d{9}$"
+        pattern="^0\\d{9}$"
         title="Introduceți un număr valid de 10 cifre (ex: 07xxxxxxxx)"
         className="w-full border p-2 rounded"
       />
 
-      {/* Buton Salvare */}
       <button
         type="submit"
         className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700 transition"
