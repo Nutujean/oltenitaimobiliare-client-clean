@@ -11,6 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
+  const [intent, setIntent] = useState(""); // 🆕 adăugat — tip anunț
 
   useEffect(() => {
     fetch(`${API_URL}/health`).catch(() => {});
@@ -24,6 +25,7 @@ export default function Home() {
 
       const sortParam = filters.sort || sort || "newest";
       const locParam = filters.location || location || "";
+      const intentParam = filters.intent || intent || ""; // 🆕 adăugat
 
       const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
       const data = await res.json();
@@ -39,6 +41,13 @@ export default function Home() {
           );
         }
 
+        if (intentParam) {
+          results = results.filter(
+            (l) =>
+              l.intent && l.intent.toLowerCase() === intentParam.toLowerCase()
+          );
+        }
+
         setListings(results);
         setFiltered(results);
       }
@@ -50,7 +59,7 @@ export default function Home() {
   };
 
   const handleFilter = () => {
-    fetchListings({ sort, location });
+    fetchListings({ sort, location, intent }); // 🆕 modificat
   };
 
   const LOCATII = [
@@ -90,7 +99,9 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Găsește casa potrivită în Oltenița
           </h1>
-          <p className="text-lg mb-6">Cele mai noi anunțuri imobiliare din zonă</p>
+          <p className="text-lg mb-6">
+            Cele mai noi anunțuri imobiliare din zonă
+          </p>
         </div>
       </div>
 
@@ -106,6 +117,19 @@ export default function Home() {
               {loc}
             </option>
           ))}
+        </select>
+
+        {/* 🆕 Filtru pentru tipul de anunț */}
+        <select
+          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          value={intent}
+          onChange={(e) => setIntent(e.target.value)}
+        >
+          <option value="">Toate tipurile</option>
+          <option value="vand">Vând</option>
+          <option value="cumpar">Cumpăr</option>
+          <option value="inchiriez">Închiriez</option>
+          <option value="schimb">Schimb</option>
         </select>
 
         <select
@@ -182,7 +206,9 @@ export default function Home() {
             <p className="ml-3 text-gray-500">Se încarcă anunțurile...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-gray-600">Nu există anunțuri pentru filtrul selectat.</p>
+          <p className="text-gray-600">
+            Nu există anunțuri pentru filtrul selectat.
+          </p>
         ) : (
           <div
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fadeIn"
@@ -234,7 +260,7 @@ export default function Home() {
           Zona noastră - Oltenița și împrejurimi
         </h2>
         <p className="text-gray-600 mb-4">
-          Caută locuințe, terenuri și spații comerciale în Oltenița și localitățile din jur.
+          Caută locuințe, terenuri și spații comerciale în Oltenița,Chrinogi,Ulmeni,Spantov,Radovanu și restul localităților din jur.
         </p>
         <iframe
           title="Harta Oltenița"
