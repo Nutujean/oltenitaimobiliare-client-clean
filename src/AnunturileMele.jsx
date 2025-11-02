@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
@@ -68,19 +68,23 @@ export default function AnunturileMele() {
       </div>
     );
 
+  // 🔹 Cazul în care nu există anunțuri
   if (listings.length === 0)
     return (
       <div className="text-center py-10">
         <p className="text-gray-600 mb-4">Nu ai încă anunțuri publicate.</p>
-        <button
-          onClick={() => navigate("/adauga-anunt")}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+
+        {/* 🔸 FIX: înlocuit <button> cu <Link> pentru navigare sigură */}
+        <Link
+          to="/adauga-anunt"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-block"
         >
           + Adaugă un anunț
-        </button>
+        </Link>
       </div>
     );
 
+  // 🔹 Lista anunțurilor existente
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Anunțurile Mele</h1>
@@ -135,7 +139,7 @@ export default function AnunturileMele() {
                     Șterge
                   </button>
 
-                  {/* 🔹 Butoane reale Stripe */}
+                  {/* 🔹 Butoane Stripe */}
                   {!isPromoted && (
                     <>
                       <button
