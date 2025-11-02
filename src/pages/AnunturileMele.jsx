@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
@@ -74,12 +74,14 @@ export default function AnunturileMele() {
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
           📋 Anunțurile Mele
         </h1>
-        <button
-          onClick={() => navigate("/adauga-anunt")}
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
+
+        {/* ✅ Înlocuit button cu Link */}
+        <Link
+          to="/adauga-anunt"
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
         >
           + Adaugă anunț nou
-        </button>
+        </Link>
       </div>
 
       {loading ? (
@@ -87,12 +89,14 @@ export default function AnunturileMele() {
       ) : anunturi.length === 0 ? (
         <div className="text-center bg-white p-8 rounded-xl shadow">
           <p className="text-gray-600 mb-4">Nu ai adăugat încă niciun anunț.</p>
-          <button
-            onClick={() => navigate("/adauga-anunt")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg transition"
+
+          {/* ✅ Înlocuit button cu Link */}
+          <Link
+            to="/adauga-anunt"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg transition inline-block"
           >
             ➕ Adaugă primul tău anunț
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
