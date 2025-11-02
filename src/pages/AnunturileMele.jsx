@@ -47,7 +47,7 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la inițializarea plății");
 
-      window.location.href = data.url; // redirect Stripe
+      window.location.href = data.url; // Stripe redirect
     } catch (err) {
       alert("Eroare la promovare: " + err.message);
     }
@@ -69,19 +69,27 @@ export default function AnunturileMele() {
     );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* ✅ Header cu buton de adăugare + profil */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
           📋 Anunțurile Mele
         </h1>
 
-        {/* ✅ Înlocuit button cu Link */}
-        <Link
-          to="/adauga-anunt"
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
-        >
-          + Adaugă anunț nou
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/adauga-anunt"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
+          >
+            + Adaugă anunț
+          </Link>
+          <Link
+            to="/profil"
+            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
+          >
+            ⚙️ Profilul meu
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -89,11 +97,9 @@ export default function AnunturileMele() {
       ) : anunturi.length === 0 ? (
         <div className="text-center bg-white p-8 rounded-xl shadow">
           <p className="text-gray-600 mb-4">Nu ai adăugat încă niciun anunț.</p>
-
-          {/* ✅ Înlocuit button cu Link */}
           <Link
             to="/adauga-anunt"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg transition inline-block"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg transition inline-block"
           >
             ➕ Adaugă primul tău anunț
           </Link>
@@ -136,7 +142,7 @@ export default function AnunturileMele() {
                   <p className="text-blue-700 font-semibold mb-1">{a.pret} €</p>
                   <p className="text-sm text-gray-500 mb-3">{a.categorie}</p>
 
-                  {/* 🔹 Butoane Edit / Delete */}
+                  {/* 🔹 Butoane Editare / Ștergere */}
                   <div className="flex flex-wrap gap-2 mb-3">
                     <button
                       onClick={() => navigate(`/editeaza-anunt/${a._id}`)}
@@ -152,8 +158,8 @@ export default function AnunturileMele() {
                     </button>
                   </div>
 
-                  {/* 🔹 Promovare */}
-                  {!estePromovat && (
+                  {/* 🔹 Promovare (Stripe) */}
+                  {!estePromovat ? (
                     <div className="mt-3 border-t pt-3">
                       <p className="text-sm font-semibold text-blue-700 mb-1">
                         Promovează anunțul:
@@ -179,12 +185,9 @@ export default function AnunturileMele() {
                         </button>
                       </div>
                     </div>
-                  )}
-
-                  {/* 🔹 Mesaj dacă e deja promovat */}
-                  {estePromovat && (
+                  ) : (
                     <p className="text-xs text-green-700 mt-2 font-medium">
-                      Anunțul este promovat până la{" "}
+                      ✅ Promovat până la{" "}
                       {new Date(a.featuredUntil).toLocaleDateString("ro-RO")}.
                     </p>
                   )}
