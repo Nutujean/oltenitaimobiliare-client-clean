@@ -18,12 +18,13 @@ export default function Profil() {
     const token = localStorage.getItem("token");
     const storedPhone = localStorage.getItem("userPhone");
 
-    if (!token || !storedPhone) {
+    if (!token) {
       navigate("/login");
       return;
     }
 
-    setPhone(storedPhone);
+    // ✅ Fallback dacă telefonul nu e salvat
+    setPhone(storedPhone || "Necompletat");
     setLoading(false);
   }, [navigate]);
 
@@ -45,7 +46,8 @@ export default function Profil() {
 
       <div className="bg-white shadow rounded-xl p-4 space-y-2 text-gray-700">
         <p>
-          <strong>Telefon:</strong> {phone}
+          <strong>Telefon:</strong>{" "}
+          {phone === "Necompletat" ? "Necompletat" : phone}
         </p>
         <p>
           <strong>Autentificare:</strong> prin SMS
