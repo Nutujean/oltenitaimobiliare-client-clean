@@ -122,6 +122,29 @@ export default function AnunturileMele() {
                   </span>
                 )}
 
+                {/* 🔹 Tip tranzacție */}
+                {a.intent && (
+                  <span
+                    className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+                      a.intent === "vand"
+                        ? "bg-green-600"
+                        : a.intent === "cumpar"
+                        ? "bg-blue-600"
+                        : a.intent === "inchiriez"
+                        ? "bg-yellow-500 text-gray-900"
+                        : "bg-purple-600"
+                    }`}
+                  >
+                    {a.intent === "vand"
+                      ? "🏠 Vând"
+                      : a.intent === "cumpar"
+                      ? "🛒 Cumpăr"
+                      : a.intent === "inchiriez"
+                      ? "🔑 Închiriez"
+                      : "♻️ Schimb"}
+                  </span>
+                )}
+
                 {/* 🔹 Imagine */}
                 {a.images?.[0] ? (
                   <img
@@ -156,7 +179,8 @@ export default function AnunturileMele() {
                     >
                       🗑️ Șterge
                     </button>
-                  </
+                  </div>
+
                   {/* 🔹 Promovare (Stripe) */}
                   {!estePromovat ? (
                     <div className="mt-3 border-t pt-3">
