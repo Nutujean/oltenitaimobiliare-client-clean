@@ -235,7 +235,28 @@ export default function Home() {
                       Fără imagine
                     </div>
                   )}
-
+{/* 🔹 Eticheta tip tranzacție */}
+{l.intent && (
+  <span
+    className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+      l.intent === "vand"
+        ? "bg-green-600"
+        : l.intent === "cumpar"
+        ? "bg-blue-600"
+        : l.intent === "inchiriez"
+        ? "bg-yellow-500"
+        : "bg-purple-600"
+    }`}
+  >
+    {l.intent === "vand"
+      ? "🏠 Vând"
+      : l.intent === "cumpar"
+      ? "🛒 Cumpăr"
+      : l.intent === "inchiriez"
+      ? "🔑 Închiriez"
+      : "♻️ Schimb"}
+  </span>
+)}
                   {isFeatured && (
                     <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
                       PROMOVAT
