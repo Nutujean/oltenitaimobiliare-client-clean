@@ -27,9 +27,12 @@ export default function AdaugaAnunt() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/anunturi`, {
+      const res = await fetch(`${API_URL}/listings`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({
           titlu,
           descriere,
@@ -42,6 +45,7 @@ export default function AdaugaAnunt() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la adăugare");
+
       alert("✅ Anunț adăugat cu succes!");
       setTitlu("");
       setDescriere("");
@@ -99,7 +103,7 @@ export default function AdaugaAnunt() {
         <option value="Case">Case</option>
         <option value="Terenuri">Terenuri</option>
         <option value="Garaje">Garaje</option>
-        <option value="Spatiu comercial">Spatiu comercial</option>
+        <option value="Spatiu comercial">Spațiu comercial</option>
       </select>
 
       {/* Email */}
