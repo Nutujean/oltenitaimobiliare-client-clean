@@ -277,7 +277,28 @@ export default function DetaliuAnunt() {
             💰 {listing.price} €
           </p>
         </div>
-
+        {/* 🔹 Tip tranzacție */}
+{listing.intent && (
+  <div
+    className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${
+      listing.intent === "vand"
+        ? "bg-green-600"
+        : listing.intent === "cumpar"
+        ? "bg-blue-600"
+        : listing.intent === "inchiriez"
+        ? "bg-yellow-500 text-gray-900"
+        : "bg-purple-600"
+    }`}
+  >
+    {listing.intent === "vand"
+      ? "🏠 Vând"
+      : listing.intent === "cumpar"
+      ? "🛒 Cumpăr"
+      : listing.intent === "inchiriez"
+      ? "🔑 Închiriez"
+      : "♻️ Schimb"}
+  </div>
+)}
         <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
 
         {listing.contactName && (
