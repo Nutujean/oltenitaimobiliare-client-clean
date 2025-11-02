@@ -1,180 +1,171 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
-  const [listings, setListings] = useState([]);
+  const [anunturi, setAnunturi] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // 🔹 Încărcăm anunțurile utilizatorului
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    fetch(`${API_URL}/listings/my`, {
+    if (!token) return;
+    fetch(`${API_URL}/api/anunturile-mele`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setListings(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Eroare la încărcarea anunțurilor:", err);
-        setLoading(false);
-      });
-  }, [token, navigate]);
+      .then((data) => setAnunturi(Array.isArray(data) ? data : []))
+      .catch((e) => console.error("Eroare:", e))
+      .finally(() => setLoading(false));
+  }, []);
 
-  // 🔹 Ștergere anunț
-  const handleDelete = async (id) => {
+  const stergeAnunt = async (id) => {
     if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
     try {
-      const res = await fetch(`${API_URL}/listings/${id}`, {
+      const res = await fetch(`${API_URL}/api/anunturi/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la ștergere");
-      alert("✅ Anunț șters cu succes!");
-      setListings((prev) => prev.filter((l) => l._id !== id));
+      if (res.ok) setAnunturi((prev) => prev.filter((a) => a._id !== id));
     } catch (e) {
-      alert("❌ " + e.message);
+      alert("❌ Eroare la ștergere");
     }
   };
 
-  // 🔹 Promovare reală (Stripe)
-  const handlePromote = async (id, plan) => {
-    try {
-      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: id, plan }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la inițializarea plății");
-      window.location.href = data.url; // redirecționează la Stripe Checkout
-    } catch (err) {
-      alert("❌ " + err.message);
-    }
-  };
-
-  if (loading)
+  if (!token)
     return (
-      <div className="flex items-center justify-center min-h-[60vh] text-gray-600">
-        Se încarcă anunțurile...
-      </div>
-    );
-
-  // 🔹 Cazul în care nu există anunțuri
-  if (listings.length === 0)
-    return (
-      <div className="text-center py-10">
-        <p className="text-gray-600 mb-4">Nu ai încă anunțuri publicate.</p>
-
-        {/* 🔸 FIX: înlocuit <button> cu <Link> pentru navigare sigură */}
-        <Link
-          to="/adauga-anunt"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-block"
+      <div className="text-center py-20">
+        <p className="text-gray-600 mb-4">
+          Trebuie să fii logat pentru a-ți vedea anunțurile.
+        </p>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
         >
-          + Adaugă un anunț
-        </Link>
+          Autentifică-te
+        </button>
       </div>
     );
 
-  // 🔹 Lista anunțurilor existente
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Anunțurile Mele</h1>
+    <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 text-center md:text-left">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
+          📋 Anunțurile Mele
+        </h1>
+        <button
+          onClick={() => navigate("/adauga-anunt")}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
+        >
+          + Adaugă anunț nou
+        </button>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {listings.map((l) => {
-          const isPromoted =
-            l.featuredUntil && new Date(l.featuredUntil) > new Date();
+      {loading ? (
+        <p className="text-gray-500 text-center">Se încarcă anunțurile...</p>
+      ) : anunturi.length === 0 ? (
+        <div className="text-center bg-white p-8 rounded-xl shadow mt-6">
+          <p className="text-gray-600 mb-4">
+            Nu ai adăugat încă niciun anunț.
+          </p>
+          <button
+            onClick={() => navigate("/adauga-anunt")}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition"
+          >
+            ➕ Adaugă primul tău anunț
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {anunturi.map((a) => {
+            const estePromovat =
+              a.featuredUntil && new Date(a.featuredUntil) > new Date();
 
-          return (
-            <div
-              key={l._id}
-              className="bg-white shadow-md rounded-xl overflow-hidden relative border border-gray-200 hover:shadow-lg transition"
-            >
-              {isPromoted && (
-                <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full shadow">
-                  🎖️ Promovat
-                </span>
-              )}
-
-              {l.images?.[0] ? (
-                <img
-                  src={l.images[0]}
-                  alt={l.title}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">
-                  Fără imagine
-                </div>
-              )}
-
-              <div className="p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-1">
-                  {l.title}
-                </h2>
-                <p className="text-blue-700 font-semibold mb-1">
-                  {l.price} €
-                </p>
-                {l.location && (
-                  <p className="text-gray-600 text-sm mb-1">{l.location}</p>
+            return (
+              <div
+                key={a._id}
+                className="relative bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+              >
+                {estePromovat && (
+                  <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-semibold px-2 py-1 rounded-full shadow">
+                    🎖️ Promovat
+                  </span>
                 )}
-                {l.phone && (
-                  <p className="text-gray-700 text-sm mb-2">📞 {l.phone}</p>
+
+                {a.images?.[0] ? (
+                  <img
+                    src={a.images[0]}
+                    alt={a.titlu}
+                    className="w-full h-48 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">
+                    Fără imagine
+                  </div>
                 )}
 
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  <button
-                    onClick={() => handleDelete(l._id)}
-                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
-                  >
-                    Șterge
-                  </button>
+                <div className="p-4">
+                  <h2 className="font-bold text-lg mb-1 line-clamp-2">
+                    {a.titlu || a.title}
+                  </h2>
+                  <p className="text-blue-700 font-semibold mb-1">{a.pret || a.price} €</p>
+                  <p className="text-sm text-gray-500 mb-3">{a.categorie || a.category}</p>
 
-                  {/* 🔹 Butoane Stripe */}
-                  {!isPromoted && (
-                    <>
-                      <button
-                        onClick={() => handlePromote(l._id, "featured7")}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm"
-                      >
-                        ⭐ 7 zile / 50 lei
-                      </button>
-                      <button
-                        onClick={() => handlePromote(l._id, "featured14")}
-                        className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
-                      >
-                        ⭐ 14 zile / 85 lei
-                      </button>
-                      <button
-                        onClick={() => handlePromote(l._id, "featured30")}
-                        className="bg-yellow-700 text-white px-3 py-1 rounded hover:bg-yellow-800 text-sm"
-                      >
-                        ⭐ 30 zile / 125 lei
-                      </button>
-                    </>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <button
+                      onClick={() => navigate(`/editeaza-anunt/${a._id}`)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      ✏️ Editează
+                    </button>
+                    <button
+                      onClick={() => stergeAnunt(a._id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                    >
+                      🗑️ Șterge
+                    </button>
+                  </div>
+
+                  {!estePromovat && (
+                    <div className="mt-3 border-t pt-3">
+                      <p className="text-sm font-semibold text-blue-700 mb-1">
+                        Promovează anunțul:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => alert('Stripe 7 zile')}
+                          className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm"
+                        >
+                          7 zile / 50 lei
+                        </button>
+                        <button
+                          onClick={() => alert('Stripe 14 zile')}
+                          className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-800 text-sm"
+                        >
+                          14 zile / 85 lei
+                        </button>
+                        <button
+                          onClick={() => alert('Stripe 30 zile')}
+                          className="bg-blue-800 text-white px-2 py-1 rounded hover:bg-blue-900 text-sm"
+                        >
+                          30 zile / 125 lei
+                        </button>
+                      </div>
+                    </div>
                   )}
 
-                  {isPromoted && (
-                    <span className="text-xs text-green-700 font-semibold">
-                      Activ până la{" "}
-                      {new Date(l.featuredUntil).toLocaleDateString("ro-RO")}
-                    </span>
+                  {estePromovat && (
+                    <p className="text-xs text-green-700 mt-2 font-medium">
+                      Anunțul este promovat până la{" "}
+                      {new Date(a.featuredUntil).toLocaleDateString("ro-RO")}.
+                    </p>
                   )}
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
