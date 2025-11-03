@@ -6,19 +6,21 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [isLogged, setIsLogged] = useState(false); // 🆕 fallback pentru token
+  const [isLogged, setIsLogged] = useState(false);
   const navigate = useNavigate();
 
+  // ✅ Actualizează Navbar-ul dacă se schimbă localStorage (ex: după login)
   useEffect(() => {
-    const u = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    const updateAuthState = () => {
+      const u = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      if (u) setUser(JSON.parse(u));
+      setIsLogged(!!token && token !== "undefined" && token !== "null");
+    };
 
-    if (u) setUser(JSON.parse(u));
-    if (token && token !== "undefined" && token !== "null") {
-      setIsLogged(true);
-    } else {
-      setIsLogged(false);
-    }
+    updateAuthState();
+    window.addEventListener("storage", updateAuthState);
+    return () => window.removeEventListener("storage", updateAuthState);
   }, []);
 
   const handleLogout = () => {
