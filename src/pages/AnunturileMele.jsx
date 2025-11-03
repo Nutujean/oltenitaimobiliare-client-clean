@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
+  const [successMsg, setSuccessMsg] = useState("");
   const [anunturi, setAnunturi] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -24,6 +25,16 @@ export default function AnunturileMele() {
       .catch((e) => console.error("Eroare:", e))
       .finally(() => setLoading(false));
   }, [token, navigate]);
+
+  // ✅ Preia mesajul de succes (după adăugarea anunțului)
+  useEffect(() => {
+    const msg = sessionStorage.getItem("anuntAdaugat");
+    if (msg) {
+      setSuccessMsg(msg);
+      sessionStorage.removeItem("anuntAdaugat");
+      setTimeout(() => setSuccessMsg(""), 4000);
+    }
+  }, []);
 
   const stergeAnunt = async (id) => {
     if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
@@ -83,6 +94,13 @@ export default function AnunturileMele() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* ✅ Mesaj verde elegant */}
+      {successMsg && (
+        <div className="mb-6 bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-lg text-center font-semibold shadow-sm transition-opacity duration-700 ease-in-out">
+          {successMsg}
+        </div>
+      )}
+
       {/* ✅ Header cu buton de adăugare + profil */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
@@ -110,7 +128,6 @@ export default function AnunturileMele() {
           const estePromovat =
             a.featuredUntil && new Date(a.featuredUntil) > new Date();
 
-          // ✅ adaptare chei corecte pentru date (în unele backenduri e title/price)
           const titlu = a.titlu || a.title;
           const pret = a.pret || a.price;
           const categorie = a.categorie || a.category;
@@ -120,14 +137,12 @@ export default function AnunturileMele() {
               key={a._id}
               className="relative bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
             >
-              {/* 🔹 Badge Promovat */}
               {estePromovat && (
                 <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-semibold px-2 py-1 rounded-full shadow">
                   🎖️ Promovat
                 </span>
               )}
 
-              {/* 🔹 Tip tranzacție */}
               {a.intent && (
                 <span
                   className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
@@ -150,7 +165,6 @@ export default function AnunturileMele() {
                 </span>
               )}
 
-              {/* 🔹 Imagine */}
               {a.images?.[0] ? (
                 <img
                   src={a.images[0]}
@@ -168,7 +182,6 @@ export default function AnunturileMele() {
                 <p className="text-blue-700 font-semibold mb-1">{pret} €</p>
                 <p className="text-sm text-gray-500 mb-3">{categorie}</p>
 
-                {/* 🔹 Butoane Editare / Ștergere */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   <button
                     onClick={() => navigate(`/editeaza-anunt/${a._id}`)}
@@ -184,7 +197,6 @@ export default function AnunturileMele() {
                   </button>
                 </div>
 
-                {/* 🔹 Promovare (Stripe) */}
                 {!estePromovat ? (
                   <div className="mt-3 border-t pt-3">
                     <p className="text-sm font-semibold text-blue-700 mb-1">
