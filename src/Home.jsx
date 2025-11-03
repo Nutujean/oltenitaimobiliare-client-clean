@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PromoBanner from "../components/PromoBanner";
 import hero from "../assets/hero.jpg";
 import bannerBebeking from "../assets/banner-bebeking.jpg";
@@ -14,6 +14,7 @@ export default function Home() {
   const [intent, setIntent] = useState(""); // 🆕 tip tranzacție
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
+  const navigate = useNavigate();
 
   const getImageUrl = (listing) => {
     if (listing.images && listing.images.length > 0) return listing.images[0];
@@ -107,12 +108,31 @@ export default function Home() {
           <option value="schimb">🔄 Schimb</option>
         </select>
 
-        <Link
-          to="/adauga-anunt"
+        {/* ✅ Buton modificat */}
+        <button
+          onClick={() => {
+            const token = localStorage.getItem("token");
+
+            if (token) {
+              navigate("/adauga-anunt");
+            } else {
+              const raspuns = window.confirm(
+                "Ai deja cont la noi?\n\nApasă OK pentru a te autentifica,\nori Cancel pentru a-ți crea un cont nou."
+              );
+
+              sessionStorage.setItem("redirectAfterLogin", "adauga-anunt");
+
+              if (raspuns) {
+                navigate("/login");
+              } else {
+                navigate("/inregistrare");
+              }
+            }
+          }}
           className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
         >
           + Adaugă anunț
-        </Link>
+        </button>
       </section>
 
       {error && (

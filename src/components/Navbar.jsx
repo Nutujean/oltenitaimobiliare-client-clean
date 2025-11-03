@@ -25,6 +25,7 @@ export default function Navbar() {
   const token = localStorage.getItem("token");
 
   if (token) {
+<<<<<<< HEAD
     navigate("/adauga-anunt");
   } else {
     // 🆕 salvează scopul redirecționării după login
@@ -42,6 +43,26 @@ export default function Navbar() {
     setShowDialog(false);
     navigate("/inregistrare");
   };
+=======
+    // ✅ Dacă e logat → merge direct la formular
+    navigate("/adauga-anunt");
+  } else {
+    // ❓ Dacă nu e logat → întrebare înainte de redirecționare
+    const raspuns = window.confirm(
+      "Ai deja cont la noi?\n\nApasă OK pentru a te autentifica,\nori Cancel pentru a-ți crea un cont nou."
+    );
+
+    // 🔁 Salvăm fluxul — ca după logare să fie trimis înapoi la Adaugă Anunț
+    sessionStorage.setItem("redirectAfterLogin", "adauga-anunt");
+
+    if (raspuns) {
+      navigate("/login");
+    } else {
+      navigate("/inregistrare");
+    }
+  }
+};
+>>>>>>> 515cfec (💾 Salvare modificări înainte de rebase)
 
   return (
     <>

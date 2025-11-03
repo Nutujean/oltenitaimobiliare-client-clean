@@ -18,7 +18,7 @@ export default function LoginSMS() {
 
     const normalized = phone.replace(/\D/g, "");
     if (!/^07\d{8}$/.test(normalized))
-      return setMessage("❌ Număr invalid (folosește formatul 07xxxxxxxx)");
+      return setMessage("❌ Număr invalid (format 07xxxxxxxx)");
 
     setMessage("⏳ Se trimite SMS...");
 
@@ -31,7 +31,7 @@ export default function LoginSMS() {
       const data = await res.json();
 
       if (data.success) {
-        setMessage("📲 Codul a fost trimis. Verifică telefonul tău!");
+        setMessage("📲 Codul a fost trimis! Verifică telefonul.");
         setStep(2);
       } else {
         setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
@@ -44,7 +44,6 @@ export default function LoginSMS() {
   // 🔹 Verificare OTP
   const verifyOtp = async () => {
     if (!code) return setMessage("Introdu codul primit prin SMS.");
-
     const normalized = phone.replace(/\D/g, "");
     setMessage("⏳ Se verifică...");
 
@@ -62,14 +61,29 @@ export default function LoginSMS() {
 
         setMessage("✅ Verificare reușită! Redirecționare...");
 
-        // 🆕 redirecționare inteligentă
-        setTimeout(() => {
-          // dacă a venit din fluxul „Adaugă anunț”, du-l acolo direct
-          if (sessionStorage.getItem("redirectAfterLogin") === "adauga-anunt") {
-            sessionStorage.removeItem("redirectAfterLogin");
+        setTimeout(async () => {
+          const redirect = sessionStorage.getItem("redirectAfterLogin");
+          sessionStorage.removeItem("redirectAfterLogin");
+
+          // 🔍 Verificăm dacă utilizatorul are deja anunțuri
+          try {
+            const resp = await fetch(
+              `https://api.oltenitaimobiliare.ro/api/anunturile-mele`,
+              {
+                headers: { Authorization: `Bearer ${data.token}` },
+              }
+            );
+            const anunturi = await resp.json();
+
+            if (Array.isArray(anunturi) && anunturi.length > 0) {
+              navigate("/anunturile-mele");
+            } else if (redirect === "adauga-anunt") {
+              navigate("/adauga-anunt");
+            } else {
+              navigate("/adauga-anunt");
+            }
+          } catch {
             navigate("/adauga-anunt");
-          } else {
-            navigate("/anunturile-mele");
           }
         }, 1500);
       } else {
@@ -80,45 +94,46 @@ export default function LoginSMS() {
     }
   };
 
+  // 🔹 UI
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
-          {isRegister ? "🆕 Înregistrare prin SMS" : "🔐 Autentificare prin SMS"}
+          {isRegister
+            ? "🆕 Înregistrare prin SMS"
+            : "🔐 Autentificare prin SMS"}
         </h2>
 
-        {step === 1 && (
+        {step === 1 ? (
           <>
             <input
               type="tel"
               placeholder="07xxxxxxxx"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-blue-500"
             />
             <button
               onClick={sendOtp}
-              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700"
             >
               {isRegister
                 ? "Trimite codul de înregistrare"
                 : "Trimite codul de autentificare"}
             </button>
           </>
-        )}
-
-        {step === 2 && (
+        ) : (
           <>
             <input
               type="text"
               placeholder="Introdu codul primit"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500 focus:outline-none"
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500"
             />
             <button
               onClick={verifyOtp}
-              className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+              className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700"
             >
               Verifică codul
             </button>
