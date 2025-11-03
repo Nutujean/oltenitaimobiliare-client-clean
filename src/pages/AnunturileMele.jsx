@@ -51,13 +51,21 @@ export default function AnunturileMele() {
     }
   }, []);
 
-  const stergeAnunt = async (id) => {
-    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
-    try {
-      const res = await fetch(`${API_URL}/api/anunturi/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+       const stergeAnunt = async (id) => {
+          if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
+         try {
+       const stergeAnunt = async (id) => {
+        if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
+         try {
+    const res = await fetch(`${API_URL}/api/listings/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) setAnunturi((prev) => prev.filter((a) => a._id !== id));
+     } catch (e) {
+    alert("❌ Eroare la ștergere");
+      }
+    };
       if (res.ok) setAnunturi((prev) => prev.filter((a) => a._id !== id));
     } catch (e) {
       alert("❌ Eroare la ștergere");
