@@ -10,12 +10,9 @@ export default function LoginSMS() {
   const location = useLocation();
   const isRegister = location.pathname.includes("inregistrare");
 
-  // ✅ Backend API live
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  /* =======================================================
-     1️⃣  Trimite codul OTP prin SMS
-  ======================================================= */
+  // 🔹 Trimite codul OTP
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
@@ -40,14 +37,11 @@ export default function LoginSMS() {
         setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
       }
     } catch (err) {
-      console.error("Eroare trimitere OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
 
-  /* =======================================================
-     2️⃣  Verificare cod OTP
-  ======================================================= */
+  // 🔹 Verificare OTP
   const verifyOtp = async () => {
     if (!code) return setMessage("Introdu codul primit prin SMS.");
 
@@ -68,21 +62,24 @@ export default function LoginSMS() {
 
         setMessage("✅ Verificare reușită! Redirecționare...");
 
-        // ✅ MODIFICARE UNICĂ:
-        // După login sau înregistrare, trimite utilizatorul la Adaugă anunț
-        setTimeout(() => navigate("/adauga-anunt"), 1500);
+        // 🆕 redirecționare inteligentă
+        setTimeout(() => {
+          // dacă a venit din fluxul „Adaugă anunț”, du-l acolo direct
+          if (sessionStorage.getItem("redirectAfterLogin") === "adauga-anunt") {
+            sessionStorage.removeItem("redirectAfterLogin");
+            navigate("/adauga-anunt");
+          } else {
+            navigate("/profil");
+          }
+        }, 1500);
       } else {
         setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
       }
     } catch (err) {
-      console.error("Eroare verificare OTP:", err);
       setMessage("❌ Eroare server: " + err.message);
     }
   };
 
-  /* =======================================================
-     🧱 UI
-  ======================================================= */
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
@@ -140,7 +137,9 @@ export default function LoginSMS() {
         )}
 
         {message && (
-          <p className="mt-4 text-center text-gray-700 whitespace-pre-line">{message}</p>
+          <p className="mt-4 text-center text-gray-700 whitespace-pre-line">
+            {message}
+          </p>
         )}
       </div>
     </div>
