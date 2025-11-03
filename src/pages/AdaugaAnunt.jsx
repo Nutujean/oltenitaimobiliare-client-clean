@@ -1,224 +1,148 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API_URL from "../api";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function AdaugaAnunt() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
+export default function LoginSMS() {
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [intent, setIntent] = useState("vand");
-  const [images, setImages] = useState([]);
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState(1);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const isRegister = location.pathname.includes("inregistrare");
 
-  const token = localStorage.getItem("token");
+  // ✅ Backend API live
+  const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  const localitati = [
-    "Oltenița",
-    "Chirnogi",
-    "Curcani",
-    "Spanțov",
-    "Radovanu",
-    "Ulmeni",
-    "Clătești",
-    "Negoești",
-    "Șoldanu",
-    "Luica",
-    "Nana",
-    "Chiselet",
-    "Căscioarele",
-    "Mănăstirea",
-    "Valea Roșie",
-    "Mitreni",
-  ];
+  /* =======================================================
+     1️⃣  Trimite codul OTP prin SMS
+  ======================================================= */
+  const sendOtp = async () => {
+    if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
-  const categorii = [
-    "Apartamente",
-    "Garsoniere",
-    "Case",
-    "Terenuri",
-    "Spatii comerciale",
-    "Garaje",
-  ];
+    const normalized = phone.replace(/\D/g, "");
+    if (!/^07\d{8}$/.test(normalized))
+      return setMessage("❌ Număr invalid (folosește formatul 07xxxxxxxx)");
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const newImgs = [];
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        newImgs.push(ev.target.result);
-        setImages((prev) => [...prev, ev.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!token) {
-      alert("Trebuie să fii logat pentru a adăuga un anunț!");
-      navigate("/login");
-      return;
-    }
-
-    if (!title || !description || !price || !category || !location || !phone) {
-      alert("Completează toate câmpurile obligatorii!");
-      return;
-    }
+    setMessage("⏳ Se trimite SMS...");
 
     try {
-      const res = await fetch(`${API_URL}/listings`, {
+      const res = await fetch(`${API}/send-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          price,
-          category,
-          location,
-          phone,
-          email,
-          images,
-          intent, // 🟢 sincronizat cu backendul (vand/cumpar/inchiriez)
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: normalized }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la adăugarea anunțului");
 
-      alert("✅ Anunț adăugat cu succes!");
-      navigate("/anunturile-mele");
+      if (data.success) {
+        setMessage("📲 Codul a fost trimis. Verifică telefonul tău!");
+        setStep(2);
+      } else {
+        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
+      }
     } catch (err) {
-      console.error("Eroare:", err);
-      alert("❌ " + err.message);
+      console.error("Eroare trimitere OTP:", err);
+      setMessage("❌ Eroare server: " + err.message);
     }
   };
 
+  /* =======================================================
+     2️⃣  Verificare cod OTP
+  ======================================================= */
+  const verifyOtp = async () => {
+    if (!code) return setMessage("Introdu codul primit prin SMS.");
+
+    const normalized = phone.replace(/\D/g, "");
+    setMessage("⏳ Se verifică...");
+
+    try {
+      const res = await fetch(`${API}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: normalized, code }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userPhone", data.user.phone);
+
+        setMessage("✅ Verificare reușită! Redirecționare...");
+
+        // ✅ MODIFICARE UNICĂ:
+        // După login sau înregistrare, trimite utilizatorul la Adaugă anunț
+        setTimeout(() => navigate("/adauga-anunt"), 1500);
+      } else {
+        setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
+      }
+    } catch (err) {
+      console.error("Eroare verificare OTP:", err);
+      setMessage("❌ Eroare server: " + err.message);
+    }
+  };
+
+  /* =======================================================
+     🧱 UI
+  ======================================================= */
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
-      <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
-        Adaugă un anunț nou
-      </h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
+      <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
+        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
+          {isRegister ? "🆕 Înregistrare prin SMS" : "🔐 Autentificare prin SMS"}
+        </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Titlu anunț"
-          required
-          className="w-full border p-2 rounded"
-        />
+        {step === 1 && (
+          <>
+            <input
+              type="tel"
+              placeholder="07xxxxxxxx"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <button
+              onClick={sendOtp}
+              className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
+              {isRegister
+                ? "Trimite codul de înregistrare"
+                : "Trimite codul de autentificare"}
+            </button>
+          </>
+        )}
 
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descriere"
-          required
-          className="w-full border p-2 rounded min-h-[100px]"
-        /> 
-        
-        <input
-         type="number"
-         value={price}
-         onChange={(e) => setPrice(e.target.value)}
-         placeholder="Preț (obligatoriu, în €)"
-         required
-         min="1"
-         step="1"
-         className="w-full border p-2 rounded"
-         title="Introduceți un preț în euro (număr mai mare de 0)"
-       />
+        {step === 2 && (
+          <>
+            <input
+              type="text"
+              placeholder="Introdu codul primit"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="border border-gray-300 rounded-lg w-full p-3 mb-4 text-center focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+            <button
+              onClick={verifyOtp}
+              className="bg-green-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
+              Verifică codul
+            </button>
 
-        <select
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          required
-          className="w-full border p-2 rounded"
-        >
-          <option value="">Selectează localitatea</option>
-          {localitati.map((loc) => (
-            <option key={loc} value={loc}>
-              {loc}
-            </option>
-          ))}
-        </select>
+            <button
+              onClick={() => {
+                setStep(1);
+                setCode("");
+                setMessage("");
+              }}
+              className="text-sm text-gray-600 mt-3 underline"
+            >
+              Retrimite codul
+            </button>
+          </>
+        )}
 
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-          className="w-full border p-2 rounded"
-        >
-          <option value="">Selectează categoria</option>
-          {categorii.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={intent}
-          onChange={(e) => setIntent(e.target.value)}
-          required
-          className="w-full border p-2 rounded"
-        >
-          <option value="vand">Vând</option>
-          <option value="inchiriez">Închiriez</option>
-          <option value="cumpar">Cumpăr</option>
-          <option value="schimb">Schimb</option>
-        </select>
-
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (opțional)"
-          className="w-full border p-2 rounded"
-        />
-
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="Telefon (07xxxxxxxx)"
-          required
-          pattern="^0[0-9]{9}$"
-          title="Introduceți un număr valid de 10 cifre (ex: 07xxxxxxxx)"
-          className="w-full border p-2 rounded"
-        />
-
-        <div>
-          <label className="block text-sm mb-1">Imagini</label>
-          <input type="file" multiple onChange={handleImageChange} />
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            {images.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt=""
-                className="h-24 w-full object-cover rounded"
-              />
-            ))}
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg w-full"
-        >
-          Publică anunțul
-        </button>
-      </form>
+        {message && (
+          <p className="mt-4 text-center text-gray-700 whitespace-pre-line">{message}</p>
+        )}
+      </div>
     </div>
   );
 }
