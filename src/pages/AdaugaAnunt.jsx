@@ -12,17 +12,19 @@ export default function AdaugaAnunt() {
   const [email, setEmail] = useState("");
   const [intent, setIntent] = useState("vand");
   const [images, setImages] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
-  // 🔒 Verificare: dacă nu e logat, redirecționează automat la login
+  // 🔒 Verificare login
   useEffect(() => {
-    if (!token || token === "undefined" || token === "null") {
-      alert("Trebuie să fii logat pentru a adăuga un anunț!");
-      navigate("/login");
+    if (!token || token === "undefined" || token === "null" || token.trim() === "") {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
     }
-  }, [token, navigate]);
+  }, [token]);
 
   const localitati = [
     "Oltenița",
@@ -67,7 +69,6 @@ export default function AdaugaAnunt() {
     e.preventDefault();
 
     if (!token) {
-      alert("Trebuie să fii logat pentru a adăuga un anunț!");
       navigate("/login");
       return;
     }
@@ -103,14 +104,13 @@ export default function AdaugaAnunt() {
           phone,
           email,
           images,
-          intent, // vand / inchiriez / cumpar / schimb
+          intent,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la adăugarea anunțului");
 
-      // ✅ Salvăm mesajul în sessionStorage ca să apară frumos în Anunturile Mele
       sessionStorage.setItem("anuntAdaugat", "✅ Anunțul tău a fost publicat cu succes!");
       navigate("/anunturile-mele");
     } catch (err) {
@@ -119,6 +119,35 @@ export default function AdaugaAnunt() {
     }
   };
 
+  // 🔹 Dacă utilizatorul nu este logat, afișează un ecran dedicat
+  if (!isLoggedIn) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 max-w-md">
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">🔒 Acces restricționat</h2>
+          <p className="text-gray-600 mb-6">
+            Trebuie să fii logat pentru a adăuga un anunț.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => navigate("/login")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold w-full sm:w-auto"
+            >
+              🔐 Autentifică-te
+            </button>
+            <button
+              onClick={() => navigate("/inregistrare")}
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold w-full sm:w-auto"
+            >
+              🆕 Creează cont
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔹 Formularul normal (pentru utilizatori logați)
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
       <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
@@ -152,7 +181,6 @@ export default function AdaugaAnunt() {
           min="1"
           step="1"
           className="w-full border p-2 rounded"
-          title="Introduceți un preț în euro (număr mai mare de 0)"
         />
 
         <select
