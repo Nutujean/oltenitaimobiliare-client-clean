@@ -17,7 +17,7 @@ export default function AnunturileMele() {
       return;
     }
 
-    fetch(`${API_URL}/api/listings/my`, {
+    fetch(`${API_URL}/listings/my`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -41,7 +41,7 @@ export default function AnunturileMele() {
     if (sessionStorage.getItem("refreshAnunturi") === "true") {
       sessionStorage.removeItem("refreshAnunturi");
 
-      fetch(`${API_URL}/api/listings/my`, {
+      fetch(`${API_URL}/listings/my`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((r) => r.json())
