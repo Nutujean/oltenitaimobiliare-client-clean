@@ -22,8 +22,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
+
+/* ✅ Stripe: promovare */
 import PromovareSucces from "./pages/PromovareSucces";
-import SuccesPlata from "./pages/SuccesPlata";
+import PromovareAnulata from "./pages/PromovareAnulata";
 
 /* Anunțuri */
 import AdaugaAnunt from "./pages/AdaugaAnunt";
@@ -62,6 +64,7 @@ function App() {
           <Route path="/banner-test" element={<BannerTest />} />
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
+          <Route path="/cancel" element={<Cancel />} />
 
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS />} />
@@ -79,8 +82,10 @@ function App() {
           <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
+
+          {/* 🔹 Stripe - Promovare */}
           <Route path="/promovare-succes" element={<PromovareSucces />} />
-          <Route path="/succesplata" element={<SuccesPlata />} />
+          <Route path="/promovare-anulata" element={<PromovareAnulata />} />
 
           {/* 🔹 Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
