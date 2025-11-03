@@ -16,9 +16,10 @@ export default function AdaugaAnunt() {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Dacă nu e logat, redirecționează imediat spre login
+  // 🔒 Verificare: dacă nu e logat, redirecționează automat la login
   useEffect(() => {
     if (!token || token === "undefined" || token === "null") {
+      alert("Trebuie să fii logat pentru a adăuga un anunț!");
       navigate("/login");
     }
   }, [token, navigate]);
