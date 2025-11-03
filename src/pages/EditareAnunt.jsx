@@ -64,6 +64,17 @@ export default function EditareAnunt() {
     });
   };
 
+  // 🔹 Înlocuire imagine existentă
+  const replaceImage = (index, file) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const newImages = [...formData.images];
+      newImages[index] = ev.target.result;
+      setFormData({ ...formData, images: newImages });
+    };
+    reader.readAsDataURL(file);
+  };
+
   // 🔹 Ștergere poză existentă
   const removeExistingImage = (index) => {
     setFormData((prev) => ({
@@ -162,16 +173,24 @@ export default function EditareAnunt() {
         />
 
         {/* 🖼️ Poze existente */}
-        <div>
-          <label className="block font-semibold mb-2">📸 Imagini existente</label>
-          {formData.images.length > 0 ? (
+        {formData.images && formData.images.length > 0 && (
+          <div>
+            <label className="block font-semibold mb-2">📸 Imagini existente</label>
             <div className="grid grid-cols-3 gap-3">
               {formData.images.map((img, i) => (
                 <div key={i} className="relative group">
                   <img
                     src={img}
                     alt={`img-${i}`}
-                    className="w-full h-32 object-cover rounded border"
+                    className="w-full h-32 object-cover rounded border shadow-sm transition-transform duration-300 hover:scale-105 cursor-pointer"
+                    onClick={() => document.getElementById(`replace-${i}`).click()}
+                  />
+                  <input
+                    id={`replace-${i}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => replaceImage(i, e.target.files[0])}
                   />
                   <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
                     <button
@@ -196,10 +215,8 @@ export default function EditareAnunt() {
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-gray-500">Nu există imagini încărcate.</p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* 🆕 Poze noi */}
         <div className="mt-4">
@@ -212,7 +229,7 @@ export default function EditareAnunt() {
                   <img
                     src={img}
                     alt={`new-${i}`}
-                    className="w-full h-32 object-cover rounded border"
+                    className="w-full h-32 object-cover rounded border shadow-sm transition-transform duration-300 hover:scale-105"
                   />
                   <button
                     onClick={() => removeNewImage(i)}
