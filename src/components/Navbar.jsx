@@ -22,14 +22,16 @@ export default function Navbar() {
 
   // 🆕 Versiune modernă cu modal
   const handleAddClick = () => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    if (token) {
-      navigate("/adauga-anunt");
-    } else {
-      setShowDialog(true);
-    }
-  };
+  if (token) {
+    navigate("/adauga-anunt");
+  } else {
+    // 🆕 salvează scopul redirecționării după login
+    sessionStorage.setItem("redirectAfterLogin", "adauga-anunt");
+    setShowDialog(true);
+  }
+};
 
   const goToLogin = () => {
     setShowDialog(false);
