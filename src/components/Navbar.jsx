@@ -5,29 +5,36 @@ import logo from "../assets/OltenitaImobiliare.png";
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showDialog, setShowDialog] = useState(false); // 🆕 pentru popup
+  const [showDialog, setShowDialog] = useState(false);
+  const [isLogged, setIsLogged] = useState(false); // 🆕 fallback pentru token
   const navigate = useNavigate();
 
   useEffect(() => {
     const u = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
     if (u) setUser(JSON.parse(u));
+    if (token && token !== "undefined" && token !== "null") {
+      setIsLogged(true);
+    } else {
+      setIsLogged(false);
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+    setIsLogged(false);
     navigate("/");
   };
 
-  // 🆕 Versiune modernă cu modal
   const handleAddClick = () => {
     const token = localStorage.getItem("token");
 
     if (token) {
       navigate("/adauga-anunt");
     } else {
-      // 🆕 salvează scopul redirecționării după login
       sessionStorage.setItem("redirectAfterLogin", "adauga-anunt");
       setShowDialog(true);
     }
@@ -76,7 +83,6 @@ export default function Navbar() {
               Acasă
             </Link>
 
-            {/* 🔵 Adaugă anunț */}
             <button
               onClick={handleAddClick}
               className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-3 py-1.5 rounded-lg transition"
@@ -84,7 +90,19 @@ export default function Navbar() {
               + Adaugă anunț
             </button>
 
-            {!user ? (
+            {(user || isLogged) ? (
+              <>
+                <Link
+                  to="/anunturile-mele"
+                  className="hover:text-gray-200 font-semibold"
+                >
+                  📋 Anunțurile mele
+                </Link>
+                <button onClick={handleLogout} className="hover:text-red-400">
+                  Logout
+                </button>
+              </>
+            ) : (
               <>
                 <Link to="/login" className="hover:text-gray-200">
                   Login
@@ -92,15 +110,6 @@ export default function Navbar() {
                 <Link to="/inregistrare" className="hover:text-gray-200">
                   Înregistrare
                 </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/anunturile-mele" className="hover:text-gray-200">
-                  Anunțurile mele
-                </Link>
-                <button onClick={handleLogout} className="hover:text-red-400">
-                  Logout
-                </button>
               </>
             )}
           </div>
@@ -127,7 +136,26 @@ export default function Navbar() {
               + Adaugă anunț
             </button>
 
-            {!user ? (
+            {(user || isLogged) ? (
+              <>
+                <Link
+                  to="/anunturile-mele"
+                  onClick={() => setMenuOpen(false)}
+                  className="block hover:text-gray-200"
+                >
+                  📋 Anunțurile mele
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="block text-left text-red-300 hover:text-red-400 w-full"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
               <>
                 <Link
                   to="/login"
@@ -143,25 +171,6 @@ export default function Navbar() {
                 >
                   Înregistrare
                 </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/anunturile-mele"
-                  onClick={() => setMenuOpen(false)}
-                  className="block hover:text-gray-200"
-                >
-                  Anunțurile mele
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }}
-                  className="block text-left text-red-300 hover:text-red-400 w-full"
-                >
-                  Logout
-                </button>
               </>
             )}
           </div>
