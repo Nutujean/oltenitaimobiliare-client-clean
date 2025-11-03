@@ -65,8 +65,12 @@ export default function LoginSMS() {
       if (data.success) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userPhone", data.user.phone);
+
         setMessage("✅ Verificare reușită! Redirecționare...");
-        setTimeout(() => navigate("/profil"), 1500);
+
+        // ✅ MODIFICARE UNICĂ:
+        // După login sau înregistrare, trimite utilizatorul la Adaugă anunț
+        setTimeout(() => navigate("/adauga-anunt"), 1500);
       } else {
         setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
       }
@@ -99,7 +103,9 @@ export default function LoginSMS() {
               onClick={sendOtp}
               className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              {isRegister ? "Trimite codul de înregistrare" : "Trimite codul de autentificare"}
+              {isRegister
+                ? "Trimite codul de înregistrare"
+                : "Trimite codul de autentificare"}
             </button>
           </>
         )}
