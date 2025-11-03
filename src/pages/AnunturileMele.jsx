@@ -8,21 +8,29 @@ export default function AnunturileMele() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
+  // ✅ luăm tokenul din localStorage corect, indiferent cum e salvat
+  const [token, setToken] = useState(() => localStorage.getItem("token")?.replace(/^"|"$/g, "") || "");
 
-  // ✅ Redirecționează automat dacă nu e logat
   useEffect(() => {
+    // dacă nu există token → redirect la login
     if (!token || token === "undefined" || token === "null") {
       navigate("/login");
       return;
     }
 
+    console.log("🔑 Token trimis:", token.slice(0, 15) + "...");
+
     fetch(`${API_URL}/listings/my`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then((r) => r.json())
-      .then((data) => setAnunturi(Array.isArray(data) ? data : []))
-      .catch((e) => console.error("Eroare:", e))
+      .then((data) => {
+        if (Array.isArray(data)) setAnunturi(data);
+        else console.warn("⚠️ Răspuns neobișnuit:", data);
+      })
+      .catch((e) => console.error("Eroare la fetch listings/my:", e))
       .finally(() => setLoading(false));
   }, [token, navigate]);
 
