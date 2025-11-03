@@ -36,6 +36,21 @@ export default function AnunturileMele() {
     }
   }, []);
 
+  // ✅ Reîncarcă automat lista după adăugare anunț
+  useEffect(() => {
+    if (sessionStorage.getItem("refreshAnunturi") === "true") {
+      sessionStorage.removeItem("refreshAnunturi");
+
+      fetch(`${API_URL}/api/anunturile-mele`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => setAnunturi(Array.isArray(data) ? data : []))
+        .catch((e) => console.error("Eroare:", e))
+        .finally(() => setLoading(false));
+    }
+  }, []);
+
   const stergeAnunt = async (id) => {
     if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
     try {

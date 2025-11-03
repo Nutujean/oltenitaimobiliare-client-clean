@@ -111,6 +111,9 @@ export default function AdaugaAnunt() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la adăugarea anunțului");
 
+      // ✅ Adăugat: marchează că trebuie reîncărcată lista
+      sessionStorage.setItem("refreshAnunturi", "true");
+
       sessionStorage.setItem("anuntAdaugat", "✅ Anunțul tău a fost publicat cu succes!");
       navigate("/anunturile-mele");
     } catch (err) {
