@@ -69,7 +69,7 @@ export default function LoginSMS() {
             sessionStorage.removeItem("redirectAfterLogin");
             navigate("/adauga-anunt");
           } else {
-            navigate("/profil");
+            navigate("/anunturile-mele");
           }
         }, 1500);
       } else {
