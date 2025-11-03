@@ -25,7 +25,7 @@ export default function EditareAnunt() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/listings/${id}`);
+        const res = await fetch(`${API_URL}/listings/${id}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcare");
 
@@ -94,7 +94,7 @@ export default function EditareAnunt() {
         images: [...formData.images, ...newImages],
       };
 
-      const res = await fetch(`${API_URL}/api/listings/${id}`, {
+      const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
