@@ -19,12 +19,13 @@ export default function Navbar() {
     navigate("/");
   };
 
+  // ✅ Modificat doar pentru verificare sigură a tokenului
   const handleAddClick = () => {
     const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/adauga-anunt");
-    } else {
+    if (!token || token === "undefined" || token === "null") {
       navigate("/login");
+    } else {
+      navigate("/adauga-anunt");
     }
   };
 
