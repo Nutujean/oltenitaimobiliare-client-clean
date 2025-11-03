@@ -58,33 +58,13 @@ export default function LoginSMS() {
       if (data.success) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userPhone", data.user.phone);
+        localStorage.setItem("user", JSON.stringify(data.user)); // 🟢 FIX: adăugăm user complet pentru Navbar
 
         setMessage("✅ Verificare reușită! Redirecționare...");
 
-        setTimeout(async () => {
-          const redirect = sessionStorage.getItem("redirectAfterLogin");
-          sessionStorage.removeItem("redirectAfterLogin");
-
-          // 🔍 Verificăm dacă utilizatorul are deja anunțuri
-          try {
-            const resp = await fetch(
-              `https://api.oltenitaimobiliare.ro/api/anunturile-mele`,
-              {
-                headers: { Authorization: `Bearer ${data.token}` },
-              }
-            );
-            const anunturi = await resp.json();
-
-            if (Array.isArray(anunturi) && anunturi.length > 0) {
-              navigate("/anunturile-mele");
-            } else if (redirect === "adauga-anunt") {
-              navigate("/adauga-anunt");
-            } else {
-              navigate("/adauga-anunt");
-            }
-          } catch {
-            navigate("/adauga-anunt");
-          }
+        // 🟢 FIX: mergem direct în "Anunțurile mele" după login
+        setTimeout(() => {
+          navigate("/anunturile-mele");
         }, 1500);
       } else {
         setMessage("❌ " + (data.error || "Cod incorect sau expirat"));
