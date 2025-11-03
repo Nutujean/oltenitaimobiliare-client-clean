@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { API_URL } from "../config";
+import API_URL from "../api";
 
 export default function PromovareSucces() {
   const [searchParams] = useSearchParams();
@@ -35,7 +35,7 @@ export default function PromovareSucces() {
   if (status === "loading") {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-gray-600">
-        <p className="text-lg">Se confirmă plata...</p>
+        <p className="text-lg animate-pulse">⏳ Se confirmă plata...</p>
       </div>
     );
   }
@@ -43,15 +43,17 @@ export default function PromovareSucces() {
   if (status === "error") {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-3">Eroare la confirmarea plății</h1>
+        <h1 className="text-2xl font-bold text-red-600 mb-3">
+          ❌ Eroare la confirmarea plății
+        </h1>
         <p className="text-gray-600 mb-4">
-          Ne pare rău, dar nu am putut confirma plata. Încearcă din nou sau contactează-ne.
+          Plata nu a putut fi confirmată sau sesiunea a expirat. Încearcă din nou sau contactează echipa Oltenița Imobiliare.
         </p>
         <Link
           to="/anunturile-mele"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          Înapoi la Anunțurile Mele
+          ← Înapoi la Anunțurile Mele
         </Link>
       </div>
     );
@@ -64,24 +66,33 @@ export default function PromovareSucces() {
       day: "numeric",
     });
 
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-3xl font-bold text-green-700 mb-3">
-          ✅ Promovare reușită!
-        </h1>
-        <p className="text-gray-700 mb-3">
-          Anunțul tău a fost promovat pentru planul <b>{details.plan}</b>.
-        </p>
-        <p className="text-gray-600 mb-6">
-          Valabil până la data de <b>{endDate}</b>.
-        </p>
+    const durata =
+      details.plan === "featured7"
+        ? "7 zile"
+        : details.plan === "featured14"
+        ? "14 zile"
+        : "30 zile";
 
-        <Link
-          to="/anunturile-mele"
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-        >
-          Vezi Anunțurile Mele
-        </Link>
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center bg-gray-50 px-4">
+        <div className="bg-white shadow-md border border-gray-200 rounded-2xl p-8 max-w-md">
+          <h1 className="text-3xl font-bold text-green-700 mb-4">
+            ✅ Promovare reușită!
+          </h1>
+          <p className="text-gray-700 mb-2">
+            Anunțul tău a fost promovat pentru <b>{durata}</b>.
+          </p>
+          <p className="text-gray-600 mb-6">
+            Valabil până la data de <b>{endDate}</b>.
+          </p>
+
+          <Link
+            to="/anunturile-mele"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Vezi Anunțurile Mele
+          </Link>
+        </div>
       </div>
     );
   }

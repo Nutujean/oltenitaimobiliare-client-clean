@@ -64,7 +64,6 @@ function App() {
           <Route path="/banner-test" element={<BannerTest />} />
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
-          <Route path="/cancel" element={<Cancel />} />
 
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS />} />
