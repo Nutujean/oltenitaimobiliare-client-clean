@@ -15,13 +15,21 @@ export default function ListingCard({ listing }) {
     listing.expiresAt && new Date(listing.expiresAt) < new Date();
   const isFavorite = favorites.includes(listing._id);
 
+  // 🆕 Nou (în ultimele 3 zile)
+  const isNew = (() => {
+    if (!listing.createdAt) return false;
+    const created = new Date(listing.createdAt);
+    const now = new Date();
+    const diffDays = (now - created) / (1000 * 60 * 60 * 24);
+    return diffDays <= 3;
+  })();
+
   const handleFavorite = (e) => {
     e.preventDefault();
     const next = toggleFav(listing._id);
     setFavorites(next);
   };
 
-  // 🔹 URL principal al anunțului
   const adUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
   return (
@@ -30,7 +38,7 @@ export default function ListingCard({ listing }) {
         isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
       }`}
     >
-      {/* 🏷️ Banner PROMOVAT / EXPIRAT */}
+      {/* 🏷️ Banner PROMOVAT / EXPIRAT / NOU */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
@@ -39,6 +47,11 @@ export default function ListingCard({ listing }) {
       {isExpired && !isPromoted && (
         <div className="absolute top-3 left-3 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⏰ EXPIRAT
+        </div>
+      )}
+      {!isPromoted && !isExpired && isNew && (
+        <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
+          🆕 NOU
         </div>
       )}
 

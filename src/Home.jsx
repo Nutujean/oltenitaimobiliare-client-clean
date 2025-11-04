@@ -59,19 +59,26 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <PromoBanner inline />
+  <div className="min-h-screen bg-gray-100">
+    {/* 🟡 Banner partener — vizibil între categorii și anunțuri */}
+    <div className="flex justify-center my-6">
+      <div className="w-full md:w-[65%] lg:w-[60%] xl:w-[55%]">
+        <PromoBanner />
+      </div>
+    </div>
 
-      <section
-        className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
-        style={{ backgroundImage: `url(${hero})` }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
-          <p className="text-lg">Cumpără, vinde sau închiriază locuințe în zona ta</p>
-        </div>
-      </section>
+    <section
+      className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
+      style={{ backgroundImage: `url(${hero})` }}
+    >
+      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div className="relative z-10 text-center px-4">
+        <h1 className="text-4xl font-bold mb-4">Oltenița Imobiliare</h1>
+        <p className="text-lg">
+          Cumpără, vinde sau închiriază locuințe în zona ta
+        </p>
+      </div>
+    </section>
 
       {/* 🔎 FILTRE */}
       <section className="-mt-8 px-6 max-w-5xl mx-auto flex flex-col md:flex-row flex-wrap gap-4 items-center bg-white shadow rounded-xl py-4 relative z-10">

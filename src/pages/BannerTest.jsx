@@ -1,39 +1,31 @@
-// src/pages/BannerTest.jsx
+// src/components/PromoBanner.jsx
 import React from "react";
 
-export default function BannerTest() {
-  const bannerImg = "/banner-bebeking.jpg"; // imaginea trebuie să fie în public/
-
+export default function PromoBanner() {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-2xl font-bold mb-6">Test Banner BebeKing.ro</h1>
-
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-blue-200">
-        <a
-          href="https://bebeking.ro/"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="BebeKing.ro - Magazin pentru copii"
-        >
-          <img
-            src={bannerImg}
-            alt="BebeKing.ro - Jucării pentru copii"
-            className="w-full h-auto hover:scale-[1.02] transition-transform duration-300"
-          />
-        </a>
-        <div className="p-4 text-center">
-          <h3 className="text-blue-700 font-bold text-sm">
-            Partener Recomandat 🎁
-          </h3>
-          <p className="text-xs text-gray-600 mt-1">
-            Vizitează <strong>BebeKing.ro</strong> — jucării și produse pentru copii!
-          </p>
-        </div>
+    <div className="col-span-3 w-full max-w-[900px] mx-auto bg-white border-2 border-yellow-400 rounded-2xl shadow-lg text-center p-6 md:p-8 mt-6">
+      {/* 🏷️ Etichetă aurie */}
+      <div className="inline-block bg-yellow-400 text-black font-semibold text-xs px-3 py-1 rounded-full mb-3 shadow animate-pulse">
+        🎖️ Partener oficial
       </div>
 
-      <p className="mt-6 text-gray-500 text-sm">
-        (Imaginea trebuie să se încarce din <code>/public/banner-bebeking.jpg</code>)
+      {/* 🔹 Conținut principal */}
+      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">
+        Vizitează <span className="text-blue-700">BebeKing.ro</span>
+      </h3>
+      <p className="text-gray-600 text-sm md:text-base mb-4">
+        Magazin recomandat — jucării, haine și produse de calitate pentru copii.
       </p>
+
+      {/* 🔗 Buton */}
+      <a
+        href="https://bebeking.ro"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition"
+      >
+        Descoperă ofertele 🎁
+      </a>
     </div>
   );
 }
