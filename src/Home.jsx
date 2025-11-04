@@ -60,11 +60,9 @@ export default function Home() {
 
   return (
   <div className="min-h-screen bg-gray-100">
-    {/* 🟡 Banner partener — vizibil între categorii și anunțuri */}
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 my-10">
-      <div className="w-full">
-        <PromoBanner />
-      </div>
+    {/* —— BANNER partener (exact cât lățimea grilei de 3 carduri) —— */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8">
+      <PromoBanner />
     </div>
   </div>
 );
