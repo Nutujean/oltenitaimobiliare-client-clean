@@ -5,13 +5,14 @@ import ScrollToTop from "./components/ScrollToTop";
 import BannerTest from "./pages/BannerTest";
 import CumAdaugi from "./pages/CumAdaugi";
 import Share from "./pages/Share";
+import CookiesConsent from "./components/CookiesConsent";
 
 /* Pagini principale */
 import Home from "./pages/Home";
 import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
-import CookiesConsent from "./components/CookiesConsent";
+import CookiesPage from "./pages/Cookies";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -60,7 +61,7 @@ function App() {
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
-          <Route path="/cookies" element={<Cookies />} />
+          <Route path="/cookies" element={<CookiesPage />} />
           <Route path="/banner-test" element={<BannerTest />} />
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
