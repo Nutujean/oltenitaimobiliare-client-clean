@@ -61,10 +61,13 @@ export default function Home() {
   return (
   <div className="min-h-screen bg-gray-100">
     {/* 🟡 Banner partener — vizibil între categorii și anunțuri */}
-{/* 🟡 Banner partener — vizibil între categorii și anunțuri */}
-<div className="max-w-7xl mx-auto px-4 my-10">
-  <PromoBanner />
-</div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 my-10">
+      <div className="w-full">
+        <PromoBanner />
+      </div>
+    </div>
+  </div>
+);
 
     <section
       className="relative h-[60vh] bg-cover bg-center flex items-center justify-center text-white"
