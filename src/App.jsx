@@ -110,6 +110,9 @@ function App() {
 
       {/* ✅ Footer global */}
       <Footer />
+
+      {/* ✅ Banner cookies legal */}
+      <CookiesConsent />
     </div>
   );
 }
