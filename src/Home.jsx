@@ -168,6 +168,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 🩵 Banner BebeKing — între Categorii și Anunțuri */}
+      <div className="max-w-6xl mx-auto px-6 mb-12 flex justify-center">
+        <div className="col-span-1 sm:col-span-2 md:col-span-3 max-w-3xl w-full">
+          <PromoBanner />
+        </div>
+      </div>
+
       {/* 🏠 ANUNȚURI */}
       <section className="py-12 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">Anunțuri recente</h2>
