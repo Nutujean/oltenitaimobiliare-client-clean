@@ -3,8 +3,8 @@ import banner from "../assets/banner-bebeking.jpg";
 
 export default function PromoBanner() {
   return (
-    <div className="w-full mx-auto my-14 px-4 md:max-w-[1100px] lg:max-w-[1250px]">
-      <div className="bg-white rounded-2xl shadow-lg border border-blue-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <div className="w-full flex justify-center my-14 px-2">
+      <div className="w-full md:w-[1000px] lg:w-[1200px] bg-white rounded-2xl shadow-lg border border-blue-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
         <a
           href="https://bebeking.ro/"
           target="_blank"
@@ -14,7 +14,7 @@ export default function PromoBanner() {
           <img
             src={banner}
             alt="BebeKing.ro - Sursa ta de jucarii"
-            className="w-full h-auto object-cover md:h-[240px] lg:h-[260px]"
+            className="w-full h-auto object-cover md:h-[250px] lg:h-[270px]"
           />
         </a>
         <div className="p-6 text-center">
