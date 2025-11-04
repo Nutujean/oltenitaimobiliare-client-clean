@@ -4,9 +4,9 @@ import banner from "../assets/banner-bebeking.jpg";
 
 export default function PromoBanner() {
   return (
-    <div className="flex justify-center my-12">
-      {/* Container cu lățime fixă cât 3 carduri */}
-      <div className="w-[960px] bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
+    <div className="w-full flex justify-center my-12">
+      {/* Banner exact cât 3 carduri de categorie */}
+      <div className="w-[1020px] bg-white rounded-2xl shadow-lg border border-blue-200 overflow-hidden">
         <a
           href="https://bebeking.ro/"
           target="_blank"
@@ -15,8 +15,8 @@ export default function PromoBanner() {
         >
           <img
             src={banner}
-            alt="BebeKing.ro - jucării și produse pentru copii"
-            className="w-full h-[160px] object-cover" // 🔹 puțin mai mic pe înălțime
+            alt="BebeKing.ro - Jucării pentru copii"
+            className="w-full h-[150px] object-cover"
           />
         </a>
         <div className="p-4 text-center">
