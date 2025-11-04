@@ -11,7 +11,7 @@ import Home from "./pages/Home";
 import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
-import Cookies from "./pages/Cookies";
+import CookiesConsent from "./components/CookiesConsent";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
