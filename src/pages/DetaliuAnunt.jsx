@@ -193,8 +193,10 @@ export default function DetaliuAnunt() {
         {/* Imagine principală */}
         <div
           className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
-          onClick={() => images.length > 0 && setIsZoomed(true)}{/* 🔙 Buton Înapoi */}
-        <button
+          onClick={() => images.length > 0 && setIsZoomed(true)}
+       >
+          {/* 🔙 Buton Înapoi (SVG, fără lucide-react) */}
+          <button
           onClick={() => navigate(-1)}
           className="absolute top-3 left-3 bg-gray-100/90 hover:bg-gray-200 text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
           aria-label="Înapoi"
