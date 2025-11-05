@@ -1,6 +1,6 @@
 // src/pages/DetaliuAnunt.jsx
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
