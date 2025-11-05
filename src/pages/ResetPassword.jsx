@@ -26,7 +26,7 @@ export default function ResetPassword() {
       }
       try {
         const r = await fetch(
-          `https://oltenitaimobiliare-backend.onrender.com/api/auth/check-reset-token?token=${encodeURIComponent(
+          `https://api.oltenitaimobiliare.ro/api/auth/check-reset-token?token=${encodeURIComponent(
             token
           )}`
         );
@@ -49,7 +49,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       const r = await fetch(
-        `https://oltenitaimobiliare-backend.onrender.com/api/auth/reset-password/${token}`,
+        `https://api.oltenitaimobiliare.ro/api/auth/reset-password/${token}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

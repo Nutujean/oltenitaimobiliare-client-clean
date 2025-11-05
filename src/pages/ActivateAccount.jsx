@@ -8,7 +8,7 @@ export default function ActivateAccount() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const r = await fetch(`https://oltenitaimobiliare-backend.onrender.com/api/auth/activate/${token}`);
+        const r = await fetch(`https://oltenitaimobiliare.ro/api/auth/activate/${token}`);
         if (r.ok) {
           setStatus("success");
         } else {
