@@ -2,7 +2,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft } from "lucide-react";
 import API_URL from "../api";
 
 export default function DetaliuAnunt() {
@@ -194,18 +193,29 @@ export default function DetaliuAnunt() {
         {/* Imagine principală */}
         <div
           className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
-          onClick={() => images.length > 0 && setIsZoomed(true)}
-        >
-        {/* 🔙 Buton Înapoi */}
+          onClick={() => images.length > 0 && setIsZoomed(true)}{/* 🔙 Buton Înapoi */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-3 left-3 bg-white/80 hover:bg-white text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
+          className="absolute top-3 left-3 bg-gray-100/90 hover:bg-gray-200 text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
           aria-label="Înapoi"
         >
-         <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-5 h-5 md:w-6 md:h-6"
+          >
+            <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
+          />
+        </svg>
+      </button>
 
-          {images.length ? (
+                 {images.length ? (
             <>
               <img
                 src={images[currentImage]}
