@@ -2,11 +2,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { ArrowLeft } from "lucide-react";
 import API_URL from "../api";
 
 export default function DetaliuAnunt() {
-  const { id: rawId } = useParams();
-  const id = rawId?.split("-").pop();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
@@ -195,6 +196,15 @@ export default function DetaliuAnunt() {
           className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
           onClick={() => images.length > 0 && setIsZoomed(true)}
         >
+        {/* 🔙 Buton Înapoi */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-3 left-3 bg-white/80 hover:bg-white text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
+          aria-label="Înapoi"
+        >
+         <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+
           {images.length ? (
             <>
               <img
