@@ -11,7 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
-  const [intent, setIntent] = useState(""); // 🆕 adăugat — tip anunț
+  const [intent, setIntent] = useState(""); // tip anunț
 
   useEffect(() => {
     fetch(`${API_URL}/health`).catch(() => {});
@@ -25,7 +25,7 @@ export default function Home() {
 
       const sortParam = filters.sort || sort || "newest";
       const locParam = filters.location || location || "";
-      const intentParam = filters.intent || intent || ""; // 🆕 adăugat
+      const intentParam = filters.intent || intent || "";
 
       const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
       const data = await res.json();
@@ -33,6 +33,7 @@ export default function Home() {
       if (Array.isArray(data)) {
         let results = [...data];
 
+        // 🔹 Filtru locație
         if (locParam) {
           results = results.filter(
             (l) =>
@@ -41,10 +42,12 @@ export default function Home() {
           );
         }
 
-        if (intentParam) {
+        // 🔥 FIX: Filtru intent — doar dacă este selectat
+        if (intentParam && intentParam !== "") {
           results = results.filter(
             (l) =>
-              l.intent && l.intent.toLowerCase() === intentParam.toLowerCase()
+              l.intent &&
+              l.intent.toLowerCase() === intentParam.toLowerCase()
           );
         }
 
@@ -59,7 +62,7 @@ export default function Home() {
   };
 
   const handleFilter = () => {
-    fetchListings({ sort, location, intent }); // 🆕 modificat
+    fetchListings({ sort, location, intent });
   };
 
   const LOCATII = [
@@ -119,7 +122,7 @@ export default function Home() {
           ))}
         </select>
 
-        {/* 🆕 Filtru pentru tipul de anunț */}
+        {/* TIP ANUNȚ */}
         <select
           className="border rounded-lg px-4 py-2 flex-1 bg-white"
           value={intent}
@@ -157,7 +160,7 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* 🏘️ Categorii */}
+      {/* Categorii */}
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
           Categorii populare
@@ -216,7 +219,8 @@ export default function Home() {
           >
             {filtered.map((l) => {
               const isFeatured =
-                l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
+                l.featuredUntil &&
+                new Date(l.featuredUntil).getTime() > Date.now();
 
               return (
                 <Link
@@ -235,28 +239,30 @@ export default function Home() {
                       Fără imagine
                     </div>
                   )}
-{/* 🔹 Eticheta tip tranzacție */}
-{l.intent && (
-  <span
-    className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
-      l.intent === "vand"
-        ? "bg-green-600"
-        : l.intent === "cumpar"
-        ? "bg-blue-600"
-        : l.intent === "inchiriez"
-        ? "bg-yellow-500"
-        : "bg-purple-600"
-    }`}
-  >
-    {l.intent === "vand"
-      ? "🏠 Vând"
-      : l.intent === "cumpar"
-      ? "🛒 Cumpăr"
-      : l.intent === "inchiriez"
-      ? "🔑 Închiriez"
-      : "♻️ Schimb"}
-  </span>
-)}
+
+                  {/* Etichetă intent */}
+                  {l.intent && (
+                    <span
+                      className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+                        l.intent === "vand"
+                          ? "bg-green-600"
+                          : l.intent === "cumpar"
+                          ? "bg-blue-600"
+                          : l.intent === "inchiriez"
+                          ? "bg-yellow-500"
+                          : "bg-purple-600"
+                      }`}
+                    >
+                      {l.intent === "vand"
+                        ? "🏠 Vând"
+                        : l.intent === "cumpar"
+                        ? "🛒 Cumpăr"
+                        : l.intent === "inchiriez"
+                        ? "🔑 Închiriez"
+                        : "♻️ Schimb"}
+                    </span>
+                  )}
+
                   {isFeatured && (
                     <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
                       PROMOVAT
@@ -264,7 +270,9 @@ export default function Home() {
                   )}
 
                   <div className="p-4">
-                    <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
+                    <h3 className="font-bold text-lg line-clamp-2">
+                      {l.title}
+                    </h3>
                     <p className="text-blue-700 font-semibold">{l.price} €</p>
                     <p className="text-sm text-gray-500">{l.location}</p>
                   </div>
@@ -283,6 +291,7 @@ export default function Home() {
         <p className="text-gray-600 mb-4">
           Caută locuințe, terenuri și spații comerciale în Oltenița,Chrinogi,Ulmeni,Spantov,Radovanu și restul localităților din jur.
         </p>
+
         <iframe
           title="Harta Oltenița"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6383!3d44.0836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1974a2fa07a5d%3A0x92ad81d23c90249f!2sOlteni%C8%9Ba!5e0!3m2!1sro!2sro!4v1699999999999"
@@ -295,6 +304,7 @@ export default function Home() {
         ></iframe>
       </div>
 
+      {/* Animatie */}
       <style>
         {`
           @keyframes fadeIn {
