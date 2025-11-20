@@ -25,46 +25,14 @@ export default function Home() {
     try {
       setLoading(true);
 
-<<<<<<< HEAD
       const sortParam = overrideSort || sort || "newest";
-=======
-      const sortParam = filters.sort || sort || "newest";
-      const locParam = filters.location || location || "";
-      const intentParam = filters.intent || intent || "";
-
->>>>>>> b99a3bf436d9d5e20f168bceea6332aca46d14a4
       const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
       const data = await res.json();
 
       if (Array.isArray(data)) {
-<<<<<<< HEAD
         setListings(data); // salvăm TOATE anunțurile
       } else {
         setListings([]);
-=======
-        let results = [...data];
-
-        // 🔹 Filtru locație
-        if (locParam) {
-          results = results.filter(
-            (l) =>
-              l.location?.toLowerCase().includes(locParam.toLowerCase()) ||
-              l.location === locParam
-          );
-        }
-
-        // 🔥 FIX: Filtru intent — doar dacă este selectat
-        if (intentParam && intentParam !== "") {
-          results = results.filter(
-            (l) =>
-              l.intent &&
-              l.intent.toLowerCase() === intentParam.toLowerCase()
-          );
-        }
-
-        setListings(results);
-        setFiltered(results);
->>>>>>> b99a3bf436d9d5e20f168bceea6332aca46d14a4
       }
     } catch (e) {
       console.error("Eroare la preluarea anunțurilor:", e);
@@ -106,12 +74,8 @@ export default function Home() {
   }, [listings, location, intent]);
 
   const handleFilter = () => {
-<<<<<<< HEAD
     // reface request-ul (în caz că s-au mai adăugat anunțuri între timp)
     fetchListings();
-=======
-    fetchListings({ sort, location, intent });
->>>>>>> b99a3bf436d9d5e20f168bceea6332aca46d14a4
   };
 
   const LOCATII = [
@@ -171,11 +135,7 @@ export default function Home() {
           ))}
         </select>
 
-<<<<<<< HEAD
         {/* Filtru pentru tipul de anunț */}
-=======
-        {/* TIP ANUNȚ */}
->>>>>>> b99a3bf436d9d5e20f168bceea6332aca46d14a4
         <select
           className="border rounded-lg px-4 py-2 flex-1 bg-white"
           value={intent}
@@ -193,7 +153,7 @@ export default function Home() {
           value={sort}
           onChange={(e) => {
             setSort(e.target.value);
-            // poți refetch-ui imediat, dacă vrei sortare live:
+            // dacă vrei sortare live când schimbi dropdown-ul:
             // fetchListings(e.target.value);
           }}
         >
@@ -217,7 +177,7 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Categorii */}
+      {/* 🏘️ Categorii */}
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
           Categorii populare
@@ -276,8 +236,7 @@ export default function Home() {
           >
             {filtered.map((l) => {
               const isFeatured =
-                l.featuredUntil &&
-                new Date(l.featuredUntil).getTime() > Date.now();
+                l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
 
               return (
                 <Link
@@ -297,11 +256,7 @@ export default function Home() {
                     </div>
                   )}
 
-<<<<<<< HEAD
                   {/* Etichetă tip tranzacție */}
-=======
-                  {/* Etichetă intent */}
->>>>>>> b99a3bf436d9d5e20f168bceea6332aca46d14a4
                   {l.intent && (
                     <span
                       className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
@@ -331,9 +286,7 @@ export default function Home() {
                   )}
 
                   <div className="p-4">
-                    <h3 className="font-bold text-lg line-clamp-2">
-                      {l.title}
-                    </h3>
+                    <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
                     <p className="text-blue-700 font-semibold">{l.price} €</p>
                     <p className="text-sm text-gray-500">{l.location}</p>
                   </div>
@@ -352,7 +305,6 @@ export default function Home() {
         <p className="text-gray-600 mb-4">
           Caută locuințe, terenuri și spații comerciale în Oltenița,Chrinogi,Ulmeni,Spantov,Radovanu și restul localităților din jur.
         </p>
-
         <iframe
           title="Harta Oltenița"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6383!3d44.0836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1974a2fa07a5d%3A0x92ad81d23c90249f!2sOlteni%C8%9Ba!5e0!3m2!1sro!2sro!4v1699999999999"
@@ -365,7 +317,6 @@ export default function Home() {
         ></iframe>
       </div>
 
-      {/* Animatie */}
       <style>
         {`
           @keyframes fadeIn {
