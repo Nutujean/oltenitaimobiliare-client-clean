@@ -11,55 +11,71 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
-  const [intent, setIntent] = useState(""); // 🆕 adăugat — tip anunț
+  const [intent, setIntent] = useState(""); // tip anunț
 
   useEffect(() => {
+    // ping backend
     fetch(`${API_URL}/health`).catch(() => {});
     fetchListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔹 Funcție pentru încărcare din backend
-  const fetchListings = async (filters = {}) => {
+  // 🔹 Încărcare anunțuri din backend (fără filtre locale)
+  const fetchListings = async (overrideSort) => {
     try {
       setLoading(true);
 
-      const sortParam = filters.sort || sort || "newest";
-      const locParam = filters.location || location || "";
-      const intentParam = filters.intent || intent || ""; // 🆕 adăugat
-
+      const sortParam = overrideSort || sort || "newest";
       const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
       const data = await res.json();
 
       if (Array.isArray(data)) {
-        let results = [...data];
-
-        if (locParam) {
-          results = results.filter(
-            (l) =>
-              l.location?.toLowerCase().includes(locParam.toLowerCase()) ||
-              l.location === locParam
-          );
-        }
-
-        if (intentParam) {
-          results = results.filter(
-            (l) =>
-              l.intent && l.intent.toLowerCase() === intentParam.toLowerCase()
-          );
-        }
-
-        setListings(results);
-        setFiltered(results);
+        setListings(data); // salvăm TOATE anunțurile
+      } else {
+        setListings([]);
       }
     } catch (e) {
       console.error("Eroare la preluarea anunțurilor:", e);
+      setListings([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // 🔍 Aplică filtrele local de fiecare dată când se schimbă datele sau filtrele
+  useEffect(() => {
+    let results = [...listings];
+
+    // normalizare pentru a ignora diacriticele
+    const normalize = (str) =>
+      (str || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    if (location) {
+      const locFilter = normalize(location);
+      results = results.filter((l) => {
+        const loc = normalize(l.location);
+        return loc.includes(locFilter);
+      });
+    }
+
+    if (intent) {
+      const intentFilter = intent.toLowerCase();
+      results = results.filter(
+        (l) =>
+          l.intent &&
+          l.intent.toLowerCase() === intentFilter
+      );
+    }
+
+    setFiltered(results);
+  }, [listings, location, intent]);
+
   const handleFilter = () => {
-    fetchListings({ sort, location, intent }); // 🆕 modificat
+    // reface request-ul (în caz că s-au mai adăugat anunțuri între timp)
+    fetchListings();
   };
 
   const LOCATII = [
@@ -119,7 +135,7 @@ export default function Home() {
           ))}
         </select>
 
-        {/* 🆕 Filtru pentru tipul de anunț */}
+        {/* Filtru pentru tipul de anunț */}
         <select
           className="border rounded-lg px-4 py-2 flex-1 bg-white"
           value={intent}
@@ -135,7 +151,11 @@ export default function Home() {
         <select
           className="border rounded-lg px-4 py-2 flex-1 bg-white"
           value={sort}
-          onChange={(e) => setSort(e.target.value)}
+          onChange={(e) => {
+            setSort(e.target.value);
+            // poți refetch-ui imediat, dacă vrei sortare live:
+            // fetchListings(e.target.value);
+          }}
         >
           <option value="newest">Cele mai noi</option>
           <option value="cheapest">Preț crescător</option>
@@ -235,28 +255,30 @@ export default function Home() {
                       Fără imagine
                     </div>
                   )}
-{/* 🔹 Eticheta tip tranzacție */}
-{l.intent && (
-  <span
-    className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
-      l.intent === "vand"
-        ? "bg-green-600"
-        : l.intent === "cumpar"
-        ? "bg-blue-600"
-        : l.intent === "inchiriez"
-        ? "bg-yellow-500"
-        : "bg-purple-600"
-    }`}
-  >
-    {l.intent === "vand"
-      ? "🏠 Vând"
-      : l.intent === "cumpar"
-      ? "🛒 Cumpăr"
-      : l.intent === "inchiriez"
-      ? "🔑 Închiriez"
-      : "♻️ Schimb"}
-  </span>
-)}
+
+                  {/* Etichetă tip tranzacție */}
+                  {l.intent && (
+                    <span
+                      className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+                        l.intent === "vand"
+                          ? "bg-green-600"
+                          : l.intent === "cumpar"
+                          ? "bg-blue-600"
+                          : l.intent === "inchiriez"
+                          ? "bg-yellow-500"
+                          : "bg-purple-600"
+                      }`}
+                    >
+                      {l.intent === "vand"
+                        ? "🏠 Vând"
+                        : l.intent === "cumpar"
+                        ? "🛒 Cumpăr"
+                        : l.intent === "inchiriez"
+                        ? "🔑 Închiriez"
+                        : "♻️ Schimb"}
+                    </span>
+                  )}
+
                   {isFeatured && (
                     <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
                       PROMOVAT
