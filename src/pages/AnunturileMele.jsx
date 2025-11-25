@@ -59,24 +59,29 @@ export default function AnunturileMele() {
     }
   }, []);
 
-       const stergeAnunt = async (id) => {
-          if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
-         try {
-       const stergeAnunt = async (id) => {
-        if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
-         try {
-    const res = await fetch(`${API_URL}/api/listings/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) setAnunturi((prev) => prev.filter((a) => a._id !== id));
-     } catch (e) {
-    alert("❌ Eroare la ștergere");
+         const stergeAnunt = async (id) => {
+    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/listings/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        alert(data?.error || "❌ Eroare la ștergerea anunțului.");
+        return;
       }
-    };
-      if (res.ok) setAnunturi((prev) => prev.filter((a) => a._id !== id));
+
+      // Scoatem anunțul șters din listă
+      setAnunturi((prev) => prev.filter((a) => a._id !== id));
     } catch (e) {
-      alert("❌ Eroare la ștergere");
+      console.error("Eroare la ștergere anunț:", e);
+      alert("❌ Eroare la ștergerea anunțului. Încearcă din nou.");
     }
   };
 
