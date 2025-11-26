@@ -16,7 +16,7 @@ export default function LoginSMS() {
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  // 🔹 Trimite codul OTP (login sau înregistrare, în funcție de pagină)
+  // 🔹 Trimite codul OTP (login sau înregistrare)
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
@@ -38,18 +38,35 @@ export default function LoginSMS() {
       });
 
       const data = await res.json();
+      const errText = data.error || "";
 
+      // dacă backend zice că există deja cont → mesaj frumos + redirect la login
       if (!res.ok || !data.success) {
-        const errText = data.error || "";
+        // caz: user încearcă ÎNREGISTRARE dar există deja cont
+        if (
+          isRegister &&
+          (data.mustLogin ||
+            errText.toLowerCase().includes("există deja un cont creat") ||
+            errText.toLowerCase().includes("exista deja un cont"))
+        ) {
+          setMessage(
+            "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
+            "Te redirecționăm către pagina de autentificare..."
+          );
+          setTimeout(() => {
+            setMessage("");
+            setStep(1);
+            navigate("/login");
+          }, 2000);
+          return;
+        }
 
-        // Mesaj prietenos pentru număr neînregistrat / nevoie de cont nou
+        // caz: user încearcă LOGIN dar nu există cont
         if (
           !isRegister &&
-          (
-            errText.toLowerCase().includes("nu există niciun cont") ||
+          (data.mustRegister ||
             errText.toLowerCase().includes("nu este înregistrat") ||
-            data.mustRegister
-          )
+            errText.toLowerCase().includes("nu există niciun cont"))
         ) {
           setMessage(
             "ℹ️ Acest număr nu este încă înregistrat.\n" +
@@ -58,6 +75,7 @@ export default function LoginSMS() {
           return;
         }
 
+        // fallback generic
         setMessage("❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului"));
         return;
       }
