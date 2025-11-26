@@ -38,17 +38,12 @@ export default function LoginSMS() {
       });
 
       const data = await res.json();
-      const errText = data.error || "";
+      const errText = (data.error || "").toString();
 
-      // dacă backend zice că există deja cont → mesaj frumos + redirect la login
-      if (!res.ok || !data.success) {
-        // caz: user încearcă ÎNREGISTRARE dar există deja cont
-        if (
-          isRegister &&
-          (data.mustLogin ||
-            errText.toLowerCase().includes("există deja un cont creat") ||
-            errText.toLowerCase().includes("exista deja un cont"))
-        ) {
+      // 🧠 1) Backend vechi: "Mod invalid. Trebuie 'login' sau 'register'."
+      if (errText.includes("Mod invalid")) {
+        if (isRegister) {
+          // suntem pe ÎNREGISTRARE → înseamnă că există deja cont pe numărul ăsta
           setMessage(
             "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
             "Te redirecționăm către pagina de autentificare..."
@@ -58,28 +53,62 @@ export default function LoginSMS() {
             setStep(1);
             navigate("/login");
           }, 2000);
-          return;
-        }
-
-        // caz: user încearcă LOGIN dar nu există cont
-        if (
-          !isRegister &&
-          (data.mustRegister ||
-            errText.toLowerCase().includes("nu este înregistrat") ||
-            errText.toLowerCase().includes("nu există niciun cont"))
-        ) {
+        } else {
+          // suntem pe LOGIN → înseamnă că nu e configurat corect mod-ul sau nu există cont
           setMessage(
             "ℹ️ Acest număr nu este încă înregistrat.\n" +
             "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
           );
-          return;
         }
+        return;
+      }
 
-        // fallback generic
+      // 🧠 2) Caz: user încearcă ÎNREGISTRARE dar există deja cont
+      if (
+        (!res.ok || !data.success) &&
+        isRegister &&
+        (
+          data.mustLogin ||
+          errText.toLowerCase().includes("există deja un cont creat") ||
+          errText.toLowerCase().includes("exista deja un cont")
+        )
+      ) {
+        setMessage(
+          "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
+          "Te redirecționăm către pagina de autentificare..."
+        );
+        setTimeout(() => {
+          setMessage("");
+          setStep(1);
+          navigate("/login");
+        }, 2000);
+        return;
+      }
+
+      // 🧠 3) Caz: user încearcă LOGIN dar nu există cont
+      if (
+        (!res.ok || !data.success) &&
+        !isRegister &&
+        (
+          data.mustRegister ||
+          errText.toLowerCase().includes("nu este înregistrat") ||
+          errText.toLowerCase().includes("nu există niciun cont")
+        )
+      ) {
+        setMessage(
+          "ℹ️ Acest număr nu este încă înregistrat.\n" +
+          "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
+        );
+        return;
+      }
+
+      // 🧠 4) Dacă e altă eroare
+      if (!res.ok || !data.success) {
         setMessage("❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului"));
         return;
       }
 
+      // ✅ Totul ok
       setMessage("📲 Codul a fost trimis! Verifică telefonul.");
       setStep(2);
     } catch (err) {
