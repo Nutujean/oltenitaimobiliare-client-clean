@@ -1,3 +1,4 @@
+// src/pages/LoginSMS.jsx
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -6,19 +7,23 @@ export default function LoginSMS() {
   const [code, setCode] = useState("");
   const [step, setStep] = useState(1);
   const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // dacă URL-ul conține "inregistrare", știm că e pagină de înregistrare
   const isRegister = location.pathname.includes("inregistrare");
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
-  // 🔹 Trimite codul OTP
+  // 🔹 Trimite codul OTP (login sau înregistrare, în funcție de pagină)
   const sendOtp = async () => {
     if (!phone) return setMessage("📱 Introdu numărul de telefon.");
 
     const normalized = phone.replace(/\D/g, "");
-    if (!/^07\d{8}$/.test(normalized))
+    if (!/^07\d{8}$/.test(normalized)) {
       return setMessage("❌ Număr invalid (format 07xxxxxxxx)");
+    }
 
     setMessage("⏳ Se trimite SMS...");
 
@@ -26,16 +31,39 @@ export default function LoginSMS() {
       const res = await fetch(`${API}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalized }),
+        body: JSON.stringify({
+          phone: normalized,
+          mode: isRegister ? "register" : "login",
+        }),
       });
+
       const data = await res.json();
 
-      if (data.success) {
-        setMessage("📲 Codul a fost trimis! Verifică telefonul.");
-        setStep(2);
-      } else {
-        setMessage("❌ " + (data.error || "Eroare la trimiterea SMS-ului"));
+      if (!res.ok || !data.success) {
+        const errText = data.error || "";
+
+        // Mesaj prietenos pentru număr neînregistrat / nevoie de cont nou
+        if (
+          !isRegister &&
+          (
+            errText.toLowerCase().includes("nu există niciun cont") ||
+            errText.toLowerCase().includes("nu este înregistrat") ||
+            data.mustRegister
+          )
+        ) {
+          setMessage(
+            "ℹ️ Acest număr nu este încă înregistrat.\n" +
+            "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
+          );
+          return;
+        }
+
+        setMessage("❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului"));
+        return;
       }
+
+      setMessage("📲 Codul a fost trimis! Verifică telefonul.");
+      setStep(2);
     } catch (err) {
       setMessage("❌ Eroare server: " + err.message);
     }
@@ -44,6 +72,7 @@ export default function LoginSMS() {
   // 🔹 Verificare OTP
   const verifyOtp = async () => {
     if (!code) return setMessage("Introdu codul primit prin SMS.");
+
     const normalized = phone.replace(/\D/g, "");
     setMessage("⏳ Se verifică...");
 
@@ -53,16 +82,20 @@ export default function LoginSMS() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: normalized, code }),
       });
+
       const data = await res.json();
 
       if (data.success) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userPhone", data.user.phone);
-        localStorage.setItem("user", JSON.stringify(data.user)); // 🟢 FIX: adăugăm user complet pentru Navbar
+        if (data.user?.phone) {
+          localStorage.setItem("userPhone", data.user.phone);
+        }
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
 
         setMessage("✅ Verificare reușită! Redirecționare...");
 
-        // 🟢 FIX: mergem direct în "Anunțurile mele" după login
         setTimeout(() => {
           navigate("/anunturile-mele");
         }, 1500);
@@ -74,14 +107,11 @@ export default function LoginSMS() {
     }
   };
 
-  // 🔹 UI
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
-          {isRegister
-            ? "🆕 Înregistrare prin SMS"
-            : "🔐 Autentificare prin SMS"}
+          {isRegister ? "🆕 Înregistrare prin SMS" : "🔐 Autentificare prin SMS"}
         </h2>
 
         {step === 1 ? (
@@ -136,6 +166,41 @@ export default function LoginSMS() {
             {message}
           </p>
         )}
+
+        {/* 🔹 Banner jos: schimbare între login / înregistrare */}
+        <div className="mt-6 text-center text-sm text-gray-600 border-t pt-4">
+          {isRegister ? (
+            <p>
+              Ai deja cont?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMessage("");
+                  setStep(1);
+                  navigate("/login");
+                }}
+                className="text-blue-600 font-semibold underline"
+              >
+                Autentifică-te aici
+              </button>
+            </p>
+          ) : (
+            <p>
+              Nu ai încă un cont?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMessage("");
+                  setStep(1);
+                  navigate("/inregistrare");
+                }}
+                className="text-blue-600 font-semibold underline"
+              >
+                Creează un cont nou
+              </button>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
