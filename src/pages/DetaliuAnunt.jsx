@@ -4,6 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
+// 🔸 Pachete de promovare (le poți schimba cum vrei)
+const PROMO_OPTIONS = [
+  { id: "promo7", label: "Promovat 7 zile", priceRON: 19, days: 7 },
+  { id: "promo14", label: "Promovat 14 zile", priceRON: 29, days: 14 },
+  { id: "promo30", label: "Promovat 30 zile", priceRON: 49, days: 30 },
+];
+
 export default function DetaliuAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,6 +22,12 @@ export default function DetaliuAnunt() {
   const [err, setErr] = useState("");
 
   const [isFacebookAppWebView, setIsFacebookAppWebView] = useState(false);
+
+  // 🔸 Stări pentru PROMOVARE
+  const [showPromo, setShowPromo] = useState(false);
+  const [selectedPromo, setSelectedPromo] = useState(PROMO_OPTIONS[0]);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
 
   useEffect(() => window.scrollTo(0, 0), [id]);
 
@@ -45,7 +58,8 @@ export default function DetaliuAnunt() {
 
   const images = Array.isArray(listing.images) ? listing.images : [];
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
-  const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
+  const nextImage = () =>
+    setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
   const backendFbDirect = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
@@ -57,20 +71,17 @@ export default function DetaliuAnunt() {
 
     switch (platform) {
       case "facebook": {
-  // folosim ruta specială din backend, care se ocupă de meta + redirect
         const fbShareUrl = backendFbDirect;
 
-     if (isFacebookApp) {
-        // în aplicația Facebook pe iPhone/Android deschidem direct linkul nostru;
-       // backend-ul redirecționează mai departe către dialogul de share
-     window.open(fbShareUrl, "_blank");
-      } else if (isMobile) {
-    window.open(fbShareUrl, "_blank");
-    } else {
-    window.open(fbShareUrl, "_blank", "width=600,height=400");
-    }
-      break;
-    }
+        if (isFacebookApp) {
+          window.open(fbShareUrl, "_blank");
+        } else if (isMobile) {
+          window.open(fbShareUrl, "_blank");
+        } else {
+          window.open(fbShareUrl, "_blank", "width=600,height=400");
+        }
+        break;
+      }
       case "whatsapp": {
         window.open(
           `https://wa.me/?text=${encodeURIComponent(
@@ -83,7 +94,9 @@ export default function DetaliuAnunt() {
       case "tiktok": {
         if (isMobile) {
           navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          alert(
+            "🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo."
+          );
         } else {
           window.open(
             `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
@@ -101,6 +114,48 @@ export default function DetaliuAnunt() {
     window.open(backendFbDirect, "_blank");
   };
 
+  // 🔸 Anunțul este deja promovat?
+  const isFeatured =
+    listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
+
+  // 🔸 Pornire flux de plată Stripe pentru promovare
+  const startPromotion = async () => {
+    if (!selectedPromo) {
+      setPromoError("Selectează un pachet de promovare.");
+      return;
+    }
+
+    try {
+      setPromoLoading(true);
+      setPromoError("");
+
+      // ⚠️ Schimbă ruta dacă backend-ul tău folosește un alt path
+      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listingId: listing._id,
+          optionId: selectedPromo.id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Nu am putut porni plata pentru promovare.");
+      }
+
+      // Redirecționează către Stripe Checkout
+      window.location.href = data.url;
+    } catch (e) {
+      setPromoError(e.message || "Eroare la inițierea plății.");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
   return (
     <div className="relative">
       {/* 🔶 Banner pentru utilizatorii iPhone în aplicația Facebook */}
@@ -109,7 +164,8 @@ export default function DetaliuAnunt() {
           <div className="text-sm leading-snug">
             ⚠️ Distribuirea pe Facebook nu funcționează din aplicația Facebook pe iPhone.
             <br />
-            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest anunț.
+            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest
+            anunț.
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -128,12 +184,19 @@ export default function DetaliuAnunt() {
         </div>
       )}
 
-      <div className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${isFacebookAppWebView ? "pt-28" : ""}`}>
+      <div
+        className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${
+          isFacebookAppWebView ? "pt-28" : ""
+        }`}
+      >
         <Helmet>
           <title>{listing.title} - Oltenița Imobiliare</title>
           <meta
             name="description"
-            content={`${listing.title} – ${listing.location}. ${listing.description?.substring(0, 150)}...`}
+            content={`${listing.title} – ${listing.location}. ${listing.description?.substring(
+              0,
+              150
+            )}...`}
           />
           <meta
             name="keywords"
@@ -169,57 +232,58 @@ export default function DetaliuAnunt() {
               priceCurrency: "EUR",
               priceValidUntil: new Date(
                 Date.now() + 180 * 24 * 60 * 60 * 1000
-              ).toISOString().split("T")[0], // 6 luni valabilitate
+              )
+                .toISOString()
+                .split("T")[0], // 6 luni valabilitate
               availability: "https://schema.org/InStock",
               itemCondition: "https://schema.org/NewCondition",
               url: publicUrl,
               datePublished:
-                listing.createdAt ||
-                new Date().toISOString().split("T")[0], // data publicării
+                listing.createdAt || new Date().toISOString().split("T")[0],
               itemOffered: {
                 "@type": "Product",
                 name: listing.title,
                 image: listing.images?.[0],
                 description: listing.description?.substring(0, 160),
                 brand: "Oltenița Imobiliare",
-             },
-             seller: {
-               "@type": "Person",
-               name: listing.contactName || "Proprietar",
-               telephone: listing.phone || "",
-            },
-          })}
-        </script>
+              },
+              seller: {
+                "@type": "Person",
+                name: listing.contactName || "Proprietar",
+                telephone: listing.phone || "",
+              },
+            })}
+          </script>
         </Helmet>
 
         {/* Imagine principală */}
         <div
           className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
           onClick={() => images.length > 0 && setIsZoomed(true)}
-       >
-          {/* 🔙 Buton Înapoi (SVG, fără lucide-react) */}
-          <button
-          onClick={() => navigate(-1)}
-          className="absolute top-3 left-3 bg-gray-100/90 hover:bg-gray-200 text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
-          aria-label="Înapoi"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="w-5 h-5 md:w-6 md:h-6"
+          {/* 🔙 Buton Înapoi */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-3 left-3 bg-gray-100/90 hover:bg-gray-200 text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
+            aria-label="Înapoi"
           >
-            <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 19.5L8.25 12l7.5-7.5"
-          />
-        </svg>
-      </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="w-5 h-5 md:w-6 md:h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          </button>
 
-                 {images.length ? (
+          {images.length ? (
             <>
               <img
                 src={images[currentImage]}
@@ -292,7 +356,7 @@ export default function DetaliuAnunt() {
           </div>
         )}
 
-        {/* Titlu + preț */}
+        {/* Titlu + preț + badge PROMOVAT */}
         <div className="mt-5 text-center sm:text-left">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
             {listing.title}
@@ -300,33 +364,53 @@ export default function DetaliuAnunt() {
           <p className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-lg font-semibold mt-1">
             💰 {listing.price} €
           </p>
+
+          {isFeatured && (
+            <div className="mt-3">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400 bg-yellow-50 text-yellow-800 text-sm font-semibold">
+                ⭐ Anunț PROMOVAT
+              </span>
+              {listing.featuredUntil && (
+                <div className="text-xs text-gray-600 mt-1">
+                  Activ până la{" "}
+                  {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
         {/* 🔹 Tip tranzacție */}
-{listing.intent && (
-  <div
-    className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${
-      listing.intent === "vand"
-        ? "bg-green-600"
-        : listing.intent === "cumpar"
-        ? "bg-blue-600"
-        : listing.intent === "inchiriez"
-        ? "bg-yellow-500 text-gray-900"
-        : "bg-purple-600"
-    }`}
-  >
-    {listing.intent === "vand"
-      ? "🏠 Vând"
-      : listing.intent === "cumpar"
-      ? "🛒 Cumpăr"
-      : listing.intent === "inchiriez"
-      ? "🔑 Închiriez"
-      : "♻️ Schimb"}
-  </div>
-)}
-        <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
+        {listing.intent && (
+          <div
+            className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${
+              listing.intent === "vand"
+                ? "bg-green-600"
+                : listing.intent === "cumpar"
+                ? "bg-blue-600"
+                : listing.intent === "inchiriez"
+                ? "bg-yellow-500 text-gray-900"
+                : "bg-purple-600"
+            }`}
+          >
+            {listing.intent === "vand"
+              ? "🏠 Vând"
+              : listing.intent === "cumpar"
+              ? "🛒 Cumpăr"
+              : listing.intent === "inchiriez"
+              ? "🔑 Închiriez"
+              : "♻️ Schimb"}
+          </div>
+        )}
+
+        <p className="text-gray-600 mt-3 text-sm md:text-base">
+          📍 {listing.location}
+        </p>
 
         {listing.contactName && (
-          <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>
+          <p className="mt-2 text-gray-800 font-medium">
+            👤 {listing.contactName}
+          </p>
         )}
         {listing.phone && (
           <p className="mt-1">
@@ -342,6 +426,74 @@ export default function DetaliuAnunt() {
 
         <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">
           {listing.description}
+        </div>
+
+        {/* 🔥 Promovează anunțul */}
+        <div className="mt-8 border-t pt-6">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Promovează anunțul
+            </h3>
+            {isFeatured && listing.featuredUntil && (
+              <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                Deja promovat până la{" "}
+                {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+              </span>
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowPromo((p) => !p)}
+            className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition"
+          >
+            {showPromo
+              ? "Ascunde opțiunile de promovare"
+              : "Alege un pachet de promovare"}
+          </button>
+
+          {showPromo && (
+            <>
+              <div className="mt-4 grid sm:grid-cols-3 gap-4">
+                {PROMO_OPTIONS.map((opt) => {
+                  const isSelected = selectedPromo?.id === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSelectedPromo(opt)}
+                      className={`border rounded-xl p-4 text-left text-sm flex flex-col gap-1 transition ${
+                        isSelected
+                          ? "border-yellow-500 bg-yellow-50 shadow"
+                          : "border-gray-200 hover:border-yellow-400 hover:bg-yellow-50/60"
+                      }`}
+                    >
+                      <span className="font-semibold">{opt.label}</span>
+                      <span className="text-gray-700">
+                        💳 {opt.priceRON} lei (plată unică)
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Anunțul tău va fi evidențiat timp de {opt.days} zile.
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {promoError && (
+                <p className="mt-3 text-sm text-red-600">{promoError}</p>
+              )}
+
+              <button
+                onClick={startPromotion}
+                disabled={promoLoading || !selectedPromo}
+                className="mt-5 w-full sm:w-auto bg-black text-white font-semibold px-6 py-2.5 rounded-lg shadow hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {promoLoading
+                  ? "Se pregătește plata..."
+                  : `Continuă către plată securizată (${selectedPromo.priceRON} lei)`}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Distribuie */}
