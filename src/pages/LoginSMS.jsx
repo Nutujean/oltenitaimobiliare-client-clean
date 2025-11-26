@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function LoginSMS() {
+export default function LoginSMS({ mode }) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState(1);
@@ -11,8 +11,11 @@ export default function LoginSMS() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // dacă URL-ul conține "inregistrare", știm că e pagină de înregistrare
-  const isRegister = location.pathname.includes("inregistrare");
+  // dacă primim mode din props, îl folosim; altfel, cădem înapoi pe URL
+  const isRegisterProp = mode === "register";
+  const isRegister = mode
+    ? isRegisterProp
+    : location.pathname.includes("inregistrare");
 
   const API = "https://api.oltenitaimobiliare.ro/api/phone";
 
@@ -45,12 +48,12 @@ export default function LoginSMS() {
         if (isRegister) {
           setMessage(
             "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
-            "Te rugăm să mergi la pagina de autentificare."
+              "Te rugăm să mergi la pagina de autentificare."
           );
         } else {
           setMessage(
             "ℹ️ Acest număr nu este încă înregistrat.\n" +
-            "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
+              "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
           );
         }
         return;
@@ -60,15 +63,13 @@ export default function LoginSMS() {
       if (
         (!res.ok || !data.success) &&
         isRegister &&
-        (
-          data.mustLogin ||
+        (data.mustLogin ||
           errText.toLowerCase().includes("există deja un cont creat") ||
-          errText.toLowerCase().includes("exista deja un cont")
-        )
+          errText.toLowerCase().includes("exista deja un cont"))
       ) {
         setMessage(
           "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
-          "Te redirecționăm către pagina de autentificare..."
+            "Te redirecționăm către pagina de autentificare..."
         );
         setTimeout(() => {
           setMessage("");
@@ -82,22 +83,22 @@ export default function LoginSMS() {
       if (
         (!res.ok || !data.success) &&
         !isRegister &&
-        (
-          data.mustRegister ||
+        (data.mustRegister ||
           errText.toLowerCase().includes("nu este înregistrat") ||
-          errText.toLowerCase().includes("nu există niciun cont")
-        )
+          errText.toLowerCase().includes("nu există niciun cont"))
       ) {
         setMessage(
           "ℹ️ Acest număr nu este încă înregistrat.\n" +
-          "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
+            "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
         );
         return;
       }
 
       // 🧠 Orice altă eroare
       if (!res.ok || !data.success) {
-        setMessage("❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului"));
+        setMessage(
+          "❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului")
+        );
         return;
       }
 
@@ -147,14 +148,13 @@ export default function LoginSMS() {
     }
   };
 
-  // 🧼 Curățăm mesajul înainte de afișare (NU lăsăm niciodată textul „Mod invalid...” să apară)
-  const displayMessage =
-    message.replace(
-      "Mod invalid. Trebuie 'login' sau 'register'.",
-      isRegister
-        ? "Există deja un cont creat cu acest număr de telefon. Te rugăm să mergi la pagina de autentificare."
-        : "Acest număr nu este încă înregistrat. Creează un cont nou pentru a continua."
-    );
+  // 🧼 Curățăm mesajul „Mod invalid...” dacă mai scapă
+  const displayMessage = message.replace(
+    "Mod invalid. Trebuie 'login' sau 'register'.",
+    isRegister
+      ? "Există deja un cont creat cu acest număr de telefon. Te rugăm să mergi la pagina de autentificare."
+      : "Acest număr nu este încă înregistrat. Creează un cont nou pentru a continua."
+  );
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
