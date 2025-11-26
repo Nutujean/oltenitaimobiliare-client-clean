@@ -40,21 +40,14 @@ export default function LoginSMS() {
       const data = await res.json();
       const errText = (data.error || "").toString();
 
-      // 🧠 1) Backend vechi: "Mod invalid. Trebuie 'login' sau 'register'."
-      if (errText.includes("Mod invalid")) {
+      // 🧠 Caz special: backend trimite mesajul vechi "Mod invalid..."
+      if (errText.includes("Mod invalid. Trebuie 'login' sau 'register'")) {
         if (isRegister) {
-          // suntem pe ÎNREGISTRARE → înseamnă că există deja cont pe numărul ăsta
           setMessage(
             "ℹ️ Există deja un cont creat cu acest număr de telefon.\n" +
-            "Te redirecționăm către pagina de autentificare..."
+            "Te rugăm să mergi la pagina de autentificare."
           );
-          setTimeout(() => {
-            setMessage("");
-            setStep(1);
-            navigate("/login");
-          }, 2000);
         } else {
-          // suntem pe LOGIN → înseamnă că nu e configurat corect mod-ul sau nu există cont
           setMessage(
             "ℹ️ Acest număr nu este încă înregistrat.\n" +
             "Creează un cont nou pentru a putea posta sau gestiona anunțuri."
@@ -63,7 +56,7 @@ export default function LoginSMS() {
         return;
       }
 
-      // 🧠 2) Caz: user încearcă ÎNREGISTRARE dar există deja cont
+      // 🧠 Caz: user încearcă ÎNREGISTRARE dar există deja cont
       if (
         (!res.ok || !data.success) &&
         isRegister &&
@@ -85,7 +78,7 @@ export default function LoginSMS() {
         return;
       }
 
-      // 🧠 3) Caz: user încearcă LOGIN dar nu există cont
+      // 🧠 Caz: user încearcă LOGIN dar nu există cont
       if (
         (!res.ok || !data.success) &&
         !isRegister &&
@@ -102,7 +95,7 @@ export default function LoginSMS() {
         return;
       }
 
-      // 🧠 4) Dacă e altă eroare
+      // 🧠 Orice altă eroare
       if (!res.ok || !data.success) {
         setMessage("❌ " + (data.error || "A apărut o eroare la trimiterea SMS-ului"));
         return;
@@ -153,6 +146,15 @@ export default function LoginSMS() {
       setMessage("❌ Eroare server: " + err.message);
     }
   };
+
+  // 🧼 Curățăm mesajul înainte de afișare (NU lăsăm niciodată textul „Mod invalid...” să apară)
+  const displayMessage =
+    message.replace(
+      "Mod invalid. Trebuie 'login' sau 'register'.",
+      isRegister
+        ? "Există deja un cont creat cu acest număr de telefon. Te rugăm să mergi la pagina de autentificare."
+        : "Acest număr nu este încă înregistrat. Creează un cont nou pentru a continua."
+    );
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -210,7 +212,7 @@ export default function LoginSMS() {
 
         {message && (
           <p className="mt-4 text-center text-gray-700 whitespace-pre-line">
-            {message}
+            {displayMessage}
           </p>
         )}
 
