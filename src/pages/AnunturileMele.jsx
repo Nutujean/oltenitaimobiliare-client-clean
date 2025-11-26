@@ -1,274 +1,145 @@
+// src/pages/AnunturileMele.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
 export default function AnunturileMele() {
-  const [successMsg, setSuccessMsg] = useState("");
-  const [anunturi, setAnunturi] = useState([]);
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // ✅ luăm tokenul din localStorage corect, indiferent cum e salvat
-  const [token, setToken] = useState(() => localStorage.getItem("token")?.replace(/^"|"$/g, "") || "");
-
   useEffect(() => {
-    // dacă nu există token → redirect la login
-    if (!token || token === "undefined" || token === "null") {
+    const token = localStorage.getItem("token");
+    const userPhone = localStorage.getItem("userPhone");
+
+    // dacă nu e logat → trimitem la login
+    if (!token || !userPhone) {
+      setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
       navigate("/login");
       return;
     }
 
-    console.log("🔑 Token trimis:", token.slice(0, 15) + "...");
+    const fetchMyListings = async () => {
+      try {
+        setLoading(true);
+        setMessage("⏳ Se încarcă anunțurile tale...");
 
-    fetch(`${API_URL}/listings/my`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setAnunturi(data);
-        else console.warn("⚠️ Răspuns neobișnuit:", data);
-      })
-      .catch((e) => console.error("Eroare la fetch listings/my:", e))
-      .finally(() => setLoading(false));
-  }, [token, navigate]);
+        // luăm TOATE anunțurile și filtrăm pe client după telefon
+        const res = await fetch(`${API_URL}/listings`);
+        const data = await res.json();
 
-  // ✅ Preia mesajul de succes (după adăugarea anunțului)
-  useEffect(() => {
-    const msg = sessionStorage.getItem("anuntAdaugat");
-    if (msg) {
-      setSuccessMsg(msg);
-      sessionStorage.removeItem("anuntAdaugat");
-      setTimeout(() => setSuccessMsg(""), 4000);
-    }
-  }, []);
+        if (!res.ok) {
+          throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
+        }
 
-  // ✅ Reîncarcă automat lista după adăugare anunț
-  useEffect(() => {
-    if (sessionStorage.getItem("refreshAnunturi") === "true") {
-      sessionStorage.removeItem("refreshAnunturi");
+        const normalizedPhone = userPhone.replace(/\D/g, "");
+        const myListings = (data || []).filter((item) => {
+          if (!item.phone) return false;
+          const itemPhone = String(item.phone).replace(/\D/g, "");
+          return itemPhone === normalizedPhone;
+        });
 
-      fetch(`${API_URL}/listings/my`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.json())
-        .then((data) => setAnunturi(Array.isArray(data) ? data : []))
-        .catch((e) => console.error("Eroare:", e))
-        .finally(() => setLoading(false));
-    }
-  }, []);
+        if (myListings.length === 0) {
+          setMessage(
+            "Momentan nu ai niciun anunț publicat cu acest număr de telefon."
+          );
+        } else {
+          setMessage("");
+        }
 
-         const stergeAnunt = async (id) => {
-    if (!window.confirm("Sigur vrei să ștergi acest anunț?")) return;
-
-    try {
-      const res = await fetch(`${API_URL}/listings/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        alert(data?.error || "❌ Eroare la ștergerea anunțului.");
-        return;
+        setListings(myListings);
+      } catch (err) {
+        console.error("Eroare la încărcarea anunțurilor mele:", err);
+        setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Scoatem anunțul șters din listă
-      setAnunturi((prev) => prev.filter((a) => a._id !== id));
-    } catch (e) {
-      console.error("Eroare la ștergere anunț:", e);
-      alert("❌ Eroare la ștergerea anunțului. Încearcă din nou.");
-    }
+    fetchMyListings();
+  }, [navigate]);
+
+  const handleAdaugaAnunt = () => {
+    navigate("/adauga-anunt");
   };
 
-  const handlePromote = async (id, planKey) => {
-    try {
-      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ listingId: id, plan: planKey }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la inițializarea plății");
-
-      window.location.href = data.url; // Stripe redirect
-    } catch (err) {
-      alert("Eroare la promovare: " + err.message);
-    }
-  };
-
-  if (loading)
+  if (loading) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500">Se încarcă anunțurile...</p>
+      <div className="max-w-5xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
+        <p>{message || "Se încarcă..."}</p>
       </div>
     );
-
-  if (!anunturi.length)
-    return (
-      <div className="text-center bg-white p-8 rounded-xl shadow mt-10 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-3 text-gray-800">
-          📋 Anunțurile mele
-        </h1>
-        <p className="text-gray-600 mb-4">Nu ai adăugat încă niciun anunț.</p>
-        <Link
-          to="/adauga-anunt"
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg transition inline-block"
-        >
-          ➕ Adaugă primul tău anunț
-        </Link>
-      </div>
-    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      {/* ✅ Mesaj verde elegant */}
-      {successMsg && (
-        <div className="mb-6 bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-lg text-center font-semibold shadow-sm transition-opacity duration-700 ease-in-out">
-          {successMsg}
+    <div className="max-w-5xl mx-auto p-6">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <h1 className="text-2xl font-bold">Anunțurile mele</h1>
+        <button
+          onClick={handleAdaugaAnunt}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+        >
+          ➕ Adaugă un anunț nou
+        </button>
+      </div>
+
+      {message && (
+        <div className="mb-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 whitespace-pre-line">
+          {message}
         </div>
       )}
 
-      {/* ✅ Header cu buton de adăugare + profil */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-          📋 Anunțurile Mele
-        </h1>
+      {listings.length === 0 && !message && (
+        <p className="text-gray-600">
+          Nu am găsit niciun anunț asociat acestui număr de telefon.
+        </p>
+      )}
 
-        <div className="flex gap-3">
-          <Link
-            to="/adauga-anunt"
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
+      <div className="grid gap-4 md:grid-cols-2">
+        {listings.map((listing) => (
+          <div
+            key={listing._id}
+            className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between"
           >
-            + Adaugă anunț
-          </Link>
-          <Link
-            to="/profil"
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition inline-block"
-          >
-            ⚙️ Profilul meu
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {anunturi.map((a) => {
-          const estePromovat =
-            a.featuredUntil && new Date(a.featuredUntil) > new Date();
-
-          const titlu = a.titlu || a.title;
-          const pret = a.pret || a.price;
-          const categorie = a.categorie || a.category;
-
-          return (
-            <div
-              key={a._id}
-              className="relative bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
-            >
-              {estePromovat && (
-                <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-semibold px-2 py-1 rounded-full shadow">
-                  🎖️ Promovat
-                </span>
-              )}
-
-              {a.intent && (
-                <span
-                  className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
-                    a.intent === "vand"
-                      ? "bg-green-600"
-                      : a.intent === "cumpar"
-                      ? "bg-blue-600"
-                      : a.intent === "inchiriez"
-                      ? "bg-yellow-500 text-gray-900"
-                      : "bg-purple-600"
-                  }`}
-                >
-                  {a.intent === "vand"
-                    ? "🏠 Vând"
-                    : a.intent === "cumpar"
-                    ? "🛒 Cumpăr"
-                    : a.intent === "inchiriez"
-                    ? "🔑 Închiriez"
-                    : "♻️ Schimb"}
-                </span>
-              )}
-
-              {a.images?.[0] ? (
-                <img
-                  src={a.images[0]}
-                  alt={titlu}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">
-                  Fără imagine
-                </div>
-              )}
-
-              <div className="p-4">
-                <h2 className="font-bold text-lg mb-1 line-clamp-2">{titlu}</h2>
-                <p className="text-blue-700 font-semibold mb-1">{pret} €</p>
-                <p className="text-sm text-gray-500 mb-3">{categorie}</p>
-
-                <div className="flex flex-wrap gap-2 mb-3">
-                  <button
-                    onClick={() => navigate(`/editeaza-anunt/${a._id}`)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    ✏️ Editează
-                  </button>
-                  <button
-                    onClick={() => stergeAnunt(a._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                  >
-                    🗑️ Șterge
-                  </button>
-                </div>
-
-                {!estePromovat ? (
-                  <div className="mt-3 border-t pt-3">
-                    <p className="text-sm font-semibold text-blue-700 mb-1">
-                      Promovează anunțul:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handlePromote(a._id, "featured7")}
-                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm"
-                      >
-                        7 zile / 50 lei
-                      </button>
-                      <button
-                        onClick={() => handlePromote(a._id, "featured14")}
-                        className="bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-800 text-sm"
-                      >
-                        14 zile / 85 lei
-                      </button>
-                      <button
-                        onClick={() => handlePromote(a._id, "featured30")}
-                        className="bg-blue-800 text-white px-2 py-1 rounded hover:bg-blue-900 text-sm"
-                      >
-                        30 zile / 125 lei
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-green-700 mt-2 font-medium">
-                    ✅ Promovat până la{" "}
-                    {new Date(a.featuredUntil).toLocaleDateString("ro-RO")}.
-                  </p>
-                )}
-              </div>
+            <div>
+              <h2 className="text-lg font-semibold text-blue-700 mb-1">
+                {listing.title}
+              </h2>
+              <p className="text-sm text-gray-500 mb-2">
+                {listing.location} • {listing.category}
+              </p>
+              <p className="font-bold text-green-700 mb-2">
+                {listing.price ? `${listing.price} €` : "Preț la cerere"}
+              </p>
+              <p className="text-sm text-gray-700 line-clamp-3">
+                {listing.description}
+              </p>
             </div>
-          );
-        })}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                to={`/anunt/${listing._id}`}
+                className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+              >
+                Vezi detalii
+              </Link>
+              <Link
+                to={`/editeaza-anunt/${listing._id}`}
+                className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Editează
+              </Link>
+              <Link
+                to={`/promovare-succes?anunt=${listing._id}`}
+                className="text-sm px-3 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600"
+              >
+                Promovează
+              </Link>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
