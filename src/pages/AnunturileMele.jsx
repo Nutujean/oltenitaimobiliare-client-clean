@@ -3,29 +3,38 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
+// 🔧 helper: normalizare telefon exact ca în backend
+function normalizePhone(value) {
+  if (!value) return "";
+  const digits = String(value).replace(/\D/g, ""); // doar cifre
+  // dacă începe cu 4 (ex: 4072...) scoatem 4 → 07...
+  return digits.replace(/^4/, "");
+}
+
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [debugInfo, setDebugInfo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userPhone = localStorage.getItem("userPhone");
+    const userPhoneRaw = localStorage.getItem("userPhone");
 
-    // dacă nu e logat → trimitem la login
-    if (!token || !userPhone) {
+    if (!token || !userPhoneRaw) {
       setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
       navigate("/login");
       return;
     }
+
+    const userPhone = normalizePhone(userPhoneRaw);
 
     const fetchMyListings = async () => {
       try {
         setLoading(true);
         setMessage("⏳ Se încarcă anunțurile tale...");
 
-        // luăm TOATE anunțurile și filtrăm pe client după telefon
         const res = await fetch(`${API_URL}/listings`);
         const data = await res.json();
 
@@ -33,11 +42,35 @@ export default function AnunturileMele() {
           throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
         }
 
-        const normalizedPhone = userPhone.replace(/\D/g, "");
-        const myListings = (data || []).filter((item) => {
-          if (!item.phone) return false;
-          const itemPhone = String(item.phone).replace(/\D/g, "");
-          return itemPhone === normalizedPhone;
+        // 👀 LOG: vezi exact ce primești de la backend
+        console.log("🔍 Răspuns brut de la /listings:", data);
+
+        // 🧠 suportăm mai multe formate de răspuns:
+        // - [ {...}, {...} ]
+        // - { listings: [ {...} ] }
+        // - { data: [ {...} ] }
+        let allListings = [];
+        if (Array.isArray(data)) {
+          allListings = data;
+        } else if (Array.isArray(data.listings)) {
+          allListings = data.listings;
+        } else if (Array.isArray(data.data)) {
+          allListings = data.data;
+        } else {
+          allListings = [];
+        }
+
+        // 🧠 filtrăm după telefon normalizat
+        const mapped = allListings.map((item) => ({
+          id: item._id,
+          rawPhone: item.phone,
+          normalizedPhone: normalizePhone(item.phone),
+          title: item.title,
+        }));
+
+        const myListings = allListings.filter((item) => {
+          const itemPhone = normalizePhone(item.phone);
+          return itemPhone && itemPhone === userPhone;
         });
 
         if (myListings.length === 0) {
@@ -47,6 +80,21 @@ export default function AnunturileMele() {
         } else {
           setMessage("");
         }
+
+        setDebugInfo(
+          `Telefonul tău (localStorage): ${userPhoneRaw}\n` +
+            `Telefon normalizat: ${userPhone}\n` +
+            `Total anunțuri primite de la backend: ${allListings.length}\n` +
+            `Anunțuri găsite pe numărul tău: ${myListings.length}\n` +
+            `Telefoane anunțuri (primele 5):\n` +
+            mapped
+              .slice(0, 5)
+              .map(
+                (m) =>
+                  `- ${m.title || "(fără titlu)"} | raw="${m.rawPhone}" | normalizat="${m.normalizedPhone}"`
+              )
+              .join("\n")
+        );
 
         setListings(myListings);
       } catch (err) {
@@ -89,6 +137,13 @@ export default function AnunturileMele() {
         <div className="mb-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 whitespace-pre-line">
           {message}
         </div>
+      )}
+
+      {/* 🔍 Debug info temporar – îl scoatem după ce totul e ok */}
+      {debugInfo && (
+        <pre className="mb-4 p-3 rounded bg-gray-50 text-xs text-gray-700 whitespace-pre-wrap">
+          {debugInfo}
+        </pre>
       )}
 
       {listings.length === 0 && !message && (
