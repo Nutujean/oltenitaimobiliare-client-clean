@@ -15,7 +15,6 @@ export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [debugInfo, setDebugInfo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,13 +60,6 @@ export default function AnunturileMele() {
           allListings = [];
         }
 
-        const mapped = allListings.map((item) => ({
-          id: item._id,
-          rawPhone: item.phone,
-          normalizedPhone: normalizePhone(item.phone),
-          title: item.title,
-        }));
-
         const myListings = allListings.filter((item) => {
           const itemPhone = normalizePhone(item.phone);
           return itemPhone && itemPhone === userPhone;
@@ -80,21 +72,6 @@ export default function AnunturileMele() {
         } else {
           setMessage("");
         }
-
-        setDebugInfo(
-          `Telefonul tău (localStorage): ${userPhoneRaw}\n` +
-            `Telefon normalizat: ${userPhone}\n` +
-            `Total anunțuri primite de la backend: ${allListings.length}\n` +
-            `Anunțuri găsite pe numărul tău: ${myListings.length}\n` +
-            `Telefoane anunțuri (primele 5):\n` +
-            mapped
-              .slice(0, 5)
-              .map(
-                (m) =>
-                  `- ${m.title || "(fără titlu)"} | raw="${m.rawPhone}" | normalizat="${m.normalizedPhone}"`
-              )
-              .join("\n")
-        );
 
         setListings(myListings);
       } catch (err) {
@@ -144,7 +121,7 @@ export default function AnunturileMele() {
     }
   };
 
-  // ⭐ Promovare → pagină dedicată cu sume și perioade
+  // ⭐ Promovare → pagina de detaliu (unde ai pachetele de promovare)
   const handlePromoveaza = (id) => {
     navigate(`/anunt/${id}`);
   };
@@ -174,13 +151,6 @@ export default function AnunturileMele() {
         <div className="mb-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 whitespace-pre-line">
           {message}
         </div>
-      )}
-
-      {/* Debug – îl poți șterge când ești mulțumit */}
-      {debugInfo && (
-        <pre className="mb-4 p-3 rounded bg-gray-50 text-xs text-gray-700 whitespace-pre-wrap">
-          {debugInfo}
-        </pre>
       )}
 
       {listings.length === 0 && !message && (
