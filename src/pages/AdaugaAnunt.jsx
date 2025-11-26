@@ -11,13 +11,17 @@ export default function AdaugaAnunt() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [intent, setIntent] = useState("vand");
-  const [images, setImages] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const navigate = useNavigate();
 
+  const [images, setImages] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [error, setError] = useState("");
+  const [mustPromote, setMustPromote] = useState(false);
+
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // 🔒 Verificare login
   useEffect(() => {
     if (!token || token === "undefined" || token === "null" || token.trim() === "") {
       setIsLoggedIn(false);
@@ -27,22 +31,9 @@ export default function AdaugaAnunt() {
   }, [token]);
 
   const localitati = [
-    "Oltenița",
-    "Chirnogi",
-    "Curcani",
-    "Spanțov",
-    "Radovanu",
-    "Ulmeni",
-    "Clătești",
-    "Negoești",
-    "Șoldanu",
-    "Luica",
-    "Nana",
-    "Chiselet",
-    "Căscioarele",
-    "Mănăstirea",
-    "Valea Roșie",
-    "Mitreni",
+    "Oltenița", "Chirnogi", "Curcani", "Spanțov", "Radovanu", "Ulmeni",
+    "Clătești", "Negoești", "Șoldanu", "Luica", "Nana", "Budesti",
+    "Chiselet", "Căscioarele", "Mănăstirea", "Valea Roșie", "Mitreni",
   ];
 
   const categorii = [
@@ -55,18 +46,17 @@ export default function AdaugaAnunt() {
   ];
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImages((prev) => [...prev, ev.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    setImages(files);
+    setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setMustPromote(false);
 
     if (!token) {
       navigate("/login");
@@ -89,40 +79,49 @@ export default function AdaugaAnunt() {
     }
 
     try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("category", category);
+      formData.append("location", location);
+      formData.append("phone", phone);
+      formData.append("email", email);
+      formData.append("intent", intent);
+
+      images.forEach((file) => formData.append("images", file));
+
       const res = await fetch(`${API_URL}/listings`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title,
-          description,
-          price,
-          category,
-          location,
-          phone,
-          email,
-          images,
-          intent,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la adăugarea anunțului");
 
-      // ✅ Adăugat: marchează că trebuie reîncărcată lista
+      if (!res.ok) {
+        if (data.mustPay) {
+          setError(
+            data.message ||
+              "Ai deja un anunț gratuit activ. Pentru a publica încă un anunț, acesta trebuie să fie promovat (plătit)."
+          );
+          setMustPromote(true);
+          return;
+        }
+        throw new Error(data.error || "Eroare la adăugarea anunțului");
+      }
+
       sessionStorage.setItem("refreshAnunturi", "true");
-
       sessionStorage.setItem("anuntAdaugat", "✅ Anunțul tău a fost publicat cu succes!");
       navigate("/anunturile-mele");
     } catch (err) {
       console.error("Eroare:", err);
-      alert("❌ " + err.message);
+      setError(err.message || "A apărut o eroare la publicarea anunțului.");
     }
   };
 
-  // 🔹 Dacă utilizatorul nu este logat, afișează un ecran dedicat
   if (!isLoggedIn) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4 text-center">
@@ -150,12 +149,31 @@ export default function AdaugaAnunt() {
     );
   }
 
-  // 🔹 Formularul normal (pentru utilizatori logați)
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
       <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
         Adaugă un anunț nou
       </h1>
+
+      {error && (
+        <div
+          className={`mb-4 p-4 rounded-lg text-sm ${
+            mustPromote
+              ? "bg-yellow-100 border border-yellow-300 text-yellow-900"
+              : "bg-red-100 border border-red-300 text-red-900"
+          }`}
+        >
+          <strong>{mustPromote ? "Ai deja un anunț gratuit activ" : "Eroare"}</strong>
+          <p className="mt-1">{error}</p>
+
+          {mustPromote && (
+            <p className="mt-2 text-xs text-yellow-800">
+              Poți păstra anunțul gratuit existent, iar acesta nou poate fi publicat ca anunț
+              promovat (plătit).
+            </p>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -179,10 +197,9 @@ export default function AdaugaAnunt() {
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          placeholder="Preț (obligatoriu, în €)"
+          placeholder="Preț (în €)"
           required
           min="1"
-          step="1"
           className="w-full border p-2 rounded"
         />
 
@@ -241,7 +258,6 @@ export default function AdaugaAnunt() {
           placeholder="Telefon (07xxxxxxxx)"
           required
           pattern="^0[0-9]{9}$"
-          title="Introduceți un număr valid de 10 cifre (ex: 07xxxxxxxx)"
           className="w-full border p-2 rounded"
         />
 
@@ -249,13 +265,8 @@ export default function AdaugaAnunt() {
           <label className="block text-sm mb-1">Imagini</label>
           <input type="file" multiple onChange={handleImageChange} />
           <div className="grid grid-cols-3 gap-2 mt-2">
-            {images.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt=""
-                className="h-24 w-full object-cover rounded"
-              />
+            {previewUrls.map((url, i) => (
+              <img key={i} src={url} alt="" className="h-24 w-full object-cover rounded" />
             ))}
           </div>
         </div>
