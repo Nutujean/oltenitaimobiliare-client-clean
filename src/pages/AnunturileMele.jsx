@@ -20,13 +20,19 @@ export default function AnunturileMele() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userPhoneRaw = localStorage.getItem("userPhone");
+let userPhoneRaw = localStorage.getItem("userPhone");
 
-    if (!token || !userPhoneRaw) {
-      setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
-      navigate("/login");
-      return;
-    }
+// 🚫 tratăm "undefined" și "null" (string) ca fiind lipsă
+if (
+  !token ||
+  !userPhoneRaw ||
+  userPhoneRaw === "undefined" ||
+  userPhoneRaw === "null"
+) {
+  setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
+  navigate("/login");
+  return;
+}
 
     const userPhone = normalizePhone(userPhoneRaw);
 

@@ -127,10 +127,13 @@ export default function LoginSMS({ mode }) {
       const data = await res.json();
 
       if (data.success) {
+        // 🔐 salvăm token
         localStorage.setItem("token", data.token);
-        if (data.user?.phone) {
-          localStorage.setItem("userPhone", data.user.phone);
-        }
+
+        // 🟢 IMPORTANT: salvăm întotdeauna telefonul cu care s-a logat userul
+        localStorage.setItem("userPhone", normalized);
+
+        // opțional, salvăm și user-ul venit din backend
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
         }
