@@ -48,9 +48,6 @@ export default function AnunturileMele() {
           throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
         }
 
-        // 👀 vezi exact ce primești de la backend
-        console.log("🔍 Răspuns brut de la /listings:", data);
-
         // suportăm mai multe formate:
         // [ {...} ] sau { listings: [ {...} ] } sau { data: [ {...} ] }
         let allListings = [];
@@ -139,7 +136,6 @@ export default function AnunturileMele() {
         throw new Error(data.error || "Eroare la ștergerea anunțului.");
       }
 
-      // scoatem anunțul șters din listă
       setListings((prev) => prev.filter((l) => l._id !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
@@ -148,12 +144,10 @@ export default function AnunturileMele() {
     }
   };
 
-  // ⭐ Promovare – te ducem pe pagina de detaliu, unde ai toate variantele
-  // te duce în pagina de detaliu a anunțului,
-// unde ai deja sumele și perioadele Stripe
-const handlePromoveaza = (id) => {
-  navigate(`/anunt/${id}?promoveaza=1`);
-};
+  // ⭐ Promovare → pagină dedicată cu sume și perioade
+  const handlePromoveaza = (id) => {
+    navigate(`/anunt/${id}`);
+  };
 
   if (loading) {
     return (
@@ -182,7 +176,7 @@ const handlePromoveaza = (id) => {
         </div>
       )}
 
-      {/* 🔍 Debug info temporar – îl poți șterge când ești mulțumit */}
+      {/* Debug – îl poți șterge când ești mulțumit */}
       {debugInfo && (
         <pre className="mb-4 p-3 rounded bg-gray-50 text-xs text-gray-700 whitespace-pre-wrap">
           {debugInfo}

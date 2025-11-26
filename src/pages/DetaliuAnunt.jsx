@@ -47,7 +47,6 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const backendFbDirect = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
@@ -58,17 +57,20 @@ export default function DetaliuAnunt() {
 
     switch (platform) {
       case "facebook": {
-        const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          backendShareUrl
-        )}`;
-        if (isFacebookApp) return;
-        if (isMobile) {
-          window.open(fbShareUrl, "_blank");
-        } else {
-          window.open(fbShareUrl, "_blank", "width=600,height=400");
-        }
-        break;
-      }
+  // folosim ruta specială din backend, care se ocupă de meta + redirect
+        const fbShareUrl = backendFbDirect;
+
+     if (isFacebookApp) {
+        // în aplicația Facebook pe iPhone/Android deschidem direct linkul nostru;
+       // backend-ul redirecționează mai departe către dialogul de share
+     window.open(fbShareUrl, "_blank");
+      } else if (isMobile) {
+    window.open(fbShareUrl, "_blank");
+    } else {
+    window.open(fbShareUrl, "_blank", "width=600,height=400");
+    }
+      break;
+    }
       case "whatsapp": {
         window.open(
           `https://wa.me/?text=${encodeURIComponent(
