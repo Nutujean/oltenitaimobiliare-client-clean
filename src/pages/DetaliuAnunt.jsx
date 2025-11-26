@@ -4,11 +4,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
 
-// 🔸 Pachete de promovare (le poți schimba cum vrei)
+// 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
-  { id: "promo7", label: "Promovat 7 zile", priceRON: 19, days: 7 },
-  { id: "promo14", label: "Promovat 14 zile", priceRON: 29, days: 14 },
-  { id: "promo30", label: "Promovat 30 zile", priceRON: 49, days: 30 },
+  { id: "featured7", label: "Promovat 7 zile", priceRON: 50, days: 7 },
+  { id: "featured14", label: "Promovat 14 zile", priceRON: 85, days: 14 },
+  { id: "featured30", label: "Promovat 30 zile", priceRON: 125, days: 30 },
 ];
 
 export default function DetaliuAnunt() {
@@ -129,7 +129,6 @@ export default function DetaliuAnunt() {
       setPromoLoading(true);
       setPromoError("");
 
-      // ⚠️ Schimbă ruta dacă backend-ul tău folosește un alt path
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
         headers: {
@@ -137,7 +136,8 @@ export default function DetaliuAnunt() {
         },
         body: JSON.stringify({
           listingId: listing._id,
-          optionId: selectedPromo.id,
+          // ⬇⬇⬇ foarte important: backend-ul așteaptă `plan`, nu `optionId`
+          plan: selectedPromo.id,
         }),
       });
 
@@ -505,20 +505,17 @@ export default function DetaliuAnunt() {
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={() => handleShare("facebook")}
-              className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
-            >
+              className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]">
               📘 Facebook
             </button>
             <button
               onClick={() => handleShare("whatsapp")}
-              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
-            >
+              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]">
               💬 WhatsApp
             </button>
             <button
               onClick={() => handleShare("tiktok")}
-              className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
-            >
+              className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 256 256"
