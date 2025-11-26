@@ -149,9 +149,11 @@ export default function AnunturileMele() {
   };
 
   // ⭐ Promovare – te ducem pe pagina de detaliu, unde ai toate variantele
-  const handlePromoveaza = (id) => {
-    navigate(`/anunt/${id}?promoveaza=1`);
-  };
+  // te duce în pagina de detaliu a anunțului,
+// unde ai deja sumele și perioadele Stripe
+const handlePromoveaza = (id) => {
+  navigate(`/anunt/${id}?promoveaza=1`);
+};
 
   if (loading) {
     return (
