@@ -20,19 +20,19 @@ export default function AnunturileMele() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-let userPhoneRaw = localStorage.getItem("userPhone");
+    let userPhoneRaw = localStorage.getItem("userPhone");
 
-// 🚫 tratăm "undefined" și "null" (string) ca fiind lipsă
-if (
-  !token ||
-  !userPhoneRaw ||
-  userPhoneRaw === "undefined" ||
-  userPhoneRaw === "null"
-) {
-  setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
-  navigate("/login");
-  return;
-}
+    // 🚫 tratăm "undefined" și "null" (string) ca fiind lipsă
+    if (
+      !token ||
+      !userPhoneRaw ||
+      userPhoneRaw === "undefined" ||
+      userPhoneRaw === "null"
+    ) {
+      setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
+      navigate("/login");
+      return;
+    }
 
     const userPhone = normalizePhone(userPhoneRaw);
 
@@ -48,13 +48,11 @@ if (
           throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
         }
 
-        // 👀 LOG: vezi exact ce primești de la backend
+        // 👀 vezi exact ce primești de la backend
         console.log("🔍 Răspuns brut de la /listings:", data);
 
-        // 🧠 suportăm mai multe formate de răspuns:
-        // - [ {...}, {...} ]
-        // - { listings: [ {...} ] }
-        // - { data: [ {...} ] }
+        // suportăm mai multe formate:
+        // [ {...} ] sau { listings: [ {...} ] } sau { data: [ {...} ] }
         let allListings = [];
         if (Array.isArray(data)) {
           allListings = data;
@@ -66,7 +64,6 @@ if (
           allListings = [];
         }
 
-        // 🧠 filtrăm după telefon normalizat
         const mapped = allListings.map((item) => ({
           id: item._id,
           rawPhone: item.phone,
@@ -118,6 +115,44 @@ if (
     navigate("/adauga-anunt");
   };
 
+  // 🗑️ Ștergere anunț
+  const handleDelete = async (id) => {
+    if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("Trebuie să fii autentificat pentru a șterge un anunț.");
+        navigate("/login");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/listings/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Eroare la ștergerea anunțului.");
+      }
+
+      // scoatem anunțul șters din listă
+      setListings((prev) => prev.filter((l) => l._id !== id));
+      setMessage("✅ Anunțul a fost șters cu succes.");
+    } catch (err) {
+      console.error("Eroare la ștergere anunț:", err);
+      setMessage(err.message || "A apărut o eroare la ștergerea anunțului.");
+    }
+  };
+
+  // ⭐ Promovare – te ducem pe pagina de detaliu, unde ai toate variantele
+  const handlePromoveaza = (id) => {
+    navigate(`/anunt/${id}?promoveaza=1`);
+  };
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto p-6">
@@ -145,7 +180,7 @@ if (
         </div>
       )}
 
-      {/* 🔍 Debug info temporar – îl scoatem după ce totul e ok */}
+      {/* 🔍 Debug info temporar – îl poți șterge când ești mulțumit */}
       {debugInfo && (
         <pre className="mb-4 p-3 rounded bg-gray-50 text-xs text-gray-700 whitespace-pre-wrap">
           {debugInfo}
@@ -186,18 +221,29 @@ if (
               >
                 Vezi detalii
               </Link>
+
               <Link
                 to={`/editeaza-anunt/${listing._id}`}
                 className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
               >
                 Editează
               </Link>
-              <Link
-                to={`/promovare-succes?anunt=${listing._id}`}
+
+              <button
+                type="button"
+                onClick={() => handlePromoveaza(listing._id)}
                 className="text-sm px-3 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600"
               >
                 Promovează
-              </Link>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDelete(listing._id)}
+                className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+              >
+                Șterge
+              </button>
             </div>
           </div>
         ))}
