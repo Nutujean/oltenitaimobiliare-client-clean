@@ -548,7 +548,7 @@ export default function DetaliuAnunt() {
             </button>
             <button
               onClick={() => handleShare("whatsapp")}
-              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"`
+              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
             >
               💬 WhatsApp
             </button>
