@@ -1,16 +1,8 @@
 // src/pages/DetaliuAnunt.jsx
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
-
-// 🔧 helper: normalizare telefon, la fel ca în AnunturileMele
-function normalizePhone(value) {
-  if (!value) return "";
-  const digits = String(value).replace(/\D/g, "");
-  // 4072... -> 072...
-  return digits.replace(/^4/, "");
-}
 
 // 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
@@ -22,6 +14,7 @@ const PROMO_OPTIONS = [
 export default function DetaliuAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
@@ -61,42 +54,12 @@ export default function DetaliuAnunt() {
     })();
   }, [id]);
 
-  // 🔸 stabilim dacă utilizatorul logat este proprietarul anunțului (pe bază de telefon + token)
+  // 🔸 DOAR dacă url-ul are ?from=me permitem promovare
   useEffect(() => {
-    if (!listing) {
-      setCanPromote(false);
-      return;
-    }
-
-    try {
-      const rawPhone = localStorage.getItem("userPhone");
-      const token = localStorage.getItem("token");
-
-      // dacă nu există token valid sau telefon valid → nu poate promova
-      if (
-        !token ||
-        token === "undefined" ||
-        token === "null" ||
-        !rawPhone ||
-        rawPhone === "undefined" ||
-        rawPhone === "null"
-      ) {
-        setCanPromote(false);
-        return;
-      }
-
-      const userPhone = normalizePhone(rawPhone);
-      const listingPhone = normalizePhone(listing.phone);
-
-      if (userPhone && listingPhone && userPhone === listingPhone) {
-        setCanPromote(true);
-      } else {
-        setCanPromote(false);
-      }
-    } catch {
-      setCanPromote(false);
-    }
-  }, [listing]);
+    const params = new URLSearchParams(location.search);
+    const fromMe = params.get("from") === "me";
+    setCanPromote(Boolean(fromMe));
+  }, [location.search]);
 
   if (loading) return <p className="text-center py-10">Se încarcă...</p>;
   if (err) return <p className="text-center py-10 text-red-600">{err}</p>;
@@ -473,7 +436,7 @@ export default function DetaliuAnunt() {
           {listing.description}
         </div>
 
-        {/* 🔥 Promovează anunțul – DOAR pentru proprietar */}
+        {/* 🔥 Promovează anunțul – DOAR dacă am venit din "Anunțurile mele" (from=me) */}
         {canPromote && (
           <div className="mt-8 border-t pt-6">
             <div className="flex items-center justify-between gap-2 mb-3">
