@@ -1,8 +1,16 @@
 // src/pages/DetaliuAnunt.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
+
+// 🔧 helper: normalizare telefon, la fel ca în AnunturileMele
+function normalizePhone(value) {
+  if (!value) return "";
+  const digits = String(value).replace(/\D/g, "");
+  // 4072... -> 072...
+  return digits.replace(/^4/, "");
+}
 
 // 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
@@ -28,6 +36,7 @@ export default function DetaliuAnunt() {
   const [selectedPromo, setSelectedPromo] = useState(PROMO_OPTIONS[0]);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState("");
+  const [canPromote, setCanPromote] = useState(false);
 
   useEffect(() => window.scrollTo(0, 0), [id]);
 
@@ -51,6 +60,33 @@ export default function DetaliuAnunt() {
       }
     })();
   }, [id]);
+
+  // 🔸 stabilim dacă utilizatorul logat este proprietarul anunțului (pe bază de telefon)
+  useEffect(() => {
+    if (!listing) {
+      setCanPromote(false);
+      return;
+    }
+
+    try {
+      const rawPhone = localStorage.getItem("userPhone");
+      if (!rawPhone || rawPhone === "undefined" || rawPhone === "null") {
+        setCanPromote(false);
+        return;
+      }
+
+      const userPhone = normalizePhone(rawPhone);
+      const listingPhone = normalizePhone(listing.phone);
+
+      if (userPhone && listingPhone && userPhone === listingPhone) {
+        setCanPromote(true);
+      } else {
+        setCanPromote(false);
+      }
+    } catch {
+      setCanPromote(false);
+    }
+  }, [listing]);
 
   if (loading) return <p className="text-center py-10">Se încarcă...</p>;
   if (err) return <p className="text-center py-10 text-red-600">{err}</p>;
@@ -136,8 +172,7 @@ export default function DetaliuAnunt() {
         },
         body: JSON.stringify({
           listingId: listing._id,
-          // ⬇⬇⬇ foarte important: backend-ul așteaptă `plan`, nu `optionId`
-          plan: selectedPromo.id,
+          plan: selectedPromo.id, // 🔹 backend-ul așteaptă `plan`
         }),
       });
 
@@ -428,73 +463,75 @@ export default function DetaliuAnunt() {
           {listing.description}
         </div>
 
-        {/* 🔥 Promovează anunțul */}
-        <div className="mt-8 border-t pt-6">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Promovează anunțul
-            </h3>
-            {isFeatured && listing.featuredUntil && (
-              <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                Deja promovat până la{" "}
-                {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
-              </span>
+        {/* 🔥 Promovează anunțul – DOAR pentru proprietar */}
+        {canPromote && (
+          <div className="mt-8 border-t pt-6">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Promovează anunțul
+              </h3>
+              {isFeatured && listing.featuredUntil && (
+                <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                  Deja promovat până la{" "}
+                  {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowPromo((p) => !p)}
+              className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition"
+            >
+              {showPromo
+                ? "Ascunde opțiunile de promovare"
+                : "Alege un pachet de promovare"}
+            </button>
+
+            {showPromo && (
+              <>
+                <div className="mt-4 grid sm:grid-cols-3 gap-4">
+                  {PROMO_OPTIONS.map((opt) => {
+                    const isSelected = selectedPromo?.id === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSelectedPromo(opt)}
+                        className={`border rounded-xl p-4 text-left text-sm flex flex-col gap-1 transition ${
+                          isSelected
+                            ? "border-yellow-500 bg-yellow-50 shadow"
+                            : "border-gray-200 hover:border-yellow-400 hover:bg-yellow-50/60"
+                        }`}
+                      >
+                        <span className="font-semibold">{opt.label}</span>
+                        <span className="text-gray-700">
+                          💳 {opt.priceRON} lei (plată unică)
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Anunțul tău va fi evidențiat timp de {opt.days} zile.
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {promoError && (
+                  <p className="mt-3 text-sm text-red-600">{promoError}</p>
+                )}
+
+                <button
+                  onClick={startPromotion}
+                  disabled={promoLoading || !selectedPromo}
+                  className="mt-5 w-full sm:w-auto bg-black text-white font-semibold px-6 py-2.5 rounded-lg shadow hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {promoLoading
+                    ? "Se pregătește plata..."
+                    : `Continuă către plată securizată (${selectedPromo.priceRON} lei)`}
+                </button>
+              </>
             )}
           </div>
-
-          <button
-            onClick={() => setShowPromo((p) => !p)}
-            className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition"
-          >
-            {showPromo
-              ? "Ascunde opțiunile de promovare"
-              : "Alege un pachet de promovare"}
-          </button>
-
-          {showPromo && (
-            <>
-              <div className="mt-4 grid sm:grid-cols-3 gap-4">
-                {PROMO_OPTIONS.map((opt) => {
-                  const isSelected = selectedPromo?.id === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSelectedPromo(opt)}
-                      className={`border rounded-xl p-4 text-left text-sm flex flex-col gap-1 transition ${
-                        isSelected
-                          ? "border-yellow-500 bg-yellow-50 shadow"
-                          : "border-gray-200 hover:border-yellow-400 hover:bg-yellow-50/60"
-                      }`}
-                    >
-                      <span className="font-semibold">{opt.label}</span>
-                      <span className="text-gray-700">
-                        💳 {opt.priceRON} lei (plată unică)
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Anunțul tău va fi evidențiat timp de {opt.days} zile.
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {promoError && (
-                <p className="mt-3 text-sm text-red-600">{promoError}</p>
-              )}
-
-              <button
-                onClick={startPromotion}
-                disabled={promoLoading || !selectedPromo}
-                className="mt-5 w-full sm:w-auto bg-black text-white font-semibold px-6 py-2.5 rounded-lg shadow hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {promoLoading
-                  ? "Se pregătește plata..."
-                  : `Continuă către plată securizată (${selectedPromo.priceRON} lei)`}
-              </button>
-            </>
-          )}
-        </div>
+        )}
 
         {/* Distribuie */}
         <div className="mt-8 border-t pt-6">
@@ -505,17 +542,20 @@ export default function DetaliuAnunt() {
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={() => handleShare("facebook")}
-              className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]">
+              className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
+            >
               📘 Facebook
             </button>
             <button
               onClick={() => handleShare("whatsapp")}
-              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]">
+              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"`
+            >
               💬 WhatsApp
             </button>
             <button
               onClick={() => handleShare("tiktok")}
-              className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800">
+              className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 256 256"
