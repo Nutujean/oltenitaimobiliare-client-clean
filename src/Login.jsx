@@ -8,17 +8,36 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: parola }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la login");
 
+      // 🔐 salvăm token-ul
       localStorage.setItem("token", data.token);
+
+      // 👤 salvăm user + telefon
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        if (data.user.phone) {
+          localStorage.setItem("userPhone", data.user.phone);
+        }
+      }
+
       alert("✅ Autentificare reușită!");
-      window.location.href = "/";
+
+      const redirect = sessionStorage.getItem("redirectAfterLogin");
+      if (redirect) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        window.location.href = `/${redirect}`;
+      } else {
+        window.location.href = "/";
+      }
+
     } catch (err) {
       alert("❌ " + err.message);
     }
@@ -27,13 +46,29 @@ export default function Login() {
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto space-y-3">
       <h1 className="text-xl font-bold mb-4">Login</h1>
-      <input type="email" placeholder="Email" value={email}
+
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full border p-2 rounded" required />
-      <input type="password" placeholder="Parola" value={parola}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <input
+        type="password"
+        placeholder="Parola"
+        value={parola}
         onChange={(e) => setParola(e.target.value)}
-        className="w-full border p-2 rounded" required />
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded w-full">
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <button
+        type="submit"
+        className="bg-green-600 text-white px-4 py-2 rounded w-full"
+      >
         Login
       </button>
     </form>
