@@ -105,7 +105,7 @@ export default function AdaugaAnunt() {
         if (data.mustPay) {
           setError(
             data.message ||
-              "Ai deja un anunț gratuit activ. Pentru a publica încă un anunț, acesta trebuie să fie promovat (plătit)."
+              "Ai deja un anunț gratuit activ sau recent pentru acest număr de telefon. Poți adăuga alt anunț doar dacă promovezi unul dintre anunțurile existente sau după ce trec aproximativ 15 zile."
           );
           setMustPromote(true);
           return;
@@ -163,14 +163,29 @@ export default function AdaugaAnunt() {
               : "bg-red-100 border border-red-300 text-red-900"
           }`}
         >
-          <strong>{mustPromote ? "Ai deja un anunț gratuit activ" : "Eroare"}</strong>
+          <strong>
+            {mustPromote ? "Limită anunțuri gratuite" : "Eroare"}
+          </strong>
           <p className="mt-1">{error}</p>
 
           {mustPromote && (
-            <p className="mt-2 text-xs text-yellow-800">
-              Poți păstra anunțul gratuit existent, iar acesta nou poate fi publicat ca anunț
-              promovat (plătit).
-            </p>
+            <div className="mt-3 space-y-2 text-xs text-yellow-800">
+              <p>
+                Poți păstra anunțul gratuit existent, iar pentru a publica anunțuri
+                suplimentare poți:
+              </p>
+              <ul className="list-disc list-inside">
+                <li>promova unul dintre anunțurile tale existente; sau</li>
+                <li>aștepta aproximativ 15 zile de la expirarea anunțului gratuit.</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => navigate("/anunturile-mele")}
+                className="mt-2 inline-flex items-center px-3 py-1.5 rounded-lg bg-yellow-500 text-xs font-semibold text-gray-900 hover:bg-yellow-600"
+              >
+                Vezi anunțurile mele și promovează
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -266,7 +281,12 @@ export default function AdaugaAnunt() {
           <input type="file" multiple onChange={handleImageChange} />
           <div className="grid grid-cols-3 gap-2 mt-2">
             {previewUrls.map((url, i) => (
-              <img key={i} src={url} alt="" className="h-24 w-full object-cover rounded" />
+              <img
+                key={i}
+                src={url}
+                alt=""
+                className="h-24 w-full object-cover rounded"
+              />
             ))}
           </div>
         </div>
