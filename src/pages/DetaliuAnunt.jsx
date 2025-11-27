@@ -61,7 +61,7 @@ export default function DetaliuAnunt() {
     })();
   }, [id]);
 
-  // 🔸 stabilim dacă utilizatorul logat este proprietarul anunțului (pe bază de telefon)
+  // 🔸 stabilim dacă utilizatorul logat este proprietarul anunțului (pe bază de telefon + token)
   useEffect(() => {
     if (!listing) {
       setCanPromote(false);
@@ -70,7 +70,17 @@ export default function DetaliuAnunt() {
 
     try {
       const rawPhone = localStorage.getItem("userPhone");
-      if (!rawPhone || rawPhone === "undefined" || rawPhone === "null") {
+      const token = localStorage.getItem("token");
+
+      // dacă nu există token valid sau telefon valid → nu poate promova
+      if (
+        !token ||
+        token === "undefined" ||
+        token === "null" ||
+        !rawPhone ||
+        rawPhone === "undefined" ||
+        rawPhone === "null"
+      ) {
         setCanPromote(false);
         return;
       }
