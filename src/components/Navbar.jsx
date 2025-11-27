@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "../assets/OltenitaImobiliare.png";
 
@@ -8,24 +8,30 @@ export default function Navbar() {
   const [showDialog, setShowDialog] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // ✅ Actualizează Navbar-ul dacă se schimbă localStorage (ex: după login)
+  // ✅ Actualizează Navbar-ul când se schimbă ruta (ex: după login) și la mount
   useEffect(() => {
-    const updateAuthState = () => {
-      const u = localStorage.getItem("user");
-      const token = localStorage.getItem("token");
-      if (u) setUser(JSON.parse(u));
-      setIsLogged(!!token && token !== "undefined" && token !== "null");
-    };
+    const u = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
 
-    updateAuthState();
-    window.addEventListener("storage", updateAuthState);
-    return () => window.removeEventListener("storage", updateAuthState);
-  }, []);
+    if (u) {
+      try {
+        setUser(JSON.parse(u));
+      } catch {
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+
+    setIsLogged(!!token && token !== "undefined" && token !== "null");
+  }, [location.pathname]); // 👈 se execută la fiecare schimbare de pagină
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("userPhone"); // bonus: curățăm și telefonul salvat
     setUser(null);
     setIsLogged(false);
     navigate("/");
