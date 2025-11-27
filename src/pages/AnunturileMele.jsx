@@ -15,6 +15,7 @@ export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [debugInfo, setDebugInfo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +61,13 @@ export default function AnunturileMele() {
           allListings = [];
         }
 
+        const mapped = allListings.map((item) => ({
+          id: item._id,
+          rawPhone: item.phone,
+          normalizedPhone: normalizePhone(item.phone),
+          title: item.title,
+        }));
+
         const myListings = allListings.filter((item) => {
           const itemPhone = normalizePhone(item.phone);
           return itemPhone && itemPhone === userPhone;
@@ -72,6 +80,22 @@ export default function AnunturileMele() {
         } else {
           setMessage("");
         }
+
+        // păstrăm debugInfo pentru cazuri de depanare, dar nu îl mai afișăm în UI
+        setDebugInfo(
+          `Telefonul tău (localStorage): ${userPhoneRaw}\n` +
+            `Telefon normalizat: ${userPhone}\n` +
+            `Total anunțuri primite de la backend: ${allListings.length}\n` +
+            `Anunțuri găsite pe numărul tău: ${myListings.length}\n` +
+            `Telefoane anunțuri (primele 5):\n` +
+            mapped
+              .slice(0, 5)
+              .map(
+                (m) =>
+                  `- ${m.title || "(fără titlu)"} | raw="${m.rawPhone}" | normalizat="${m.normalizedPhone}"`
+              )
+              .join("\n")
+        );
 
         setListings(myListings);
       } catch (err) {
@@ -121,7 +145,7 @@ export default function AnunturileMele() {
     }
   };
 
-  // ⭐ Promovare → pagina de detaliu (unde ai pachetele de promovare)
+  // ⭐ Promovare → mergem la pagina de detaliu, acolo alegi zile & sume
   const handlePromoveaza = (id) => {
     navigate(`/anunt/${id}`);
   };
