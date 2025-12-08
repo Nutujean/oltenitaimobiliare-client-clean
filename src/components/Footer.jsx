@@ -71,7 +71,7 @@ const Footer = () => {
             Oltenița Imobiliare 🏠
           </h3>
           <p style={{ lineHeight: "1.7", fontSize: "15px" }}>
-            Platforma locală de anunțuri imobiliare pentru Oltenița și
+            Cea mai mare platforma locală de anunțuri imobiliare pentru Oltenița și
             împrejurimi.
           </p>
         </div>
