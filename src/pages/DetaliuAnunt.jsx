@@ -107,54 +107,51 @@ export default function DetaliuAnunt() {
   const nextImage = () =>
     setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  const backendFbDirect = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
-  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  // sub publicUrl și backendFbDirect, SUS în componentă:
+const backendFbDirect = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-  const handleShare = (platform) => {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-    const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
+const handleShare = (platform) => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+  const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
 
-    switch (platform) {
-      case "facebook": {
-        const fbShareUrl = backendFbDirect;
-
-        if (isFacebookApp) {
-          window.open(fbShareUrl, "_blank");
-        } else if (isMobile) {
-          window.open(fbShareUrl, "_blank");
-        } else {
-          window.open(fbShareUrl, "_blank", "width=600,height=400");
-        }
-        break;
-      }
-      case "whatsapp": {
-        window.open(
-          `https://wa.me/?text=${encodeURIComponent(
-            `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
-          )}`,
-          "_blank"
-        );
-        break;
-      }
-      case "tiktok": {
-        if (isMobile) {
-          navigator.clipboard.writeText(publicUrl);
-          alert(
-            "🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo."
-          );
-        } else {
-          window.open(
-            `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
-            "_blank"
-          );
-        }
-        break;
-      }
-      default:
-        break;
+  switch (platform) {
+    case "facebook": {
+      // 🔵 mereu trimitem spre subdomeniul SHARE (backend-ul de meta)
+      const fbShareUrl = backendFbDirect;
+      // deschidere simplă, fără alte combinații
+      window.open(fbShareUrl, "_blank");
+      break;
     }
-  };
+
+    case "whatsapp": {
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(
+          `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
+        )}`,
+        "_blank"
+      );
+      break;
+    }
+
+    case "tiktok": {
+      if (isMobile) {
+        navigator.clipboard.writeText(publicUrl);
+        alert(
+          "🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo."
+        );
+      } else {
+        navigator.clipboard.writeText(publicUrl);
+        alert("🔗 Linkul anunțului a fost copiat în clipboard.");
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+};
 
   const openInSafari = () => {
     window.open(backendFbDirect, "_blank");

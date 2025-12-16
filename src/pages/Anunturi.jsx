@@ -82,7 +82,7 @@ export default function Anunturi() {
                       onClick={() =>
                         window.open(
                           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                            `https://share.oltenitaimobiliare.ro/fb/${listing._id}`
+                            `https://share.oltenitaimobiliare.ro/share/${listing._id}`
                           )}`,
                           "_blank",
                           "width=600,height=400"
