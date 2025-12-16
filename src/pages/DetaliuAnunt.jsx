@@ -107,7 +107,7 @@ export default function DetaliuAnunt() {
   const nextImage = () =>
     setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  const backendFbDirect = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+  const backendFbDirect = `https://share.oltenitaimobiliare.ro/share/${listing._id}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
   const handleShare = (platform) => {
