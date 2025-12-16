@@ -235,64 +235,80 @@ export default function Home() {
             style={{ animation: "fadeIn 0.6s ease-in-out" }}
           >
             {filtered.map((l) => {
-              const isFeatured =
-                l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
+  const isFeatured =
+    l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
 
-              return (
-                <Link
-                  key={l._id}
-                  to={`/anunt/${l._id}`}
-                  className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
-                >
-                  {l.images?.length > 0 ? (
-                    <img
-                      src={l.images[0]}
-                      alt={l.title}
-                      className="w-full h-56 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
-                      Fără imagine
-                    </div>
-                  )}
+  // 🔸 considerăm anunț NOU dacă are max. 5 zile vechime
+  let isNew = false;
+  if (l.createdAt) {
+    const created = new Date(l.createdAt);
+    const diffMs = Date.now() - created.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    isNew = diffDays <= 5; // poți schimba 5 în 3, 7 etc.
+  }
 
-                  {/* Etichetă tip tranzacție */}
-                  {l.intent && (
-                    <span
-                      className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
-                        l.intent === "vand"
-                          ? "bg-green-600"
-                          : l.intent === "cumpar"
-                          ? "bg-blue-600"
-                          : l.intent === "inchiriez"
-                          ? "bg-yellow-500"
-                          : "bg-purple-600"
-                      }`}
-                    >
-                      {l.intent === "vand"
-                        ? "🏠 Vând"
-                        : l.intent === "cumpar"
-                        ? "🛒 Cumpăr"
-                        : l.intent === "inchiriez"
-                        ? "🔑 Închiriez"
-                        : "♻️ Schimb"}
-                    </span>
-                  )}
+  return (
+    <Link
+      key={l._id}
+      to={`/anunt/${l._id}`}
+      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
+    >
+      {l.images?.length > 0 ? (
+        <img
+          src={l.images[0]}
+          alt={l.title}
+          className="w-full h-56 object-cover"
+        />
+      ) : (
+        <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
+          Fără imagine
+        </div>
+      )}
 
-                  {isFeatured && (
-                    <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
-                      PROMOVAT
-                    </span>
-                  )}
+      {/* 🔖 Badge „PROMOVAT” sau „NOU” */}
+      {isFeatured ? (
+        <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
+          PROMOVAT
+        </span>
+      ) : (
+        isNew && (
+          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded shadow">
+            NOU
+          </span>
+        )
+      )}
 
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
-                    <p className="text-blue-700 font-semibold">{l.price} €</p>
-                    <p className="text-sm text-gray-500">{l.location}</p>
-                  </div>
-                </Link>
-              );
-            })}
+      {/* Etichetă tip tranzacție */}
+      {l.intent && (
+        <span
+          className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+            l.intent === "vand"
+              ? "bg-green-600"
+              : l.intent === "cumpar"
+              ? "bg-blue-600"
+              : l.intent === "inchiriez"
+              ? "bg-yellow-500"
+              : "bg-purple-600"
+          }`}
+        >
+          {l.intent === "vand"
+            ? "🏠 Vând"
+            : l.intent === "cumpar"
+            ? "🛒 Cumpăr"
+            : l.intent === "inchiriez"
+            ? "🔑 Închiriez"
+            : "♻️ Schimb"}
+        </span>
+      )}
+
+      <div className="p-4">
+        <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
+        <p className="text-blue-700 font-semibold">{l.price} €</p>
+        <p className="text-sm text-gray-500">{l.location}</p>
+      </div>
+    </Link>
+  );
+})}
           </div>
         )}
       </div>
