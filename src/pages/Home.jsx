@@ -255,7 +255,7 @@ export default function Home() {
           <div
   className={
     view === "grid"
-      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fadeIn"
+      ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-fadeIn"
       : "flex flex-col gap-4 animate-fadeIn"
   }
   style={{ animation: "fadeIn 0.6s ease-in-out" }}
