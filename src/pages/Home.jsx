@@ -12,6 +12,7 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
   const [intent, setIntent] = useState(""); // tip anunț
+  const [view, setView] = useState("grid"); // "grid" sau "list"
 
   useEffect(() => {
     // ping backend
@@ -219,6 +220,27 @@ export default function Home() {
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
+<div className="flex justify-end gap-2 mb-4">
+  <button
+    type="button"
+    onClick={() => setView("grid")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+    }`}
+  >
+    Carduri
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setView("list")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+    }`}
+  >
+    Listă
+  </button>
+</div>
 
         {loading ? (
           <div className="flex justify-center items-center py-12">
@@ -231,9 +253,13 @@ export default function Home() {
           </p>
         ) : (
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fadeIn"
-            style={{ animation: "fadeIn 0.6s ease-in-out" }}
-          >
+  className={
+    view === "grid"
+      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fadeIn"
+      : "flex flex-col gap-4 animate-fadeIn"
+  }
+  style={{ animation: "fadeIn 0.6s ease-in-out" }}
+>
             {filtered.map((l) => {
   const isFeatured =
     l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
