@@ -95,7 +95,8 @@ export default function Navbar() {
               onClick={handleAddClick}
               className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-3 py-1.5 rounded-lg transition"
             >
-              + Adaugă anunț
+              ➕ Postează gratuit
+
             </button>
 
             {(user || isLogged) ? (

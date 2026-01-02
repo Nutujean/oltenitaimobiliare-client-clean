@@ -16,8 +16,9 @@ export default function Hero() {
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
           Anunțuri imobiliare în Oltenița
         </h1>
-        <p className="max-w-2xl mx-auto text-lg mb-8">
-          Cumpără, vinde sau închiriază apartamente, case, terenuri și spații comerciale în Oltenița și împrejurimi.
+        <p className="max-w-2xl mx-auto text-lg mb-6">
+          Postează <strong>GRATUIT</strong> un anunț imobiliar în mai puțin de 1 minut.
+          Anunțul tău apare imediat pe OltenitaImobiliare.ro.
         </p>
 
         {/* Formular căutare rapidă */}
