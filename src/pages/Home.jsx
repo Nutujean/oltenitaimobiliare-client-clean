@@ -116,8 +116,13 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Găsește casa potrivită în Oltenița
           </h1>
-          <p className="text-lg mb-6">
-            Cele mai noi anunțuri imobiliare din zonă
+
+          <p className="text-lg mb-2">
+            Cele mai noi anunțuri imobiliare din Oltenița și împrejurimi
+          </p>
+
+          <p className="text-sm text-white/80 mb-6">
+            Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Radovanu • Chiselet • Negoești
           </p>
         </div>
       </div>
@@ -174,7 +179,7 @@ export default function Home() {
           to="/adauga-anunt"
           className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg w-full md:w-auto text-center"
         >
-          + Adaugă anunț
+          ➕ Postează anunț gratuit
         </Link>
       </section>
 
