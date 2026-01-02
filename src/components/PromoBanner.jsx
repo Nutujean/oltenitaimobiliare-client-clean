@@ -3,7 +3,7 @@ import banner from "../assets/banner-bebeking.jpg";
 
 export default function PromoBanner() {
   return (
-    <div className="relative w-full h-48 sm:h-52 overflow-hidden rounded-2xl shadow-md border border-blue-200">
+    <div className="relative w-full h-44 sm:h-52 overflow-hidden rounded-2xl shadow-md border border-blue-200">
       <a
         href="https://bebeking.ro/"
         target="_blank"
@@ -24,13 +24,13 @@ export default function PromoBanner() {
 
         {/* Panou text (stânga) */}
         <div className="absolute inset-0 flex items-center">
-          <div className="ml-4 sm:ml-6 max-w-[70%] sm:max-w-[55%]">
+          <div className="ml-3 sm:ml-6 max-w-[65%] sm:max-w-[55%]">
             <div className="bg-black/55 backdrop-blur-sm rounded-2xl px-4 py-3 sm:px-5 sm:py-4 border border-white/10">
               <p className="text-[10px] sm:text-xs uppercase tracking-wider text-blue-200">
                 Partener recomandat
               </p>
 
-              <h3 className="text-xl sm:text-2xl font-extrabold text-white leading-tight mt-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight mt-1">
                 BebeKing.ro
               </h3>
 
@@ -38,7 +38,7 @@ export default function PromoBanner() {
                 Jucării, haine și accesorii pentru copii
               </p>
 
-              <span className="inline-flex items-center justify-center mt-3 bg-white text-blue-700 font-semibold px-4 py-2 rounded-xl text-sm shadow">
+              <span className="inline-flex items-center justify-center mt-2 bg-white/90 text-blue-700 font-semibold px-3 py-1.5 rounded-xl text-xs shadow">
                 Vezi oferta
               </span>
             </div>
