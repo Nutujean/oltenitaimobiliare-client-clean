@@ -213,9 +213,11 @@ export default function Home() {
       </section>
 
       {/* Banner partener */}
-      <div className="max-w-sm mx-auto mt-10">
-        <PromoBanner />
-      </div>
+<section className="max-w-7xl mx-auto mt-12 px-4">
+  <div className="bg-white rounded-2xl shadow-md p-6 flex justify-center">
+    <PromoBanner />
+  </div>
+</section>
 
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
