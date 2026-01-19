@@ -14,9 +14,9 @@ function normalizePhone(value) {
 
 // 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
-  { id: "featured7", label: "Promovat 7 zile", priceRON: 50, days: 7 },
-  { id: "featured14", label: "Promovat 14 zile", priceRON: 85, days: 14 },
-  { id: "featured30", label: "Promovat 30 zile", priceRON: 125, days: 30 },
+  { id: "featured7", label: "Promovat 7 zile", priceRON: 30, days: 7 },
+  { id: "featured14", label: "Promovat 14 zile", priceRON: 50, days: 14 },
+  { id: "featured30", label: "Promovat 30 zile", priceRON: 80, days: 30 },
 ];
 
 export default function DetaliuAnunt() {
