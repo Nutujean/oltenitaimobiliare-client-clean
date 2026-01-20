@@ -156,7 +156,13 @@ export default function Home() {
           Categorii populare
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div
+  className={
+    view === "grid"
+      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+      : "flex flex-col gap-4"
+  }
+>
           {[
             { name: "Apartamente", path: "/categorie/apartamente", img: "/apartamente.jpg" },
             { name: "Case", path: "/categorie/case", img: "/case.jpg" },
@@ -186,7 +192,31 @@ export default function Home() {
           <PromoBanner />
         </div>
       </section>
+<div className="flex justify-end gap-2 mb-4">
+  <button
+    type="button"
+    onClick={() => setView("grid")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "grid"
+        ? "bg-blue-600 text-white"
+        : "bg-white text-gray-700"
+    }`}
+  >
+    Carduri
+  </button>
 
+  <button
+    type="button"
+    onClick={() => setView("list")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "list"
+        ? "bg-blue-600 text-white"
+        : "bg-white text-gray-700"
+    }`}
+  >
+    Listă
+  </button>
+</div>
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
