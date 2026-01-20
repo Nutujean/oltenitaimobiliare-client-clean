@@ -267,7 +267,7 @@ export default function Home() {
               l.status === "expirat" || (l.expiresAt && new Date(l.expiresAt) < new Date());
 
             // ✅ ruta către anunț (NU schimb altceva în proiect; folosesc querystring, cel mai safe)
-            const listingHref = `/anunt?id=${l._id}`;
+            const listingHref = `/anunt/${l._id}`;
 
             // ✅ wrapper: dacă e expirat -> div, dacă nu -> Link (clickabil)
             const Wrapper = ({ children }) =>
