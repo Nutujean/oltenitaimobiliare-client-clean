@@ -190,55 +190,124 @@ export default function Home() {
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
+<div className="flex justify-end gap-2 mb-4">
+  <button
+    type="button"
+    onClick={() => setView("grid")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+    }`}
+  >
+    Carduri
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setView("list")}
+    className={`px-3 py-2 rounded-lg border text-sm ${
+      view === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+    }`}
+  >
+    Listă
+  </button>
+</div>
 
         {loading ? (
           <p>Se încarcă...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filtered.map((l) => {
-              const isFeatured =
-                l.featuredUntil && new Date(l.featuredUntil) > new Date();
+  const isFeatured =
+    l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
 
-              const isNew =
-                l.createdAt &&
-                (Date.now() - new Date(l.createdAt)) /
-                  (1000 * 60 * 60 * 24) <= 5;
+  const isNew =
+    l.createdAt &&
+    (Date.now() - new Date(l.createdAt)) / (1000 * 60 * 60 * 24) <= 5;
 
-              return (
-                <Link
-                  key={l._id}
-                  to={`/anunt/${l._id}`}
-                  className="relative bg-white rounded-xl shadow-md overflow-hidden"
-                >
-                  <img
-                    src={l.images?.[0]}
-                    alt={l.title}
-                    className="w-full h-56 object-cover"
-                  />
+  const isExpired =
+    l.status === "expirat" ||
+    (l.expiresAt && new Date(l.expiresAt) < new Date());
 
-                  {isFeatured && (
-                    <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                      ⭐ PROMOVAT
-                    </span>
-                  )}
-
-                  {!isFeatured && isNew && (
-                    <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
-                      NOU
-                    </span>
-                  )}
-
-                  <div className="p-4">
-                    <h3 className="font-bold">{l.title}</h3>
-                    <p className="text-blue-700 font-semibold">{l.price} €</p>
-                    <p className="text-sm text-gray-500">{l.location}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+  const CardWrapper = ({ children }) =>
+    isExpired ? (
+      <div className="relative bg-gray-100 rounded-xl shadow-md overflow-hidden opacity-70 cursor-not-allowed">
+        {children}
       </div>
+    ) : (
+      <Link
+        to={`/anunt/${l._id}`}
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
+      >
+        {children}
+      </Link>
+    );
+
+  return (
+    <CardWrapper key={l._id}>
+      {l.images?.length > 0 ? (
+        <img
+          src={l.images[0]}
+          alt={l.title}
+          className="w-full h-56 object-cover"
+        />
+      ) : (
+        <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
+          Fără imagine
+        </div>
+      )}
+
+      {/* 🔴 EXPIRAT */}
+      {isExpired && (
+        <span className="absolute top-2 left-2 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded">
+          EXPIRAT
+        </span>
+      )}
+
+      {/* ⭐ PROMOVAT */}
+      {!isExpired && isFeatured && (
+        <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-md border border-yellow-700">
+          ⭐ PROMOVAT
+        </span>
+      )}
+
+      {/* 🆕 NOU */}
+      {!isExpired && !isFeatured && isNew && (
+        <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded shadow">
+          NOU
+        </span>
+      )}
+
+      {/* Tip tranzacție */}
+      {l.intent && (
+        <span
+          className={`absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full shadow ${
+            l.intent === "vand"
+              ? "bg-green-600"
+              : l.intent === "cumpar"
+              ? "bg-blue-600"
+              : l.intent === "inchiriez"
+              ? "bg-yellow-500"
+              : "bg-purple-600"
+          }`}
+        >
+          {l.intent === "vand"
+            ? "🏠 Vând"
+            : l.intent === "cumpar"
+            ? "🛒 Cumpăr"
+            : l.intent === "inchiriez"
+            ? "🔑 Închiriez"
+            : "♻️ Schimb"}
+        </span>
+      )}
+
+      <div className="p-4">
+        <h3 className="font-bold text-lg line-clamp-2">{l.title}</h3>
+        <p className="text-blue-700 font-semibold">{l.price} €</p>
+        <p className="text-sm text-gray-500">{l.location}</p>
+      </div>
+    </CardWrapper>
+  );
+})}
 
       {/* HARTĂ */}
       <div className="mt-16 mb-10 text-center px-4">
