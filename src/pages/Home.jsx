@@ -308,7 +308,8 @@ export default function Home() {
     </CardWrapper>
   );
 })}
-
+</div>
+      </div>
       {/* HARTĂ */}
       <div className="mt-16 mb-10 text-center px-4">
         <h2 className="text-2xl font-bold text-blue-700 mb-3">
