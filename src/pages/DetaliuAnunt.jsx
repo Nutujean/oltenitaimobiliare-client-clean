@@ -72,7 +72,6 @@ export default function DetaliuAnunt() {
       const rawPhone = localStorage.getItem("userPhone");
       const token = localStorage.getItem("token");
 
-      // dacă nu există token valid sau telefon valid → nu poate promova
       if (
         !token ||
         token === "undefined" ||
@@ -104,72 +103,58 @@ export default function DetaliuAnunt() {
 
   const images = Array.isArray(listing.images) ? listing.images : [];
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
-  const nextImage = () =>
-    setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
+  const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  // sub publicUrl și backendFbDirect, SUS în componentă:
-const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
-const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  // ✅ URL-uri share/public
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
+  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
 
-const handleShare = (platform) => {
-  const ua = navigator.userAgent || navigator.vendor || window.opera;
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+  // ✅ FIX: în codul tău era backendFbDirect nedefinit -> crăpa pagina
+  const backendFbDirect = backendShareUrl;
 
-  switch (platform) {
-    case "facebook": {
-      // URL-ul care conține META (backend share)
-      const shareUrl = backendShareUrl;
+  const handleShare = (platform) => {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
 
-      // Deschidem direct sharer-ul Facebook cu link-ul nostru de share
-      const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        shareUrl
-      )}`;
+    switch (platform) {
+      case "facebook": {
+        const shareUrl = backendShareUrl;
+        const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          shareUrl
+        )}`;
+        window.open(fbSharer, "_blank", isMobile ? undefined : "width=600,height=400");
+        break;
+      }
 
-      window.open(
-        fbSharer,
-        "_blank",
-        isMobile ? undefined : "width=600,height=400"
-      );
-      break;
-    }
-
-    case "whatsapp": {
-      window.open(
-        `https://wa.me/?text=${encodeURIComponent(
-          `🏡 ${listing.title} – vezi detalii: ${publicUrl}`
-        )}`,
-        "_blank"
-      );
-      break;
-    }
-
-    case "tiktok": {
-      if (isMobile) {
-        navigator.clipboard.writeText(publicUrl);
-        alert(
-          "🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo."
-        );
-      } else {
+      case "whatsapp": {
         window.open(
-          `https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`,
+          `https://wa.me/?text=${encodeURIComponent(`🏡 ${listing.title} – vezi detalii: ${publicUrl}`)}`,
           "_blank"
         );
+        break;
       }
-      break;
-    }
 
-    default:
-      break;
-  }
-};
+      case "tiktok": {
+        if (isMobile) {
+          navigator.clipboard.writeText(publicUrl);
+          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+        } else {
+          window.open(`https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`, "_blank");
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
+  };
 
   const openInSafari = () => {
     window.open(backendFbDirect, "_blank");
   };
 
   // 🔸 Anunțul este deja promovat?
-  const isFeatured =
-    listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
+  const isFeatured = listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
 
   // 🔸 Pornire flux de plată Stripe pentru promovare
   const startPromotion = async () => {
@@ -184,12 +169,10 @@ const handleShare = (platform) => {
 
       const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listingId: listing._id,
-          plan: selectedPromo.id, // 🔹 backend-ul așteaptă `plan`
+          plan: selectedPromo.id,
         }),
       });
 
@@ -199,13 +182,17 @@ const handleShare = (platform) => {
         throw new Error(data.error || "Nu am putut porni plata pentru promovare.");
       }
 
-      // Redirecționează către Stripe Checkout
       window.location.href = data.url;
     } catch (e) {
       setPromoError(e.message || "Eroare la inițierea plății.");
     } finally {
       setPromoLoading(false);
     }
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/");
   };
 
   return (
@@ -216,8 +203,7 @@ const handleShare = (platform) => {
           <div className="text-sm leading-snug">
             ⚠️ Distribuirea pe Facebook nu funcționează din aplicația Facebook pe iPhone.
             <br />
-            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest
-            anunț.
+            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest anunț.
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -236,19 +222,12 @@ const handleShare = (platform) => {
         </div>
       )}
 
-      <div
-        className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${
-          isFacebookAppWebView ? "pt-28" : ""
-        }`}
-      >
+      <div className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${isFacebookAppWebView ? "pt-28" : ""}`}>
         <Helmet>
           <title>{listing.title} - Oltenița Imobiliare</title>
           <meta
             name="description"
-            content={`${listing.title} – ${listing.location}. ${listing.description?.substring(
-              0,
-              150
-            )}...`}
+            content={`${listing.title} – ${listing.location}. ${listing.description?.substring(0, 150)}...`}
           />
           <meta
             name="keywords"
@@ -282,16 +261,13 @@ const handleShare = (platform) => {
               description: listing.description?.substring(0, 160),
               price: listing.price,
               priceCurrency: "EUR",
-              priceValidUntil: new Date(
-                Date.now() + 180 * 24 * 60 * 60 * 1000
-              )
+              priceValidUntil: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
                 .toISOString()
-                .split("T")[0], // 6 luni valabilitate
+                .split("T")[0],
               availability: "https://schema.org/InStock",
               itemCondition: "https://schema.org/NewCondition",
               url: publicUrl,
-              datePublished:
-                listing.createdAt || new Date().toISOString().split("T")[0],
+              datePublished: listing.createdAt || new Date().toISOString().split("T")[0],
               itemOffered: {
                 "@type": "Product",
                 name: listing.title,
@@ -308,33 +284,22 @@ const handleShare = (platform) => {
           </script>
         </Helmet>
 
+        {/* ✅ Buton Înapoi (clar, profesionist) */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 bg-white border rounded-lg px-3 py-2 shadow-sm text-blue-700 hover:bg-gray-50"
+          >
+            ← Înapoi la anunțuri
+          </button>
+        </div>
+
         {/* Imagine principală */}
         <div
           className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
           onClick={() => images.length > 0 && setIsZoomed(true)}
         >
-          {/* 🔙 Buton Înapoi */}
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-3 left-3 bg-gray-100/90 hover:bg-gray-200 text-gray-700 p-2 md:p-2.5 rounded-full shadow-md transition active:scale-95 z-10"
-            aria-label="Înapoi"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="w-5 h-5 md:w-6 md:h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
-
           {images.length ? (
             <>
               <img
@@ -410,9 +375,7 @@ const handleShare = (platform) => {
 
         {/* Titlu + preț + badge PROMOVAT */}
         <div className="mt-5 text-center sm:text-left">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-            {listing.title}
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{listing.title}</h1>
           <p className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-lg font-semibold mt-1">
             💰 {listing.price} €
           </p>
@@ -424,15 +387,14 @@ const handleShare = (platform) => {
               </span>
               {listing.featuredUntil && (
                 <div className="text-xs text-gray-600 mt-1">
-                  Activ până la{" "}
-                  {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+                  Activ până la {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* 🔹 Tip tranzacție */}
+        {/* Tip tranzacție */}
         {listing.intent && (
           <div
             className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${
@@ -455,22 +417,16 @@ const handleShare = (platform) => {
           </div>
         )}
 
-        <p className="text-gray-600 mt-3 text-sm md:text-base">
-          📍 {listing.location}
-        </p>
+        <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
 
         {listing.contactName && (
-          <p className="mt-2 text-gray-800 font-medium">
-            👤 {listing.contactName}
-          </p>
+          <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>
         )}
+
         {listing.phone && (
           <p className="mt-1">
             📞{" "}
-            <a
-              href={`tel:${listing.phone}`}
-              className="text-blue-600 font-semibold hover:underline"
-            >
+            <a href={`tel:${listing.phone}`} className="text-blue-600 font-semibold hover:underline">
               {listing.phone}
             </a>
           </p>
@@ -480,17 +436,14 @@ const handleShare = (platform) => {
           {listing.description}
         </div>
 
-        {/* 🔥 Promovează anunțul – DOAR pentru proprietar (telefon+token) */}
+        {/* Promovează anunțul – DOAR pentru proprietar */}
         {canPromote && (
           <div className="mt-8 border-t pt-6">
             <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Promovează anunțul
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800">Promovează anunțul</h3>
               {isFeatured && listing.featuredUntil && (
                 <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                  Deja promovat până la{" "}
-                  {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
+                  Deja promovat până la {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}
                 </span>
               )}
             </div>
@@ -499,9 +452,7 @@ const handleShare = (platform) => {
               onClick={() => setShowPromo((p) => !p)}
               className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition"
             >
-              {showPromo
-                ? "Ascunde opțiunile de promovare"
-                : "Alege un pachet de promovare"}
+              {showPromo ? "Ascunde opțiunile de promovare" : "Alege un pachet de promovare"}
             </button>
 
             {showPromo && (
@@ -521,9 +472,7 @@ const handleShare = (platform) => {
                         }`}
                       >
                         <span className="font-semibold">{opt.label}</span>
-                        <span className="text-gray-700">
-                          💳 {opt.priceRON} lei (plată unică)
-                        </span>
+                        <span className="text-gray-700">💳 {opt.priceRON} lei (plată unică)</span>
                         <span className="text-xs text-gray-500">
                           Anunțul tău va fi evidențiat timp de {opt.days} zile.
                         </span>
@@ -532,9 +481,7 @@ const handleShare = (platform) => {
                   })}
                 </div>
 
-                {promoError && (
-                  <p className="mt-3 text-sm text-red-600">{promoError}</p>
-                )}
+                {promoError && <p className="mt-3 text-sm text-red-600">{promoError}</p>}
 
                 <button
                   onClick={startPromotion}
@@ -552,9 +499,7 @@ const handleShare = (platform) => {
 
         {/* Distribuie */}
         <div className="mt-8 border-t pt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            Distribuie anunțul
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Distribuie anunțul</h3>
 
           <div className="flex gap-3 flex-wrap">
             <button
@@ -573,14 +518,6 @@ const handleShare = (platform) => {
               onClick={() => handleShare("tiktok")}
               className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-                className="w-5 h-5"
-              >
-                <path d="M168 32a48 48 0 0 0 48 48v32a80 80 0 0 1-80-80zM64 120a56 56 0 0 1 55.6-56H120V32h32v128a56 56 0 1 1-88-40zm56 56a24 24 0 0 0 24-24v-32a56 56 0 0 1-32 103.2A56 56 0 0 1 64 168h32a24 24 0 0 0 24 24z" />
-              </svg>
               TikTok
             </button>
           </div>
