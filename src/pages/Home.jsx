@@ -385,7 +385,7 @@ export default function Home() {
         ></iframe>
       </div>
 
-            <style>
+                  <style>
         {`
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -396,3 +396,6 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;
+
