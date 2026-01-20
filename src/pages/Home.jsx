@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PromoBanner from "../components/PromoBanner";
 import API_URL from "../api";
-import logo from "../assets/oltenitaimobiliare.png";
+import logo from "../assets/OltenitaImobiliare.png";
 
 const fundal = "/fundal.jpg";
 
