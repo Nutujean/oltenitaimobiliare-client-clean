@@ -12,7 +12,7 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
   const [intent, setIntent] = useState("");
-  const [view, setView] = useState("grid");
+  const [view, setView] = useState("grid"); // ✅ rămâne pentru anunțuri
 
   useEffect(() => {
     fetch(`${API_URL}/health`).catch(() => {});
@@ -46,9 +46,7 @@ export default function Home() {
 
     if (location) {
       const locFilter = normalize(location);
-      results = results.filter((l) =>
-        normalize(l.location).includes(locFilter)
-      );
+      results = results.filter((l) => normalize(l.location).includes(locFilter));
     }
 
     if (intent) {
@@ -59,6 +57,12 @@ export default function Home() {
 
     setFiltered(results);
   }, [listings, location, intent]);
+
+  // ✅ dacă schimbi sort, refacem fetch (altfel rămâne doar UI schimbat)
+  useEffect(() => {
+    fetchListings(sort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort]);
 
   const LOCATII = [
     "Localitate",
@@ -79,6 +83,25 @@ export default function Home() {
     "Chiselet",
     "Mănăstirea",
     "Budești",
+    "Gruiu",
+    "Aprozi",
+    "Buciumeni",
+    "Frumusani",
+    "Vasilati",
+    "Galbinasi",
+    "Cucuieti",
+    "Podul Pitarului",
+    "Sohatu",
+    "Fundeni",
+    "Dorobantu",
+    "Varasti",
+    "Ciocanesti",
+    "Cunesti",
+    "Bogata",
+    "Gradistea",
+    "Rasa",
+    "Cuza voda",
+    "Modelu",
   ];
 
   return (
@@ -97,11 +120,11 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Găsește casa potrivită în Oltenița
           </h1>
-          <p className="text-lg mb-2">
-            Cele mai noi anunțuri imobiliare din zonă
-          </p>
+          <p className="text-lg mb-2">Cele mai noi anunțuri imobiliare din zonă</p>
           <p className="text-sm text-white/80">
-            Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Chiselet • Spantov • Valea rosie • Negoiesti • Manastirea • Curcani • Soldanu • Radovanu • Cascioarele
+            Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Chiselet •
+            Spantov • Valea rosie • Negoiesti • Manastirea • Curcani • Soldanu •
+            Radovanu • Cascioarele
           </p>
         </div>
       </div>
@@ -156,20 +179,19 @@ export default function Home() {
           Categorii populare
         </h2>
 
-        <div
-  className={
-    view === "grid"
-      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-      : "flex flex-col gap-4"
-  }
->
+        {/* ✅ IMPORTANT: aici NU mai folosim view, ca să nu fie afectate de Carduri/Listă */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {[
             { name: "Apartamente", path: "/categorie/apartamente", img: "/apartamente.jpg" },
             { name: "Case", path: "/categorie/case", img: "/case.jpg" },
             { name: "Terenuri", path: "/categorie/terenuri", img: "/terenuri.jpg" },
             { name: "Garsoniere", path: "/categorie/garsoniere", img: "/garsoniere.jpg" },
             { name: "Garaje", path: "/categorie/garaje", img: "/garaje.jpg" },
-            { name: "Spațiu comercial", path: "/categorie/spatiu-comercial", img: "/spatiu-comercial.jpg" },
+            {
+              name: "Spațiu comercial",
+              path: "/categorie/spatiu-comercial",
+              img: "/spatiu-comercial.jpg",
+            },
           ].map((cat) => (
             <Link
               key={cat.name}
@@ -192,36 +214,47 @@ export default function Home() {
           <PromoBanner />
         </div>
       </section>
-<div className="flex justify-end gap-2 mb-4">
-  <button
-    type="button"
-    onClick={() => setView("grid")}
-    className={`px-3 py-2 rounded-lg border text-sm ${
-      view === "grid"
-        ? "bg-blue-600 text-white"
-        : "bg-white text-gray-700"
-    }`}
-  >
-    Carduri
-  </button>
 
-  <button
-    type="button"
-    onClick={() => setView("list")}
-    className={`px-3 py-2 rounded-lg border text-sm ${
-      view === "list"
-        ? "bg-blue-600 text-white"
-        : "bg-white text-gray-700"
-    }`}
-  >
-    Listă
-  </button>
-</div>
+      {/* ✅ BUTOANE VIEW (doar pentru anunțuri) */}
+      <div className="max-w-6xl mx-auto px-4 mt-10">
+        <div className="flex justify-end gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setView("grid")}
+            className={`px-3 py-2 rounded-lg border text-sm ${
+              view === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+            }`}
+          >
+            Carduri
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            className={`px-3 py-2 rounded-lg border text-sm ${
+              view === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+            }`}
+          >
+            Listă
+          </button>
+        </div>
+      </div>
+
       {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {loading && (
+          <div className="text-gray-600 mb-6">Se încarcă anunțurile...</div>
+        )}
+
+        <div
+          className={
+            view === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+              : "flex flex-col gap-4"
+          }
+        >
           {filtered.map((l) => {
             const isFeatured =
               l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
@@ -231,29 +264,94 @@ export default function Home() {
               (Date.now() - new Date(l.createdAt)) / (1000 * 60 * 60 * 24) <= 5;
 
             const isExpired =
-              l.status === "expirat" ||
-              (l.expiresAt && new Date(l.expiresAt) < new Date());
+              l.status === "expirat" || (l.expiresAt && new Date(l.expiresAt) < new Date());
 
+            // ✅ ruta către anunț (NU schimb altceva în proiect; folosesc querystring, cel mai safe)
+            const listingHref = `/anunt?id=${l._id}`;
+
+            // ✅ wrapper: dacă e expirat -> div, dacă nu -> Link (clickabil)
+            const Wrapper = ({ children }) =>
+              isExpired ? (
+                <div className="block">{children}</div>
+              ) : (
+                <Link to={listingHref} className="block">
+                  {children}
+                </Link>
+              );
+
+            // ✅ card layout: grid vs list (doar pentru anunțuri)
+            const cardBase =
+              "relative rounded-xl shadow-md overflow-hidden " +
+              (isExpired
+                ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                : "bg-white hover:shadow-lg transition");
+
+            if (view === "list") {
+              return (
+                <div key={l._id} className={cardBase}>
+                  <Wrapper>
+                    <div className="flex gap-4 p-4">
+                      <div className="w-36 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                        {l.images?.length > 0 ? (
+                          <img
+                            src={l.images[0]}
+                            alt={l.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                            Fără imagine
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg truncate">{l.title}</h3>
+                        <p className="text-blue-700 font-semibold">{l.price} €</p>
+                        <p className="text-sm text-gray-500">{l.location}</p>
+                      </div>
+                    </div>
+                  </Wrapper>
+
+                  {!isExpired && isFeatured && (
+                    <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                      ⭐ PROMOVAT
+                    </span>
+                  )}
+
+                  {!isExpired && !isFeatured && isNew && (
+                    <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
+                      NOU
+                    </span>
+                  )}
+
+                  {isExpired && (
+                    <span className="absolute top-2 left-2 bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                      EXPIRAT
+                    </span>
+                  )}
+                </div>
+              );
+            }
+
+            // ✅ GRID (carduri)
             return (
-              <div
-                key={l._id}
-                className={`relative rounded-xl shadow-md overflow-hidden ${
-                  isExpired
-                    ? "bg-gray-100 opacity-70 cursor-not-allowed"
-                    : "bg-white hover:shadow-lg transition"
-                }`}
-              >
-                {l.images?.length > 0 ? (
-                  <img
-                    src={l.images[0]}
-                    alt={l.title}
-                    className="w-full h-56 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
-                    Fără imagine
+              <div key={l._id} className={cardBase}>
+                <Wrapper>
+                  {l.images?.length > 0 ? (
+                    <img src={l.images[0]} alt={l.title} className="w-full h-56 object-cover" />
+                  ) : (
+                    <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
+                      Fără imagine
+                    </div>
+                  )}
+
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg">{l.title}</h3>
+                    <p className="text-blue-700 font-semibold">{l.price} €</p>
+                    <p className="text-sm text-gray-500">{l.location}</p>
                   </div>
-                )}
+                </Wrapper>
 
                 {!isExpired && isFeatured && (
                   <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
@@ -272,12 +370,6 @@ export default function Home() {
                     EXPIRAT
                   </span>
                 )}
-
-                <div className="p-4">
-                  <h3 className="font-bold text-lg">{l.title}</h3>
-                  <p className="text-blue-700 font-semibold">{l.price} €</p>
-                  <p className="text-sm text-gray-500">{l.location}</p>
-                </div>
               </div>
             );
           })}
