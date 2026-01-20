@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PromoBanner from "../components/PromoBanner";
 import API_URL from "../api";
+import logo from "../assets/oltenitaimobiliare.png";
 
 const fundal = "/fundal.jpg";
 
@@ -354,9 +355,16 @@ export default function Home() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                            Fără imagine
-                          </div>
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+  <img
+    src={logo}
+    alt="Oltenița Imobiliare"
+    className="w-12 h-12 opacity-80"
+  />
+  <span className="mt-2 text-[11px] text-gray-500">
+    Fără poză încă
+  </span>
+</div>
                         )}
                       </div>
 
@@ -392,9 +400,16 @@ export default function Home() {
                   {l.images?.length > 0 ? (
                     <img src={l.images[0]} alt={l.title} className="w-full h-56 object-cover" />
                   ) : (
-                    <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
-                      Fără imagine
-                    </div>
+                    <div className="w-full h-56 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+  <img
+    src={logo}
+    alt="Oltenița Imobiliare"
+    className="w-16 h-16 opacity-80"
+  />
+  <span className="mt-2 text-xs text-gray-500">
+    Fără poză încă
+  </span>
+</div>
                   )}
 
                   <div className="p-4">{renderInfo()}</div>
