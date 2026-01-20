@@ -228,22 +228,8 @@ export default function Home() {
     l.status === "expirat" ||
     (l.expiresAt && new Date(l.expiresAt) < new Date());
 
-  const CardWrapper = ({ children }) =>
-    isExpired ? (
-      <div className="relative bg-gray-100 rounded-xl shadow-md overflow-hidden opacity-70 cursor-not-allowed">
-        {children}
-      </div>
-    ) : (
-      <Link
-        to={`/anunt/${l._id}`}
-        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
-      >
-        {children}
-      </Link>
-    );
-
-  return (
-    <CardWrapper key={l._id}>
+  const CardContent = (
+    <>
       {l.images?.length > 0 ? (
         <img
           src={l.images[0]}
@@ -256,21 +242,21 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🔴 EXPIRAT */}
+      {/* EXPIRAT */}
       {isExpired && (
         <span className="absolute top-2 left-2 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded">
           EXPIRAT
         </span>
       )}
 
-      {/* ⭐ PROMOVAT */}
+      {/* PROMOVAT */}
       {!isExpired && isFeatured && (
         <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-md border border-yellow-700">
           ⭐ PROMOVAT
         </span>
       )}
 
-      {/* 🆕 NOU */}
+      {/* NOU */}
       {!isExpired && !isFeatured && isNew && (
         <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded shadow">
           NOU
@@ -305,11 +291,26 @@ export default function Home() {
         <p className="text-blue-700 font-semibold">{l.price} €</p>
         <p className="text-sm text-gray-500">{l.location}</p>
       </div>
-    </CardWrapper>
+    </>
+  );
+
+  return isExpired ? (
+    <div
+      key={l._id}
+      className="relative bg-gray-100 rounded-xl shadow-md overflow-hidden opacity-70 cursor-not-allowed"
+    >
+      {CardContent}
+    </div>
+  ) : (
+    <Link
+      key={l._id}
+      to={`/anunt/${l._id}`}
+      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
+    >
+      {CardContent}
+    </Link>
   );
 })}
-</div>
-      </div>
       {/* HARTĂ */}
       <div className="mt-16 mb-10 text-center px-4">
         <h2 className="text-2xl font-bold text-blue-700 mb-3">
