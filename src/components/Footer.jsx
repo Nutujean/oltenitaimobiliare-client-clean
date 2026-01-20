@@ -148,7 +148,6 @@ const Footer = () => {
               </li>
 
               <li>
-                <{" "}
                 <Link className="hover:text-white" to="/contact">
                   Contact
                 </Link>
