@@ -5,7 +5,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import BannerTest from "./pages/BannerTest";
 import CumAdaugi from "./pages/CumAdaugi";
 import Share from "./pages/Share";
+import Promovare from "./pages/Promovare";
 import CookiesConsent from "./components/CookiesConsent";
+
 
 /* Pagini principale */
 import Home from "./pages/Home";
@@ -64,6 +66,7 @@ function App() {
           <Route path="/banner-test" element={<BannerTest />} />
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
+          <Route path="/promovare" element={<Promovare />} />
 
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
@@ -78,7 +81,6 @@ function App() {
           />
 
           {/* 🔹 Utilizator */}
-          <Route path="/profil" element={<Profil />} />
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
 
