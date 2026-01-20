@@ -1,20 +1,20 @@
+// src/App.jsx
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
-import BannerTest from "./pages/BannerTest";
-import CumAdaugi from "./pages/CumAdaugi";
-import Share from "./pages/Share";
-import Promovare from "./pages/Promovare";
 import CookiesConsent from "./components/CookiesConsent";
 
-
-/* Pagini principale */
+/* Pagini publice */
 import Home from "./pages/Home";
 import DespreNoi from "./pages/DespreNoi";
 import Termeni from "./pages/Termeni";
 import Confidentialitate from "./pages/Confidentialitate";
 import CookiesPage from "./pages/Cookies";
+import BannerTest from "./pages/BannerTest";
+import CumAdaugi from "./pages/CumAdaugi";
+import Share from "./pages/Share";
+import Promovare from "./pages/Promovare";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -70,8 +70,10 @@ function App() {
 
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
- 	  <Route path="/inregistrare" element={<LoginSMS mode="register" />} />
-             <Route
+          <Route path="/inregistrare" element={<LoginSMS mode="register" />} />
+
+          {/* 🔹 Profil protejat */}
+          <Route
             path="/profil"
             element={
               <ProtectedRoute>
