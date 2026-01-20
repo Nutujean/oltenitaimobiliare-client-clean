@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import API_URL from "../api"; // sus, ca în celelalte pagini
+import { Link } from "react-router-dom";
+import API_URL from "../api"; // păstrat ca la tine
 
 const Footer = () => {
   const [statusMsg, setStatusMsg] = useState("");
@@ -41,215 +42,186 @@ const Footer = () => {
     setTimeout(() => setStatusMsg(""), 3000);
   };
 
+  const statusColor = statusMsg.startsWith("✅")
+    ? "text-emerald-300"
+    : statusMsg.startsWith("⚠️")
+    ? "text-yellow-200"
+    : "text-red-200";
+
   return (
-    <footer
-      style={{
-        backgroundColor: "#0a58ca",
-        color: "white",
-        padding: "50px 20px 30px",
-        marginTop: "60px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "40px",
-        }}
-      >
-        {/* 🏠 Descriere site */}
-        <div>
-          <h3
-            style={{
-              fontSize: "20px",
-              marginBottom: "10px",
-              fontWeight: "bold",
-            }}
-          >
-            Oltenița Imobiliare 🏠
-          </h3>
-          <p style={{ lineHeight: "1.7", fontSize: "15px" }}>
-            Cea mai mare platforma locală de anunțuri imobiliare pentru Oltenița și
-            împrejurimi.
-          </p>
-        </div>
-
-        {/* 🔗 Linkuri utile */}
-        <div>
-          <h4
-            style={{
-              marginBottom: "12px",
-              fontSize: "18px",
-              fontWeight: "bold",
-            }}
-          >
-            Linkuri utile
-          </h4>
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              lineHeight: "1.8",
-              fontSize: "15px",
-            }}
-          >
-            <li>
-              <a href="/despre-noi" style={linkStyle}>
-                Despre noi
-              </a>
-            </li>
-
-            {/* 🆕 Link Cum adaugi un anunț */}
-            <li>
-              <a href="/cum-adaugi" style={linkStyle}>
-                Cum adaugi un anunț
-              </a>
-            </li>
-
-            <li>
-              <a href="/termeni" style={linkStyle}>
-                Termeni și condiții
-              </a>
-            </li>
-            <li>
-              <a href="/confidentialitate" style={linkStyle}>
-                Politica de confidențialitate
-              </a>
-            </li>
-            <li>
-              <a href="/cookies" style={linkStyle}>
-                Politica cookies
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* 📬 Formular contact */}
-        <div>
-          <h4
-            style={{
-              marginBottom: "12px",
-              fontSize: "18px",
-              fontWeight: "bold",
-            }}
-          >
-            Trimite-ne un mesaj
-          </h4>
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <input
-              type="text"
-              name="name"
-              placeholder="Numele tău"
-              required
-              style={inputStyle}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Emailul tău (obligatoriu)"
-              required
-              style={inputStyle}
-            />
-            <textarea
-              name="message"
-              placeholder="Mesajul tău"
-              rows="3"
-              required
-              style={inputStyle}
-            ></textarea>
-            <button
-              type="submit"
-              style={{
-                backgroundColor: "white",
-                color: "#0a58ca",
-                border: "none",
-                borderRadius: "6px",
-                padding: "10px 0",
-                fontWeight: "bold",
-                fontSize: "15px",
-                cursor: "pointer",
-              }}
-            >
-              Trimite
-            </button>
-          </form>
-
-          {statusMsg && (
-            <p
-              style={{
-                marginTop: "10px",
-                color: statusMsg.startsWith("✅")
-                  ? "#9effb2"
-                  : statusMsg.startsWith("⚠️")
-                  ? "#fff59d"
-                  : "#ffcccc",
-                fontWeight: "500",
-                textAlign: "center",
-              }}
-            >
-              {statusMsg}
+    <footer className="mt-16 bg-[#0b1220] text-gray-300">
+      {/* TOP */}
+      <div className="max-w-7xl mx-auto px-5 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {/* 🏠 Brand */}
+          <div>
+            <h3 className="text-white text-xl font-bold mb-3">
+              Oltenița Imobiliare
+            </h3>
+            <p className="text-sm leading-relaxed text-gray-400">
+              Platformă locală de anunțuri imobiliare pentru Oltenița și
+              împrejurimi. Publică anunțuri gratuit sau promovează-le pentru
+              vizibilitate maximă.
             </p>
-          )}
+
+            {/* Contact scurt */}
+            <div className="mt-5 space-y-2 text-sm text-gray-400">
+              <p>
+                Email:{" "}
+                <a
+                  href="mailto:oltenitaimobiliare@gmail.com"
+                  className="text-gray-200 hover:text-white underline-offset-4 hover:underline"
+                >
+                  oltenitaimobiliare@gmail.com
+                </a>
+              </p>
+              <p>Oltenița, Călărași</p>
+            </div>
+
+            {/* Social (poți pune linkurile tale reale) */}
+            <div className="mt-5 flex gap-3">
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200"
+              >
+                Facebook
+              </a>
+              <a
+                href="https://www.tiktok.com"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200"
+              >
+                TikTok
+              </a>
+            </div>
+          </div>
+
+          {/* 🔗 Linkuri utile */}
+          <div>
+            <h4 className="text-white text-lg font-semibold mb-4">
+              Linkuri utile
+            </h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link className="hover:text-white" to="/despre-noi">
+                  Despre noi
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white" to="/cum-adaugi">
+                  Cum adaugi un anunț
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white" to="/termeni">
+                  Termeni și condiții
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white" to="/confidentialitate">
+                  Politica de confidențialitate
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white" to="/cookies">
+                  Politica cookies
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-white" to="/contact">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+
+            {/* CTA mic, ca pe site-urile mari */}
+            <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <p className="text-sm text-gray-200 font-semibold">
+                Postează rapid
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Adaugă un anunț în 1 minut.
+              </p>
+              <Link
+                to="/adauga-anunt"
+                className="mt-3 inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg"
+              >
+                ➕ Postează anunț gratuit
+              </Link>
+            </div>
+          </div>
+
+          {/* 📬 Formular contact */}
+          <div>
+            <h4 className="text-white text-lg font-semibold mb-4">
+              Trimite-ne un mesaj
+            </h4>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="text"
+                name="name"
+                placeholder="Numele tău"
+                required
+                className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 outline-none focus:border-white/25"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Emailul tău (obligatoriu)"
+                required
+                className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 outline-none focus:border-white/25"
+              />
+              <textarea
+                name="message"
+                placeholder="Mesajul tău"
+                rows="4"
+                required
+                className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 outline-none focus:border-white/25"
+              />
+
+              <button
+                type="submit"
+                className="w-full bg-white text-[#0b1220] font-bold py-2 rounded-lg hover:bg-gray-100 transition"
+              >
+                Trimite
+              </button>
+
+              {statusMsg && (
+                <p className={`text-center text-sm font-medium ${statusColor}`}>
+                  {statusMsg}
+                </p>
+              )}
+            </form>
+
+            <p className="mt-4 text-xs text-gray-400 leading-relaxed">
+              Prin trimiterea mesajului ești de acord cu{" "}
+              <Link className="text-gray-200 hover:text-white underline" to="/confidentialitate">
+                Politica de confidențialitate
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </div>
 
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: "16px",
-          marginTop: "50px",
-          color: "rgba(255,255,255,0.95)",
-          fontWeight: "500",
-        }}
-      >
-        Creat din <span style={{ color: "#ffcccc" }}>❤️</span> pentru Oltenița
-      </p>
+      {/* BOTTOM BAR */}
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-5 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile rezervate.
+          </p>
 
-      <hr
-        style={{
-          border: "none",
-          borderTop: "1px solid rgba(255,255,255,0.3)",
-          margin: "20px auto",
-          maxWidth: "1000px",
-        }}
-      />
-
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: "14px",
-          opacity: "0.9",
-        }}
-      >
-        © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile
-        rezervate.
-      </p>
+          <p className="text-sm text-gray-400">
+            Creat din <span className="text-red-300">❤️</span> pentru Oltenița
+          </p>
+        </div>
+      </div>
     </footer>
   );
-};
-
-// 🔹 Stiluri generale
-const linkStyle = {
-  color: "white",
-  textDecoration: "none",
-};
-const inputStyle = {
-  padding: "10px",
-  borderRadius: "6px",
-  border: "none",
-  fontSize: "14px",
-  outline: "none",
-  width: "100%",
-  color: "black",
 };
 
 export default Footer;
