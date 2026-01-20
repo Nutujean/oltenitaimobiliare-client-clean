@@ -267,25 +267,39 @@ export default function Home() {
   }
   style={{ animation: "fadeIn 0.6s ease-in-out" }}
 >
-            {filtered.map((l) => {
+      {filtered.map((l) => {
   const isFeatured =
     l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
 
-  // 🔸 considerăm anunț NOU dacă are max. 5 zile vechime
+  const isExpired =
+    l.status === "expirat" ||
+    (l.expiresAt && new Date(l.expiresAt).getTime() < Date.now());
+
+  // 🔸 anunț NOU = max 5 zile
   let isNew = false;
   if (l.createdAt) {
     const created = new Date(l.createdAt);
     const diffMs = Date.now() - created.getTime();
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
-    isNew = diffDays <= 5; // poți schimba 5 în 3, 7 etc.
+    isNew = diffDays <= 5;
   }
 
+  const CardWrapper = ({ children }) =>
+    isExpired ? (
+      <div className="relative bg-white rounded-xl shadow-md overflow-hidden opacity-60 cursor-not-allowed">
+        {children}
+      </div>
+    ) : (
+      <Link
+        to={`/anunt/${l._id}`}
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
+      >
+        {children}
+      </Link>
+    );
+
   return (
-    <Link
-      key={l._id}
-      to={`/anunt/${l._id}`}
-      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden"
-    >
+    <CardWrapper key={l._id}>
       {l.images?.length > 0 ? (
         <img
           src={l.images[0]}
@@ -298,17 +312,25 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🔖 Badge „PROMOVAT” sau „NOU” */}
-      {isFeatured ? (
-        <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow">
-          PROMOVAT
+      {/* 🔖 Badge PROMOVAT / NOU */}
+      {!isExpired && isFeatured ? (
+        <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-md border border-yellow-700">
+          ⭐ PROMOVAT
         </span>
       ) : (
+        !isExpired &&
         isNew && (
-          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded shadow">
+          <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded shadow">
             NOU
           </span>
         )
+      )}
+
+      {/* ❌ EXPIRAT */}
+      {isExpired && (
+        <span className="absolute top-2 left-2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow">
+          EXPIRAT
+        </span>
       )}
 
       {/* Etichetă tip tranzacție */}
@@ -339,12 +361,9 @@ export default function Home() {
         <p className="text-blue-700 font-semibold">{l.price} €</p>
         <p className="text-sm text-gray-500">{l.location}</p>
       </div>
-    </Link>
+    </CardWrapper>
   );
 })}
-          </div>
-        )}
-      </div>
 
       {/* 🗺️ Harta Oltenița */}
       <div className="mt-16 mb-10 text-center px-4">
