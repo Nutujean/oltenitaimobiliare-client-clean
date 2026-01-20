@@ -58,11 +58,13 @@ const Footer = () => {
             <h3 className="text-white text-xl font-bold mb-3">
               Oltenița Imobiliare
             </h3>
+
             <p className="text-sm leading-relaxed text-gray-400">
               Platformă locală de anunțuri imobiliare pentru Oltenița și
               împrejurimi. Publică anunțuri gratuit sau promovează-le pentru
-              vizibilitate maximă.
-Oltenitaimobiliare.ro este cea mai mare platforma de anunturi imobiliare din Judetul Calarasi !Posteaza anuntul tau GRATUIT acum !
+              vizibilitate maximă. Oltenitaimobiliare.ro este cea mai mare
+              platformă de anunțuri imobiliare din județul Călărași! Postează
+              anunțul tău GRATUIT acum!
             </p>
 
             {/* Contact scurt */}
@@ -79,7 +81,7 @@ Oltenitaimobiliare.ro este cea mai mare platforma de anunturi imobiliare din Jud
               <p>Oltenița, Călărași</p>
             </div>
 
-            {/* Social (poți pune linkurile tale reale) */}
+            {/* Social (pune linkurile tale reale) */}
             <div className="mt-5 flex gap-3">
               <a
                 href="https://www.facebook.com"
@@ -100,65 +102,66 @@ Oltenitaimobiliare.ro este cea mai mare platforma de anunturi imobiliare din Jud
             </div>
           </div>
 
-          <h4 className="font-semibold mb-3 text-white">
-  Linkuri utile
-</h4>
+          {/* 🔗 Linkuri utile + CTA */}
+          <div>
+            <h4 className="font-semibold mb-3 text-white">Linkuri utile</h4>
 
-<ul className="space-y-2 text-sm">
-  <li>
-    <Link className="hover:text-white" to="/despre-noi">
-      Despre noi
-    </Link>
-  </li>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link className="hover:text-white" to="/despre-noi">
+                  Despre noi
+                </Link>
+              </li>
 
-  <li>
-    <Link className="hover:text-white" to="/cum-adaugi">
-      Cum adaugi un anunț
-    </Link>
-  </li>
+              <li>
+                <Link className="hover:text-white" to="/cum-adaugi">
+                  Cum adaugi un anunț
+                </Link>
+              </li>
 
-  <li>
-    <Link className="hover:text-white" to="/termeni">
-      Termeni și condiții
-    </Link>
-  </li>
+              <li>
+                <Link className="hover:text-white" to="/termeni">
+                  Termeni și condiții
+                </Link>
+              </li>
 
-  <li>
-    <Link className="hover:text-white" to="/confidentialitate">
-      Politica de confidențialitate
-    </Link>
-  </li>
+              <li>
+                <Link className="hover:text-white" to="/confidentialitate">
+                  Politica de confidențialitate
+                </Link>
+              </li>
 
-  <li>
-    <Link className="hover:text-white" to="/cookies">
-      Politica cookies
-    </Link>
-  </li>
+              <li>
+                <Link className="hover:text-white" to="/cookies">
+                  Politica cookies
+                </Link>
+              </li>
 
-  {/* 🔥 Promovare – evidențiat */}
-  <li className="pt-2">
-    <Link
-      to="/promovare"
-      className="inline-block bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
-    >
-      ⭐ Vezi detalii promovare
-    </Link>
-  </li>
+              {/* 🔥 Promovare – evidențiat */}
+              <li className="pt-2">
+                <Link
+                  to="/promovare"
+                  className="inline-block bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
+                >
+                  ⭐ Vezi detalii promovare
+                </Link>
+              </li>
 
-  <li>
-    <Link className="hover:text-white" to="/contact">
-      Contact
-    </Link>
-  </li>
-</ul>
+              <li>
+                <{" "}
+                <Link className="hover:text-white" to="/contact">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+
             {/* CTA mic, ca pe site-urile mari */}
             <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">
-              <p className="text-sm text-gray-200 font-semibold">
-                Postează rapid
-              </p>
+              <p className="text-sm text-gray-200 font-semibold">Postează rapid</p>
               <p className="text-xs text-gray-400 mt-1">
                 Adaugă un anunț în 1 minut.
               </p>
+
               <Link
                 to="/adauga-anunt"
                 className="mt-3 inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg"
@@ -213,7 +216,10 @@ Oltenitaimobiliare.ro este cea mai mare platforma de anunturi imobiliare din Jud
 
             <p className="mt-4 text-xs text-gray-400 leading-relaxed">
               Prin trimiterea mesajului ești de acord cu{" "}
-              <Link className="text-gray-200 hover:text-white underline" to="/confidentialitate">
+              <Link
+                className="text-gray-200 hover:text-white underline"
+                to="/confidentialitate"
+              >
                 Politica de confidențialitate
               </Link>
               .
@@ -226,7 +232,8 @@ Oltenitaimobiliare.ro este cea mai mare platforma de anunturi imobiliare din Jud
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-5 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile rezervate.
+            © {new Date().getFullYear()} OltenitaImobiliare.ro — Toate drepturile
+            rezervate.
           </p>
 
           <p className="text-sm text-gray-400">
