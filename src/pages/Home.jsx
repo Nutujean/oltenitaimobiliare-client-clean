@@ -60,8 +60,6 @@ export default function Home() {
     setFiltered(results);
   }, [listings, location, intent]);
 
-  const handleFilter = () => fetchListings();
-
   const LOCATII = [
     "Localitate",
     "Oltenița",
@@ -100,19 +98,18 @@ export default function Home() {
             Găsește casa potrivită în Oltenița
           </h1>
           <p className="text-lg mb-2">
-            Cele mai noi anunțuri imobiliare din Oltenița și împrejurimi
+            Cele mai noi anunțuri imobiliare din zonă
           </p>
-          <p className="text-sm text-white/80 mb-6">
-            Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Radovanu •
-            Chiselet • Negoești
+          <p className="text-sm text-white/80">
+            Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Chiselet • Spantov • Valea rosie • Negoiesti • Manastirea • Curcani • Soldanu • Radovanu • Cascioarele
           </p>
         </div>
       </div>
 
       {/* FILTRE */}
-      <section className="-mt-8 max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 z-20 relative flex flex-col md:flex-row gap-4 items-center justify-between">
+      <section className="-mt-8 max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 z-20 relative flex flex-col md:flex-row gap-4">
         <select
-          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          className="border rounded-lg px-4 py-2 flex-1"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         >
@@ -124,7 +121,7 @@ export default function Home() {
         </select>
 
         <select
-          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          className="border rounded-lg px-4 py-2 flex-1"
           value={intent}
           onChange={(e) => setIntent(e.target.value)}
         >
@@ -136,7 +133,7 @@ export default function Home() {
         </select>
 
         <select
-          className="border rounded-lg px-4 py-2 flex-1 bg-white"
+          className="border rounded-lg px-4 py-2 flex-1"
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
@@ -145,18 +142,11 @@ export default function Home() {
           <option value="expensive">Preț descrescător</option>
         </select>
 
-        <button
-          onClick={handleFilter}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg"
-        >
-          Caută
-        </button>
-
         <Link
           to="/adauga-anunt"
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg text-center"
+          className="bg-green-600 text-white px-6 py-2 rounded-lg text-center"
         >
-          ➕ Postează anunț gratuit
+          ➕ Postează anunț
         </Link>
       </section>
 
@@ -165,6 +155,7 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
           Categorii populare
         </h2>
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {[
             { name: "Apartamente", path: "/categorie/apartamente", img: "/apartamente.jpg" },
@@ -177,14 +168,10 @@ export default function Home() {
             <Link
               key={cat.name}
               to={cat.path}
-              className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition"
+              className="relative rounded-xl overflow-hidden shadow-lg"
             >
-              <img
-                src={cat.img}
-                alt={cat.name}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
-              />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition" />
+              <img src={cat.img} alt={cat.name} className="w-full h-48 object-cover" />
+              <div className="absolute inset-0 bg-black/40" />
               <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
                 {cat.name}
               </h3>
@@ -204,71 +191,70 @@ export default function Home() {
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold mb-6">Ultimele Anunțuri</h2>
 
-        <div className="flex justify-end gap-2 mb-4">
-          <button
-            type="button"
-            onClick={() => setView("grid")}
-            className={`px-3 py-2 rounded-lg border text-sm ${
-              view === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
-            }`}
-          >
-            Carduri
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("list")}
-            className={`px-3 py-2 rounded-lg border text-sm ${
-              view === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
-            }`}
-          >
-            Listă
-          </button>
-        </div>
-
         {loading ? (
           <p>Se încarcă...</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {filtered.map((l) => (
-              <Link
-                key={l._id}
-                to={`/anunt/${l._id}`}
-                className="bg-white rounded-xl shadow-md"
-              >
-                <img
-                  src={l.images?.[0]}
-                  alt={l.title}
-                  className="w-full h-56 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="font-bold">{l.title}</h3>
-                  <p className="text-blue-700">{l.price} €</p>
-                  <p className="text-sm text-gray-500">{l.location}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {filtered.map((l) => {
+              const isFeatured =
+                l.featuredUntil && new Date(l.featuredUntil) > new Date();
+
+              const isNew =
+                l.createdAt &&
+                (Date.now() - new Date(l.createdAt)) /
+                  (1000 * 60 * 60 * 24) <= 5;
+
+              return (
+                <Link
+                  key={l._id}
+                  to={`/anunt/${l._id}`}
+                  className="relative bg-white rounded-xl shadow-md overflow-hidden"
+                >
+                  <img
+                    src={l.images?.[0]}
+                    alt={l.title}
+                    className="w-full h-56 object-cover"
+                  />
+
+                  {isFeatured && (
+                    <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                      ⭐ PROMOVAT
+                    </span>
+                  )}
+
+                  {!isFeatured && isNew && (
+                    <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
+                      NOU
+                    </span>
+                  )}
+
+                  <div className="p-4">
+                    <h3 className="font-bold">{l.title}</h3>
+                    <p className="text-blue-700 font-semibold">{l.price} €</p>
+                    <p className="text-sm text-gray-500">{l.location}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* HARTĂ */}
       <div className="mt-16 mb-10 text-center px-4">
+        <h2 className="text-2xl font-bold text-blue-700 mb-3">
+          Zona noastră - Oltenița și împrejurimi
+        </h2>
+
         <iframe
           title="Harta Oltenița"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6383!3d44.0836"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6382815!3d44.0835869!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1974a2fa07a5d%3A0x92ad81d23c90249f!2sOlteni%C8%9Ba!5e0!3m2!1sro!2sro!4v1699999999999"
           width="100%"
           height="320"
           style={{ border: 0, borderRadius: "12px" }}
           loading="lazy"
         />
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
