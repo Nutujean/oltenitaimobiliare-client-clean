@@ -153,11 +153,11 @@ export default function AnunturileMele() {
         </Link>
 
         <Link
-          to={`/editeaza-anunt/${listing._id || listing.id}`}
-          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Editează
-        </Link>
+  to={`/editeaza-anunt/${String(listing._id || listing.id || "")}`}
+  className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+>
+  Editează
+</Link>
 
         <button
           type="button"
