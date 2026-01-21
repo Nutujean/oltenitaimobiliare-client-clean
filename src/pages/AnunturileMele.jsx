@@ -37,74 +37,32 @@ export default function AnunturileMele() {
     const userPhone = normalizePhone(userPhoneRaw);
 
     const fetchMyListings = async () => {
-      try {
-        setLoading(true);
-        setMessage("⏳ Se încarcă anunțurile tale...");
+  try {
+    setLoading(true);
+    setMessage("⏳ Se încarcă anunțurile tale...");
 
-        const res = await fetch(`${API_URL}/listings`);
-        const data = await res.json();
+    const res = await fetch(`${API_URL}/listings/mine`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-        if (!res.ok) {
-          throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
-        }
+    const data = await res.json();
 
-        // suportăm mai multe formate:
-        // [ {...} ] sau { listings: [ {...} ] } sau { data: [ {...} ] }
-        let allListings = [];
-        if (Array.isArray(data)) {
-          allListings = data;
-        } else if (Array.isArray(data.listings)) {
-          allListings = data.listings;
-        } else if (Array.isArray(data.data)) {
-          allListings = data.data;
-        } else {
-          allListings = [];
-        }
+    if (!res.ok) {
+      throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
+    }
 
-        const mapped = allListings.map((item) => ({
-          id: item._id,
-          rawPhone: item.phone,
-          normalizedPhone: normalizePhone(item.phone),
-          title: item.title,
-        }));
-
-        const myListings = allListings.filter((item) => {
-          const itemPhone = normalizePhone(item.phone);
-          return itemPhone && itemPhone === userPhone;
-        });
-
-        if (myListings.length === 0) {
-          setMessage(
-            "Momentan nu ai niciun anunț publicat cu acest număr de telefon."
-          );
-        } else {
-          setMessage("");
-        }
-
-        // păstrăm debugInfo pentru cazuri de depanare, dar nu îl mai afișăm în UI
-        setDebugInfo(
-          `Telefonul tău (localStorage): ${userPhoneRaw}\n` +
-            `Telefon normalizat: ${userPhone}\n` +
-            `Total anunțuri primite de la backend: ${allListings.length}\n` +
-            `Anunțuri găsite pe numărul tău: ${myListings.length}\n` +
-            `Telefoane anunțuri (primele 5):\n` +
-            mapped
-              .slice(0, 5)
-              .map(
-                (m) =>
-                  `- ${m.title || "(fără titlu)"} | raw="${m.rawPhone}" | normalizat="${m.normalizedPhone}"`
-              )
-              .join("\n")
-        );
-
-        setListings(myListings);
-      } catch (err) {
-        console.error("Eroare la încărcarea anunțurilor mele:", err);
-        setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    // data e array de listings
+    setListings(Array.isArray(data) ? data : []);
+    setMessage(Array.isArray(data) && data.length === 0 ? "Momentan nu ai niciun anunț publicat." : "");
+  } catch (err) {
+    console.error("Eroare la încărcarea anunțurilor mele:", err);
+    setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchMyListings();
   }, [navigate]);
