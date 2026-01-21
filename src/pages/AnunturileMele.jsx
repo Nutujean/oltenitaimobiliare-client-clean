@@ -1,13 +1,12 @@
 // src/pages/AnunturileMele.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
 // 🔧 helper: normalizare telefon exact ca în backend
 function normalizePhone(value) {
   if (!value) return "";
-  const digits = String(value).replace(/\D/g, ""); // doar cifre
-  // dacă începe cu 4 (ex: 4072...) scoatem 4 → 07...
+  const digits = String(value).replace(/\D/g, "");
   return digits.replace(/^4/, "");
 }
 
@@ -15,61 +14,51 @@ export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [debugInfo, setDebugInfo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     let userPhoneRaw = localStorage.getItem("userPhone");
 
-    // 🚫 tratăm "undefined" și "null" (string) ca fiind lipsă
-    if (
-      !token ||
-      !userPhoneRaw ||
-      userPhoneRaw === "undefined" ||
-      userPhoneRaw === "null"
-    ) {
+    if (!token || !userPhoneRaw || userPhoneRaw === "undefined" || userPhoneRaw === "null") {
       setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
       navigate("/login");
       return;
     }
 
-    const userPhone = normalizePhone(userPhoneRaw);
+    // (îl păstrez, chiar dacă nu-l folosești acum)
+    normalizePhone(userPhoneRaw);
 
     const fetchMyListings = async () => {
-  try {
-    setLoading(true);
-    setMessage("⏳ Se încarcă anunțurile tale...");
+      try {
+        setLoading(true);
+        setMessage("⏳ Se încarcă anunțurile tale...");
 
-    const res = await fetch(`${API_URL}/listings/mine`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+        const res = await fetch(`${API_URL}/listings/mine`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!res.ok) {
-      throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
-    }
+        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
 
-    // data e array de listings
-    setListings(Array.isArray(data) ? data : []);
-    setMessage(Array.isArray(data) && data.length === 0 ? "Momentan nu ai niciun anunț publicat." : "");
-  } catch (err) {
-    console.error("Eroare la încărcarea anunțurilor mele:", err);
-    setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
-  } finally {
-    setLoading(false);
-  }
-};
+        const arr = Array.isArray(data) ? data : [];
+        setListings(arr);
+
+        if (arr.length === 0) setMessage("Momentan nu ai niciun anunț.");
+        else setMessage("");
+      } catch (err) {
+        console.error("Eroare la încărcarea anunțurilor mele:", err);
+        setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchMyListings();
   }, [navigate]);
 
-  const handleAdaugaAnunt = () => {
-    navigate("/adauga-anunt");
-  };
+  const handleAdaugaAnunt = () => navigate("/adauga-anunt");
 
   // 🗑️ Ștergere anunț
   const handleDelete = async (id) => {
@@ -85,15 +74,11 @@ export default function AnunturileMele() {
 
       const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Eroare la ștergerea anunțului.");
-      }
+      if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
       setListings((prev) => prev.filter((l) => l._id !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
@@ -103,10 +88,21 @@ export default function AnunturileMele() {
     }
   };
 
-  // ⭐ Promovare → mergem la pagina de detaliu, acolo alegi zile & sume
-  const handlePromoveaza = (id) => {
+  // ⭐ Plătește/Publică (pentru draft) / Promovează (pentru public)
+  const handlePayOrPromote = (id) => {
+    // păstrăm flow-ul tău existent: detaliu anunț
     navigate(`/anunt/${id}`);
   };
+
+  const { drafts, published } = useMemo(() => {
+    const d = [];
+    const p = [];
+    for (const l of listings) {
+      if (l?.visibility === "draft") d.push(l);
+      else p.push(l); // include și anunțurile vechi fără visibility
+    }
+    return { drafts: d, published: p };
+  }, [listings]);
 
   if (loading) {
     return (
@@ -116,6 +112,73 @@ export default function AnunturileMele() {
       </div>
     );
   }
+
+  const Card = ({ listing, isDraft }) => (
+    <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-lg font-semibold text-blue-700 mb-1">{listing.title}</h2>
+
+          {isDraft && (
+            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
+              DRAFT (nepublicat)
+            </span>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-500 mb-2">
+          {listing.location} • {listing.category}
+        </p>
+
+        <p className="font-bold text-green-700 mb-2">
+          {listing.price ? `${listing.price} €` : "Preț la cerere"}
+        </p>
+
+        <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
+
+        {isDraft && (
+          <div className="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
+            Acest anunț este salvat ca <b>Draft</b> și nu apare pe prima pagină.
+            Apasă <b>„Plătește și publică”</b> ca să îl faci public.
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          to={`/anunt/${listing._id}`}
+          className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+        >
+          Vezi detalii
+        </Link>
+
+        <Link
+          to={`/editeaza-anunt/${listing._id}`}
+          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Editează
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => handlePayOrPromote(listing._id)}
+          className={`text-sm px-3 py-2 rounded-lg text-white ${
+            isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
+          }`}
+        >
+          {isDraft ? "Plătește și publică" : "Promovează"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleDelete(listing._id)}
+          className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+        >
+          Șterge
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -135,66 +198,31 @@ export default function AnunturileMele() {
         </div>
       )}
 
-      {listings.length === 0 && !message && (
-        <p className="text-gray-600">
-          Nu am găsit niciun anunț asociat acestui număr de telefon.
-        </p>
+      {/* DRAFTURI */}
+      {drafts.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {drafts.map((l) => (
+              <Card key={l._id} listing={l} isDraft />
+            ))}
+          </div>
+        </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {listings.map((listing) => (
-          <div
-            key={listing._id}
-            className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between"
-          >
-            <div>
-              <h2 className="text-lg font-semibold text-blue-700 mb-1">
-                {listing.title}
-              </h2>
-              <p className="text-sm text-gray-500 mb-2">
-                {listing.location} • {listing.category}
-              </p>
-              <p className="font-bold text-green-700 mb-2">
-                {listing.price ? `${listing.price} €` : "Preț la cerere"}
-              </p>
-              <p className="text-sm text-gray-700 line-clamp-3">
-                {listing.description}
-              </p>
-            </div>
+      {/* PUBLICATE */}
+      <div>
+        <h2 className="text-lg font-bold mb-3">Anunțuri publicate</h2>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                to={`/anunt/${listing._id}`}
-                className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
-              >
-                Vezi detalii
-              </Link>
-
-              <Link
-                to={`/editeaza-anunt/${listing._id}`}
-                className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Editează
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => handlePromoveaza(listing._id)}
-                className="text-sm px-3 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600"
-              >
-                Promovează
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDelete(listing._id)}
-                className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
-              >
-                Șterge
-              </button>
-            </div>
+        {published.length === 0 ? (
+          <p className="text-gray-600">Momentan nu ai anunțuri publicate.</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {published.map((l) => (
+              <Card key={l._id} listing={l} isDraft={false} />
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
