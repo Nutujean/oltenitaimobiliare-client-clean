@@ -141,21 +141,58 @@ export default function AdaugaAnunt() {
       const data = await res.json();
 
       if (!res.ok) {
-        // dacă ai păstrat acest flow în backend, îl lăsăm
-        if (data.mustPay) {
-          setError(
-            data.message ||
-              "Ai deja un anunț gratuit activ sau recent pentru acest număr de telefon. Poți adăuga alt anunț doar dacă promovezi unul dintre anunțurile existente sau după ce trec aproximativ 15 zile."
-          );
-          setMustPromote(true);
-          return;
-        }
-        throw new Error(data.error || "Eroare la adăugarea anunțului");
+  // ✅ dacă backend cere plată -> salvăm anunțul ca DRAFT
+  if (data.mustPay || res.status === 402) {
+    try {
+      const draftForm = new FormData();
+      draftForm.append("title", title);
+      draftForm.append("description", description);
+      draftForm.append("price", price);
+      draftForm.append("category", category);
+      draftForm.append("location", location);
+      draftForm.append("phone", phone);
+      draftForm.append("email", email);
+      draftForm.append("intent", intent);
+
+      images.forEach((file) => draftForm.append("images", file));
+
+      const draftRes = await fetch(`${API_URL}/listings/draft`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: draftForm,
+      });
+
+      const draftData = await draftRes.json();
+
+      if (draftRes.ok && draftData?.draftId) {
+        sessionStorage.setItem(
+          "anuntAdaugat",
+          "✅ Anunț salvat ca DRAFT. Îl găsești în «Anunțurile mele»."
+        );
+        navigate("/anunturile-mele");
+        return;
       }
 
-      sessionStorage.setItem("refreshAnunturi", "true");
-      sessionStorage.setItem("anuntAdaugat", "✅ Anunțul tău a fost publicat cu succes!");
-      navigate("/anunturile-mele");
+      setError(draftData?.error || "Nu am putut salva anunțul ca DRAFT.");
+      setMustPromote(true);
+      return;
+    } catch (e) {
+      console.error("Eroare draft:", e);
+      setError("Eroare la salvarea anunțului ca DRAFT.");
+      setMustPromote(true);
+      return;
+    }
+  }
+
+  throw new Error(data.error || "Eroare la adăugarea anunțului");
+}
+
+// ✅ dacă totul e OK (FREE publicat)
+sessionStorage.setItem("refreshAnunturi", "true");
+sessionStorage.setItem("anuntAdaugat", "✅ Anunțul tău a fost publicat cu succes!");
+navigate("/anunturile-mele");
     } catch (err) {
       console.error("Eroare:", err);
       setError(err.message || "A apărut o eroare la publicarea anunțului.");
