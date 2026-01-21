@@ -54,7 +54,7 @@ export default function AdaugaAnunt() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // ✅ limitare imagini (6 free / 10 paid)
+    // ✅ limitare imagini (10 free / 15 paid)
     const sliced = files.slice(0, maxImages);
     setImages(sliced);
 
@@ -207,7 +207,7 @@ export default function AdaugaAnunt() {
           }`}
         >
           <div className="font-semibold text-gray-900">Gratuit</div>
-          <div className="text-xs text-gray-600">Regula OLX-like • max 10 poze</div>
+          <div className="text-xs text-gray-600">Max 10 poze</div>
         </button>
 
         <button
@@ -220,7 +220,7 @@ export default function AdaugaAnunt() {
           }`}
         >
           <div className="font-semibold text-gray-900">Promovat (plătit)</div>
-          <div className="text-xs text-gray-600">Publici imediat • isFree=false • max 10 poze</div>
+          <div className="text-xs text-gray-600">Publici imediat • Max 15 poze</div>
         </button>
       </div>
 
@@ -245,7 +245,7 @@ export default function AdaugaAnunt() {
               </p>
               <ul className="list-disc list-inside">
                 <li>promova unul dintre anunțurile tale existente; sau</li>
-                <li>aștepta aproximativ 15 zile de la expirarea anunțului gratuit.</li>
+                <li>așteapta 15 zile de la expirarea anunțului gratuit.</li>
               </ul>
               <button
                 type="button"
