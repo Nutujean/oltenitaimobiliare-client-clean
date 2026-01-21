@@ -146,14 +146,14 @@ export default function AnunturileMele() {
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
-          to={`/anunt/${listing._id}`}
+          to={`/anunt/${listing._id || listing.id}`}
           className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
         >
           Vezi detalii
         </Link>
 
         <Link
-          to={`/editeaza-anunt/${listing._id}`}
+          to={`/editeaza-anunt/${listing._id || listing.id}`}
           className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
         >
           Editează
@@ -161,7 +161,7 @@ export default function AnunturileMele() {
 
         <button
           type="button"
-          onClick={() => handlePayOrPromote(listing._id)}
+          onClick={() => handlePayOrPromote(listing._id || listing.id)}
           className={`text-sm px-3 py-2 rounded-lg text-white ${
             isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
           }`}
@@ -171,7 +171,7 @@ export default function AnunturileMele() {
 
         <button
           type="button"
-          onClick={() => handleDelete(listing._id)}
+          onClick={() => handleDelete(listing._id || listing.id)}
           className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
         >
           Șterge
