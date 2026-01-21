@@ -8,14 +8,15 @@ export default function EditareAnunt() {
   const token = localStorage.getItem("token");
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    category: "",
-    location: "",
-    phone: "",
-    images: [], // ✅ URL-uri existente (din DB)
-  });
+  title: "",
+  description: "",
+  price: "",
+  category: "",
+  location: "",
+  phone: "",
+  images: [], // ✅ URL-uri existente (din DB)
+  isFree: true, // ✅ IMPORTANT (FREE/PAID)
+});
 
   // ✅ preview-uri pentru poze noi (dataURL)
   const [newImages, setNewImages] = useState([]);
@@ -34,14 +35,15 @@ export default function EditareAnunt() {
         if (!res.ok) throw new Error(data.error || "Eroare la încărcare");
 
         setFormData({
-          title: data.title || "",
-          description: data.description || "",
-          price: data.price ?? "",
-          category: data.category || "",
-          location: data.location || "",
-          phone: data.phone || "",
-          images: Array.isArray(data.images) ? data.images : [],
-        });
+  title: data.title || "",
+  description: data.description || "",
+  price: data.price ?? "",
+  category: data.category || "",
+  location: data.location || "",
+  phone: data.phone || "",
+  images: Array.isArray(data.images) ? data.images : [],
+  isFree: data.isFree ?? true, // ✅ IMPORTANT
+});
 
         // resetăm orice selecție nouă când încărcăm anunțul
         setNewImages([]);
@@ -121,7 +123,8 @@ export default function EditareAnunt() {
     });
   };
 
-  const maxTotalImages = 15;
+  const isFreeListing = listing?.isFree ?? formData?.isFree ?? true; // fallback
+  const maxTotalImages = isFreeListing ? 10 : 15;
   const totalImagesCount = useMemo(
     () => (formData.images?.length || 0) + (newImageFiles?.length || 0),
     [formData.images, newImageFiles]
