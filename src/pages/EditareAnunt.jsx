@@ -8,44 +8,56 @@ export default function EditareAnunt() {
   const token = localStorage.getItem("token");
 
   const [formData, setFormData] = useState({
-  title: "",
-  description: "",
-  price: "",
-  category: "",
-  location: "",
-  phone: "",
-  images: [], // ✅ URL-uri existente (din DB)
-  isFree: true, // ✅ IMPORTANT (FREE/PAID)
-});
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+    location: "",
+    phone: "",
+    images: [],     // URL-uri existente
+    isFree: true,   // ✅ important pentru limită 10/15
+  });
 
-  // ✅ preview-uri pentru poze noi (dataURL)
+  // preview-uri poze noi (dataURL)
   const [newImages, setNewImages] = useState([]);
-  // ✅ fișiere reale pentru upload
+  // fișiere reale pentru upload
   const [newImageFiles, setNewImageFiles] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ limită în funcție de tipul anunțului
+  const maxTotalImages = formData.isFree ? 10 : 15;
+
+  const totalImagesCount = useMemo(
+    () => (formData.images?.length || 0) + (newImageFiles?.length || 0),
+    [formData.images, newImageFiles]
+  );
 
   // 🔹 Preia anunțul curent
   useEffect(() => {
     const fetchListing = async () => {
       try {
+        setLoading(true);
+        setError("");
+
         const res = await fetch(`${API_URL}/listings/${id}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcare");
 
         setFormData({
-  title: data.title || "",
-  description: data.description || "",
-  price: data.price ?? "",
-  category: data.category || "",
-  location: data.location || "",
-  phone: data.phone || "",
-  images: Array.isArray(data.images) ? data.images : [],
-  isFree: data.isFree ?? true, // ✅ IMPORTANT
-});
+          title: data.title || "",
+          description: data.description || "",
+          price: data.price ?? "",
+          category: data.category || "",
+          location: data.location || "",
+          phone: data.phone || "",
+          images: Array.isArray(data.images) ? data.images : [],
+          isFree: data.isFree ?? true,
+        });
 
-        // resetăm orice selecție nouă când încărcăm anunțul
+        // reset selecții noi
         setNewImages([]);
         setNewImageFiles([]);
       } catch (err) {
@@ -61,17 +73,27 @@ export default function EditareAnunt() {
   // 🔹 Schimbare câmp text
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  // 🔹 Adăugare poze noi (preview + păstrăm FILE-urile pentru upload)
+  // 🔹 Adăugare poze noi (preview + FILE)
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    setNewImageFiles((prev) => [...prev, ...files]);
+    // dacă depășește limita, nu mai adăugăm
+    const freeSlots = maxTotalImages - totalImagesCount;
+    if (freeSlots <= 0) {
+      alert(`Ai atins limita de ${maxTotalImages} imagini (${formData.isFree ? "FREE" : "PROMOVAT"}).`);
+      e.target.value = "";
+      return;
+    }
 
-    files.forEach((file) => {
+    const accepted = files.slice(0, freeSlots);
+
+    setNewImageFiles((prev) => [...prev, ...accepted]);
+
+    accepted.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => setNewImages((prev) => [...prev, ev.target.result]);
       reader.readAsDataURL(file);
@@ -80,11 +102,17 @@ export default function EditareAnunt() {
     e.target.value = "";
   };
 
-  // 🔹 Înlocuire imagine existentă:
-  // - scoatem URL-ul vechi din lista de existente
-  // - adăugăm fișierul nou la upload + preview
+  // 🔹 Înlocuire imagine existentă
+  // - scoatem URL-ul vechi (nu îl mai păstrăm)
+  // - adăugăm FILE nou + preview
   const replaceImage = (index, file) => {
     if (!file) return;
+
+    // dacă nu mai avem loc, nu permitem
+    if (totalImagesCount >= maxTotalImages) {
+      alert(`Maxim ${maxTotalImages} imagini pentru acest tip de anunț.`);
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -116,21 +144,14 @@ export default function EditareAnunt() {
   const moveImage = (index, direction) => {
     setFormData((prev) => {
       const arr = [...prev.images];
-      const targetIndex = index + direction;
-      if (targetIndex < 0 || targetIndex >= arr.length) return prev;
-      [arr[index], arr[targetIndex]] = [arr[targetIndex], arr[index]];
+      const target = index + direction;
+      if (target < 0 || target >= arr.length) return prev;
+      [arr[index], arr[target]] = [arr[target], arr[index]];
       return { ...prev, images: arr };
     });
   };
 
-  const isFreeListing = listing?.isFree ?? formData?.isFree ?? true; // fallback
-  const maxTotalImages = isFreeListing ? 10 : 15;
-  const totalImagesCount = useMemo(
-    () => (formData.images?.length || 0) + (newImageFiles?.length || 0),
-    [formData.images, newImageFiles]
-  );
-
-  // 🔹 Salvare modificări (multipart/form-data)
+  // 🔹 Salvare (FormData)
   const handleSave = async () => {
     try {
       if (!token || token === "undefined" || token === "null") {
@@ -140,9 +161,11 @@ export default function EditareAnunt() {
       }
 
       if (totalImagesCount > maxTotalImages) {
-        alert(`⚠️ Maxim ${maxTotalImages} imagini în total.`);
+        alert(`Maxim ${maxTotalImages} imagini pentru acest tip de anunț.`);
         return;
       }
+
+      setSaving(true);
 
       const fd = new FormData();
       fd.append("title", formData.title || "");
@@ -152,17 +175,17 @@ export default function EditareAnunt() {
       fd.append("location", formData.location || "");
       fd.append("phone", formData.phone || "");
 
-      // ✅ imaginile existente pe care le păstrezi
+      // ✅ trimitem imaginile existente (cele păstrate)
       (formData.images || []).forEach((url) => fd.append("existingImages", url));
 
-      // ✅ poze noi (fișiere)
+      // ✅ trimitem poze noi ca FILE (cheia "images")
       (newImageFiles || []).forEach((file) => fd.append("images", file));
 
       const res = await fetch(`${API_URL}/listings/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          // ⚠️ NU pune Content-Type manual la FormData
+          // NU pune Content-Type la FormData
         },
         body: fd,
       });
@@ -174,6 +197,8 @@ export default function EditareAnunt() {
       navigate("/anunturile-mele");
     } catch (err) {
       alert("❌ " + (err.message || "Eroare la salvare"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -182,7 +207,10 @@ export default function EditareAnunt() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">✏️ Editează Anunțul</h1>
+      <h1 className="text-3xl font-bold mb-2 text-center">✏️ Editează Anunțul</h1>
+      <p className="text-center text-sm text-gray-600 mb-6">
+        Tip: <b>{formData.isFree ? "FREE (max 10 poze)" : "PROMOVAT (max 15 poze)"}</b>
+      </p>
 
       <div className="space-y-4">
         <input
@@ -230,7 +258,7 @@ export default function EditareAnunt() {
         />
 
         {/* 🖼️ Poze existente */}
-        {formData.images && formData.images.length > 0 && (
+        {formData.images?.length > 0 && (
           <div>
             <label className="block font-semibold mb-2">📸 Imagini existente</label>
             <div className="grid grid-cols-3 gap-3">
@@ -249,7 +277,6 @@ export default function EditareAnunt() {
                     className="hidden"
                     onChange={(e) => replaceImage(i, e.target.files?.[0])}
                   />
-
                   <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
                     <button
                       type="button"
@@ -315,10 +342,12 @@ export default function EditareAnunt() {
           <button
             type="button"
             onClick={handleSave}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-6 py-3 rounded-lg font-medium"
           >
-            💾 Salvează modificările
+            {saving ? "Se salvează..." : "💾 Salvează modificările"}
           </button>
+
           <button
             type="button"
             onClick={() => navigate("/anunturile-mele")}
