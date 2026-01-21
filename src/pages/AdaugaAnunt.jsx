@@ -19,6 +19,9 @@ export default function AdaugaAnunt() {
   const [error, setError] = useState("");
   const [mustPromote, setMustPromote] = useState(false);
 
+  // ✅ NOU: alegere Gratuit / Promovat
+  const [plan, setPlan] = useState("free"); // "free" | "paid"
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -45,13 +48,34 @@ export default function AdaugaAnunt() {
     "Garaje",
   ];
 
+  const maxImages = plan === "paid" ? 15 : 10;
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    setImages(files);
-    setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
+    // ✅ limitare imagini (6 free / 10 paid)
+    const sliced = files.slice(0, maxImages);
+    setImages(sliced);
+
+    // cleanup previews vechi
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setPreviewUrls(sliced.map((file) => URL.createObjectURL(file)));
+
+    if (files.length > maxImages) {
+      setError(`Ai selectat ${files.length} poze. Limita este ${maxImages} pentru ${plan === "paid" ? "Promovat" : "Gratuit"}.`);
+    } else {
+      setError("");
+    }
   };
+
+  useEffect(() => {
+    // cleanup la unmount
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +102,16 @@ export default function AdaugaAnunt() {
       return;
     }
 
+    if (!images.length) {
+      alert("⚠️ Adaugă cel puțin o imagine!");
+      return;
+    }
+
+    if (images.length > maxImages) {
+      alert(`⚠️ Prea multe imagini. Maxim ${maxImages} pentru ${plan === "paid" ? "Promovat" : "Gratuit"}.`);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("title", title);
@@ -88,6 +122,11 @@ export default function AdaugaAnunt() {
       formData.append("phone", phone);
       formData.append("email", email);
       formData.append("intent", intent);
+
+      // ✅ CHEIA PROBLEMEI:
+      // Gratuit => isFree=true (aplică regula)
+      // Promovat => isFree=false (nelimitat / publicare imediată)
+      formData.append("isFree", plan === "paid" ? "false" : "true");
 
       images.forEach((file) => formData.append("images", file));
 
@@ -102,6 +141,7 @@ export default function AdaugaAnunt() {
       const data = await res.json();
 
       if (!res.ok) {
+        // dacă ai păstrat acest flow în backend, îl lăsăm
         if (data.mustPay) {
           setError(
             data.message ||
@@ -151,9 +191,38 @@ export default function AdaugaAnunt() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
-      <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
+      <h1 className="text-2xl font-bold mb-2 text-center text-blue-700">
         Adaugă un anunț nou
       </h1>
+
+      {/* ✅ NOU: Gratuit / Promovat */}
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setPlan("free")}
+          className={`p-3 rounded-xl border text-left ${
+            plan === "free"
+              ? "border-blue-600 bg-blue-50"
+              : "border-gray-200 bg-white hover:bg-gray-50"
+          }`}
+        >
+          <div className="font-semibold text-gray-900">Gratuit</div>
+          <div className="text-xs text-gray-600">Regula OLX-like • max 10 poze</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setPlan("paid")}
+          className={`p-3 rounded-xl border text-left ${
+            plan === "paid"
+              ? "border-yellow-500 bg-yellow-50"
+              : "border-gray-200 bg-white hover:bg-gray-50"
+          }`}
+        >
+          <div className="font-semibold text-gray-900">Promovat (plătit)</div>
+          <div className="text-xs text-gray-600">Publici imediat • isFree=false • max 10 poze</div>
+        </button>
+      </div>
 
       {error && (
         <div
@@ -277,8 +346,10 @@ export default function AdaugaAnunt() {
         />
 
         <div>
-          <label className="block text-sm mb-1">Imagini</label>
-          <input type="file" multiple onChange={handleImageChange} />
+          <label className="block text-sm mb-1">
+            Imagini (max {maxImages} pentru {plan === "paid" ? "Promovat" : "Gratuit"})
+          </label>
+          <input type="file" multiple accept="image/*" onChange={handleImageChange} />
           <div className="grid grid-cols-3 gap-2 mt-2">
             {previewUrls.map((url, i) => (
               <img
@@ -293,9 +364,13 @@ export default function AdaugaAnunt() {
 
         <button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg w-full"
+          className={`text-white font-semibold px-4 py-2 rounded-lg w-full ${
+            plan === "paid"
+              ? "bg-yellow-500 hover:bg-yellow-600"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Publică anunțul
+          {plan === "paid" ? "Publică Promovat" : "Publică anunțul"}
         </button>
       </form>
     </div>
