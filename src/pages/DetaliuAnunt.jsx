@@ -12,6 +12,16 @@ function normalizePhone(value) {
   return digits.replace(/^4/, "");
 }
 
+// 🔧 helper: extrage userId din JWT (fără lib extern)
+function getUserIdFromToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload?.id || payload?._id || payload?.userId || payload?.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 // 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
   { id: "featured7", label: "Promovat 7 zile", priceRON: 30, days: 7 },
@@ -61,7 +71,8 @@ export default function DetaliuAnunt() {
     })();
   }, [id]);
 
-  // 🔸 stabilim dacă utilizatorul logat este proprietarul anunțului (pe bază de telefon + token)
+  // ✅ owner-check robust: userId din token vs listing.user / listing.userId
+  // + fallback pe telefon (pentru anunțuri vechi)
   useEffect(() => {
     if (!listing) {
       setCanPromote(false);
@@ -69,29 +80,48 @@ export default function DetaliuAnunt() {
     }
 
     try {
-      const rawPhone = localStorage.getItem("userPhone");
       const token = localStorage.getItem("token");
+      const rawPhone = localStorage.getItem("userPhone");
 
-      if (
-        !token ||
-        token === "undefined" ||
-        token === "null" ||
-        !rawPhone ||
-        rawPhone === "undefined" ||
-        rawPhone === "null"
-      ) {
+      if (!token || token === "undefined" || token === "null") {
         setCanPromote(false);
         return;
       }
 
-      const userPhone = normalizePhone(rawPhone);
-      const listingPhone = normalizePhone(listing.phone);
+      const myUserId = getUserIdFromToken(token);
 
-      if (userPhone && listingPhone && userPhone === listingPhone) {
+      // suportă mai multe forme în listing:
+      // - user: "ObjectId"
+      // - user: { _id: "ObjectId" }
+      // - userId: "ObjectId"
+      const listingUserId =
+        (typeof listing?.user === "string" ? listing.user : listing?.user?._id) ||
+        listing?.userId ||
+        null;
+
+      // 1) match pe userId (cea mai bună variantă)
+      if (myUserId && listingUserId && String(myUserId) === String(listingUserId)) {
         setCanPromote(true);
-      } else {
-        setCanPromote(false);
+        return;
       }
+
+      // 2) fallback pe telefon (compatibilitate anunțuri vechi)
+      if (
+        rawPhone &&
+        rawPhone !== "undefined" &&
+        rawPhone !== "null" &&
+        listing?.phone
+      ) {
+        const userPhone = normalizePhone(rawPhone);
+        const listingPhone = normalizePhone(listing.phone);
+
+        if (userPhone && listingPhone && userPhone === listingPhone) {
+          setCanPromote(true);
+          return;
+        }
+      }
+
+      setCanPromote(false);
     } catch {
       setCanPromote(false);
     }
@@ -105,11 +135,13 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  // ✅ URL-uri share/public
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listing._id}`;
-  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  // ✅ ID robust pentru share/public URL (vechi/nou)
+  const listingId = listing?._id || listing?.id;
 
-  // ✅ FIX: în codul tău era backendFbDirect nedefinit -> crăpa pagina
+  // ✅ URL-uri share/public
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listingId}`;
+  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
+
   const backendFbDirect = backendShareUrl;
 
   const handleShare = (platform) => {
@@ -171,7 +203,7 @@ export default function DetaliuAnunt() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          listingId: listing._id,
+          listingId: listingId,
           plan: selectedPromo.id,
         }),
       });
@@ -251,40 +283,9 @@ export default function DetaliuAnunt() {
           />
           <meta property="og:url" content={publicUrl} />
           <meta property="og:type" content="article" />
-
-          {/* 🏠 Schema.org SEO JSON-LD */}
-          <script type="application/ld+json">
-            {JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Offer",
-              name: listing.title,
-              description: listing.description?.substring(0, 160),
-              price: listing.price,
-              priceCurrency: "EUR",
-              priceValidUntil: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split("T")[0],
-              availability: "https://schema.org/InStock",
-              itemCondition: "https://schema.org/NewCondition",
-              url: publicUrl,
-              datePublished: listing.createdAt || new Date().toISOString().split("T")[0],
-              itemOffered: {
-                "@type": "Product",
-                name: listing.title,
-                image: listing.images?.[0],
-                description: listing.description?.substring(0, 160),
-                brand: "Oltenița Imobiliare",
-              },
-              seller: {
-                "@type": "Person",
-                name: listing.contactName || "Proprietar",
-                telephone: listing.phone || "",
-              },
-            })}
-          </script>
         </Helmet>
 
-        {/* ✅ Buton Înapoi (clar, profesionist) */}
+        {/* ✅ Buton Înapoi */}
         <div className="mb-4">
           <button
             type="button"
