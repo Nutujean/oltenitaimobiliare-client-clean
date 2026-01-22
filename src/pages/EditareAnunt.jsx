@@ -2,6 +2,55 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
+const CATEGORII = [
+  { value: "apartamente", label: "Apartamente" },
+  { value: "garsoniere", label: "Garsoniere" },
+  { value: "case", label: "Case" },
+  { value: "terenuri", label: "Terenuri" },
+  { value: "spatiu_comercial", label: "Spațiu comercial" },
+  { value: "garaj", label: "Garaj" },
+];
+
+const LOCALITATI_OLTENITA = [
+  "Oltenița",
+  "Chirnogi",
+  "Ulmeni",
+  "Mitreni",
+  "Clatesti",
+  "Spantov",
+  "Spanțov",
+  "Cascioarele",
+  "Soldanu",
+  "Negoesti",
+  "Valea rosie",
+  "Radovanu",
+  "Curcani",
+  "Luica",
+  "Nana",
+  "Chiselet",
+  "Manastirea",
+  "Budesti",
+  "Gruiu",
+  "Aprozi",
+  "Buciumeni",
+  "Frumusani",
+  "Vasilati",
+  "Galbinasi",
+  "Cucuieti",
+  "Podul Pitarului",
+  "Sohatu",
+  "Fundeni",
+  "Dorobantu",
+  "Varasti",
+  "Ciocanesti",
+  "Cunesti",
+  "Bogata",
+  "Gradistea",
+  "Rasa",
+  "Cuza Voda",
+  "Modelu",
+];
+
 export default function EditareAnunt() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -44,7 +93,6 @@ export default function EditareAnunt() {
   // ✅ validare obligatorie
   function validateForm(fd) {
     const title = String(fd.title || "").trim();
-    const description = String(fd.description || "").trim(); // nu e obligatoriu, dar îl normalizăm
     const category = String(fd.category || "").trim();
     const location = String(fd.location || "").trim();
     const phone = normalizePhone(fd.phone);
@@ -54,9 +102,6 @@ export default function EditareAnunt() {
     if (!location) return "Localitatea este obligatorie.";
     if (!phone) return "Numărul de telefon este obligatoriu.";
     if (phone.length < 9) return "Numărul de telefon pare invalid.";
-
-    // doar ca să evităm unused warning dacă ai linter strict
-    void description;
 
     return "";
   }
@@ -99,7 +144,7 @@ export default function EditareAnunt() {
     fetchListing();
   }, [id]);
 
-  // 🔹 Schimbare câmp text
+  // 🔹 Schimbare câmp text/select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -272,30 +317,41 @@ export default function EditareAnunt() {
           name="price"
           value={formData.price}
           onChange={handleChange}
-          placeholder="Preț (€)"
+          placeholder="Preț (€) – opțional"
           className="w-full border p-3 rounded"
         />
 
-        {/* ✅ Categorie (era în formData, dar lipsea din UI) */}
-        <input
-          type="text"
+        {/* ✅ Categorie (dropdown obligatoriu) */}
+        <select
           name="category"
           value={formData.category}
           onChange={handleChange}
-          placeholder="Categorie (ex: apartamente, case, terenuri)"
           className="w-full border p-3 rounded"
           required
-        />
+        >
+          <option value="">Alege categoria</option>
+          {CATEGORII.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
 
-        <input
-          type="text"
+        {/* ✅ Localitate (dropdown obligatoriu) */}
+        <select
           name="location"
           value={formData.location}
           onChange={handleChange}
-          placeholder="Locație"
           className="w-full border p-3 rounded"
           required
-        />
+        >
+          <option value="">Alege localitatea</option>
+          {LOCALITATI_OLTENITA.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
 
         <input
           type="tel"
