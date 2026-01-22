@@ -11,6 +11,13 @@ const CATEGORII = [
   { value: "garaj", label: "Garaj" },
 ];
 
+const TIPURI_TRANZACTIE = [
+  { value: "vand", label: "Vând" },
+  { value: "cumpar", label: "Cumpăr" },
+  { value: "inchiriez", label: "Închiriez" },
+  { value: "schimb", label: "Schimb" },
+];
+
 const LOCALITATI_OLTENITA = [
   "Oltenița",
   "Chirnogi",
@@ -61,10 +68,11 @@ export default function EditareAnunt() {
     description: "",
     price: "",
     category: "",
+    type: "",        // ✅ NOU: tip tranzacție
     location: "",
     phone: "",
-    images: [], // URL-uri existente
-    isFree: true, // ✅ important pentru limită 10/15
+    images: [],      // URL-uri existente
+    isFree: true,    // ✅ important pentru limită 10/15
   });
 
   // preview-uri poze noi (dataURL)
@@ -94,11 +102,13 @@ export default function EditareAnunt() {
   function validateForm(fd) {
     const title = String(fd.title || "").trim();
     const category = String(fd.category || "").trim();
+    const type = String(fd.type || "").trim();
     const location = String(fd.location || "").trim();
     const phone = normalizePhone(fd.phone);
 
     if (!title) return "Titlul este obligatoriu.";
     if (!category) return "Categoria este obligatorie.";
+    if (!type) return "Tipul (Vând/Cumpăr/Închiriez/Schimb) este obligatoriu.";
     if (!location) return "Localitatea este obligatorie.";
     if (!phone) return "Numărul de telefon este obligatoriu.";
     if (phone.length < 9) return "Numărul de telefon pare invalid.";
@@ -125,6 +135,7 @@ export default function EditareAnunt() {
           description: payload.description || "",
           price: payload.price ?? "",
           category: payload.category || "",
+          type: payload.type || "",            // ✅ NOU
           location: payload.location || "",
           phone: payload.phone || "",
           images: Array.isArray(payload.images) ? payload.images : [],
@@ -253,6 +264,7 @@ export default function EditareAnunt() {
       fd.append("description", String(formData.description || "").trim());
       fd.append("price", String(formData.price ?? ""));
       fd.append("category", String(formData.category || "").trim());
+      fd.append("type", String(formData.type || "").trim()); // ✅ NOU
       fd.append("location", String(formData.location || "").trim());
       fd.append("phone", normalizePhone(formData.phone));
 
@@ -320,6 +332,22 @@ export default function EditareAnunt() {
           placeholder="Preț (€) – opțional"
           className="w-full border p-3 rounded"
         />
+
+        {/* ✅ Tip tranzacție (dropdown obligatoriu) */}
+        <select
+          name="type"
+          value={formData.type}
+          onChange={handleChange}
+          className="w-full border p-3 rounded"
+          required
+        >
+          <option value="">Alege tipul (Vând / Cumpăr / Închiriez / Schimb)</option>
+          {TIPURI_TRANZACTIE.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
 
         {/* ✅ Categorie (dropdown obligatoriu) */}
         <select
