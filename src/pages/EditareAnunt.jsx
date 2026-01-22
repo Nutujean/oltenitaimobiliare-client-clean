@@ -413,26 +413,36 @@ export default function EditareAnunt() {
                   />
                   <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
                     <button
-                      type="button"
-                      onClick={() => removeExistingImage(i)}
-                      className="bg-red-600 text-white text-xs px-2 py-1 rounded"
-                    >
-                      🗑️
-                    </button>
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation();
+    removeExistingImage(i);
+  }}
+  className="bg-red-600 text-white text-xs px-2 py-1 rounded"
+>
+  🗑️
+</button>
                     <button
-                      type="button"
-                      onClick={() => moveImage(i, -1)}
-                      className="bg-gray-600 text-white text-xs px-2 py-1 rounded"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveImage(i, 1)}
-                      className="bg-gray-600 text-white text-xs px-2 py-1 rounded"
-                    >
-                      ↓
-                    </button>
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation();
+    moveImage(i, -1);
+  }}
+  className="bg-gray-600 text-white text-xs px-2 py-1 rounded"
+>
+  ←
+</button>
+
+<button
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation();
+    moveImage(i, 1);
+  }}
+  className="bg-gray-600 text-white text-xs px-2 py-1 rounded"
+>
+  →
+</button>
                   </div>
                 </div>
               ))}
