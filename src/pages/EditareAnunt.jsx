@@ -411,14 +411,14 @@ export default function EditareAnunt() {
                     className="hidden"
                     onChange={(e) => replaceImage(i, e.target.files?.[0])}
                   />
-                  <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+                  <div className="absolute top-2 right-2 z-50 flex flex-col gap-2 opacity-100">
                     <button
   type="button"
   onClick={(e) => {
     e.stopPropagation();
     removeExistingImage(i);
   }}
-  className="bg-red-600 text-white text-xs px-2 py-1 rounded"
+  className="bg-red-600 text-white text-sm px-3 py-2 rounded-lg shadow"
 >
   🗑️
 </button>
@@ -428,7 +428,7 @@ export default function EditareAnunt() {
     e.stopPropagation();
     moveImage(i, -1);
   }}
-  className="bg-gray-600 text-white text-xs px-2 py-1 rounded"
+  className="bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow"
 >
   ←
 </button>
