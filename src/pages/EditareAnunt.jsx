@@ -14,8 +14,8 @@ export default function EditareAnunt() {
     category: "",
     location: "",
     phone: "",
-    images: [],     // URL-uri existente
-    isFree: true,   // ✅ important pentru limită 10/15
+    images: [], // URL-uri existente
+    isFree: true, // ✅ important pentru limită 10/15
   });
 
   // preview-uri poze noi (dataURL)
@@ -35,6 +35,32 @@ export default function EditareAnunt() {
     [formData.images, newImageFiles]
   );
 
+  // ✅ helper: normalize phone
+  function normalizePhone(value) {
+    if (!value) return "";
+    return String(value).replace(/\D/g, "");
+  }
+
+  // ✅ validare obligatorie
+  function validateForm(fd) {
+    const title = String(fd.title || "").trim();
+    const description = String(fd.description || "").trim(); // nu e obligatoriu, dar îl normalizăm
+    const category = String(fd.category || "").trim();
+    const location = String(fd.location || "").trim();
+    const phone = normalizePhone(fd.phone);
+
+    if (!title) return "Titlul este obligatoriu.";
+    if (!category) return "Categoria este obligatorie.";
+    if (!location) return "Localitatea este obligatorie.";
+    if (!phone) return "Numărul de telefon este obligatoriu.";
+    if (phone.length < 9) return "Numărul de telefon pare invalid.";
+
+    // doar ca să evităm unused warning dacă ai linter strict
+    void description;
+
+    return "";
+  }
+
   // 🔹 Preia anunțul curent
   useEffect(() => {
     const fetchListing = async () => {
@@ -46,15 +72,18 @@ export default function EditareAnunt() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcare");
 
+        // ✅ compatibil cu ambele forme de răspuns: {ok, listing} sau direct obiectul listing
+        const payload = data?.listing ? data.listing : data;
+
         setFormData({
-          title: data.title || "",
-          description: data.description || "",
-          price: data.price ?? "",
-          category: data.category || "",
-          location: data.location || "",
-          phone: data.phone || "",
-          images: Array.isArray(data.images) ? data.images : [],
-          isFree: data.isFree ?? true,
+          title: payload.title || "",
+          description: payload.description || "",
+          price: payload.price ?? "",
+          category: payload.category || "",
+          location: payload.location || "",
+          phone: payload.phone || "",
+          images: Array.isArray(payload.images) ? payload.images : [],
+          isFree: payload.isFree ?? true,
         });
 
         // reset selecții noi
@@ -160,6 +189,13 @@ export default function EditareAnunt() {
         return;
       }
 
+      // ✅ validare obligatorie
+      const validationError = validateForm(formData);
+      if (validationError) {
+        alert("❌ " + validationError);
+        return;
+      }
+
       if (totalImagesCount > maxTotalImages) {
         alert(`Maxim ${maxTotalImages} imagini pentru acest tip de anunț.`);
         return;
@@ -168,12 +204,12 @@ export default function EditareAnunt() {
       setSaving(true);
 
       const fd = new FormData();
-      fd.append("title", formData.title || "");
-      fd.append("description", formData.description || "");
+      fd.append("title", String(formData.title || "").trim());
+      fd.append("description", String(formData.description || "").trim());
       fd.append("price", String(formData.price ?? ""));
-      fd.append("category", formData.category || "");
-      fd.append("location", formData.location || "");
-      fd.append("phone", formData.phone || "");
+      fd.append("category", String(formData.category || "").trim());
+      fd.append("location", String(formData.location || "").trim());
+      fd.append("phone", normalizePhone(formData.phone));
 
       // ✅ trimitem imaginile existente (cele păstrate)
       (formData.images || []).forEach((url) => fd.append("existingImages", url));
@@ -220,6 +256,7 @@ export default function EditareAnunt() {
           onChange={handleChange}
           placeholder="Titlul anunțului"
           className="w-full border p-3 rounded"
+          required
         />
 
         <textarea
@@ -239,6 +276,17 @@ export default function EditareAnunt() {
           className="w-full border p-3 rounded"
         />
 
+        {/* ✅ Categorie (era în formData, dar lipsea din UI) */}
+        <input
+          type="text"
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          placeholder="Categorie (ex: apartamente, case, terenuri)"
+          className="w-full border p-3 rounded"
+          required
+        />
+
         <input
           type="text"
           name="location"
@@ -246,15 +294,17 @@ export default function EditareAnunt() {
           onChange={handleChange}
           placeholder="Locație"
           className="w-full border p-3 rounded"
+          required
         />
 
         <input
-          type="text"
+          type="tel"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
           placeholder="Telefon"
           className="w-full border p-3 rounded"
+          required
         />
 
         {/* 🖼️ Poze existente */}
