@@ -62,7 +62,45 @@ export default function Angajari() {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
-                  onClick={() => alert("Următorul pas: publicare job (plătit) – legăm Stripe.")}
+                  onClick={async () => {
+  const token = localStorage.getItem("token");
+  if (!token) return alert("Trebuie să fii logat ca să publici un job.");
+
+  // 1) draft job (section=angajari)
+  const draftRes = await fetch(`${API_URL}/listings/draft`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      title: "Angajare (exemplu) - modificăm imediat cu formular",
+      description: "Descriere job (exemplu) - urmează formular complet",
+      price: 1,
+      category: "Angajări",
+      location: "Oltenița",
+      phone: localStorage.getItem("userPhone") || "",
+      email: "",
+      intent: "vand",
+      section: "angajari",
+    }),
+  });
+
+  const draftData = await draftRes.json();
+  if (!draftRes.ok) return alert(draftData?.error || "Nu pot salva draftul.");
+
+  // 2) checkout job30
+  const payRes = await fetch(`${API_URL}/stripe/create-checkout-session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ listingId: draftData.draftId, plan: "job30" }),
+  });
+
+  const payData = await payRes.json();
+  if (!payRes.ok || !payData?.url) return alert(payData?.error || "Nu pot porni plata.");
+
+  window.location.href = payData.url;
+}}
                 >
                   💼 Publică job (plătit)
                 </button>
