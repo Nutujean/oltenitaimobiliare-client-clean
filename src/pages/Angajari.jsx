@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 import angajariImg from "../assets/angajari.png";
 
-// helper: normalize phone (doar cifre, fără 4 la început)
 function normalizePhone(v) {
   const digits = String(v || "").replace(/\D/g, "");
   return digits.replace(/^4/, "");
@@ -23,14 +22,13 @@ export default function Angajari() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // modal + form
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [editingId, setEditingId] = useState("");
   const [isDraftJob, setIsDraftJob] = useState(false);
-  const [notice, setNotice] = useState(""); // mesaje în modal
+  const [notice, setNotice] = useState("");
 
   const [form, setForm] = useState({
     title: "",
@@ -50,12 +48,33 @@ export default function Angajari() {
     });
   };
 
+  const isJobFromListing = (l) => {
+    const s = String(l?.section || "").toLowerCase();
+    const c = String(l?.category || "").toLowerCase();
+    return s.includes("angaj") || c.includes("angaj");
+  };
+
+  const pickListingFromPayload = (payload) => {
+    if (!payload) return null;
+    return (
+      payload.listing ||
+      payload.draft ||
+      payload.data?.listing ||
+      payload.data?.draft ||
+      payload
+    );
+  };
+
   const fetchJobs = async () => {
     try {
       setLoading(true);
       setErr("");
-      const res = await fetch(`${API_URL}/listings?section=angajari&sort=newest`);
-      const data = await res.json();
+
+      // ✅ cache-busting + no-store
+      const url = `${API_URL}/listings?section=angajari&sort=newest&_=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const data = await res.json().catch(() => null);
+
       setJobs(Array.isArray(data) ? data : []);
     } catch (e) {
       setErr("Nu pot încărca anunțurile de angajare.");
@@ -83,30 +102,11 @@ export default function Angajari() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ helper: verifică dacă e job
-  const isJobFromListing = (l) => {
-    const s = String(l?.section || "").toLowerCase();
-    const c = String(l?.category || "").toLowerCase();
-    return s.includes("angaj") || c.includes("angaj");
-  };
-
-  // ✅ helper: ia listing din payload indiferent de format
-  const pickListingFromPayload = (payload) => {
-    if (!payload) return null;
-    return (
-      payload.listing ||
-      payload.draft ||
-      payload.data?.listing ||
-      payload.data?.draft ||
-      payload
-    );
-  };
-
-  // ✅ încărcare pentru edit: încearcă public + draft
+  // ✅ fetch pentru edit (încearcă public + draft, no-store)
   const fetchForEdit = async (id, token) => {
     const tries = [
-      `${API_URL}/listings/${id}`,
-      `${API_URL}/listings/draft/${id}`,
+      `${API_URL}/listings/${id}?_=${Date.now()}`,
+      `${API_URL}/listings/draft/${id}?_=${Date.now()}`,
     ];
 
     let lastErr = null;
@@ -114,8 +114,10 @@ export default function Angajari() {
     for (const url of tries) {
       try {
         const res = await fetch(url, {
+          cache: "no-store",
           headers: { Authorization: `Bearer ${token}` },
         });
+
         const payload = await res.json().catch(() => null);
         const l = pickListingFromPayload(payload);
 
@@ -132,17 +134,22 @@ export default function Angajari() {
     throw new Error(lastErr || "Nu pot încărca anunțul pentru editare.");
   };
 
-  // ✅ SALVARE robustă: JSON + fallback FormData
-  const saveListingEdits = async (id, token, obj) => {
-    const jsonTries = [
-      { url: `${API_URL}/listings/${id}`, method: "PUT" },
-      { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
-    ];
+  // ✅ Salvare: încearcă ENDPOINTUL CORECT ÎN PRIMUL RÂND (draft vs public) + JSON + fallback FormData
+  const saveListingEdits = async (id, token, obj, draftFirst = false) => {
+    const order = draftFirst
+      ? [
+          { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
+          { url: `${API_URL}/listings/${id}`, method: "PUT" },
+        ]
+      : [
+          { url: `${API_URL}/listings/${id}`, method: "PUT" },
+          { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
+        ];
 
     let lastErr = null;
 
     // 1) JSON
-    for (const t of jsonTries) {
+    for (const t of order) {
       try {
         const res = await fetch(t.url, {
           method: t.method,
@@ -170,12 +177,7 @@ export default function Angajari() {
       if (v !== undefined && v !== null) fd.append(k, String(v));
     });
 
-    const fdTries = [
-      { url: `${API_URL}/listings/${id}`, method: "PUT" },
-      { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
-    ];
-
-    for (const t of fdTries) {
+    for (const t of order) {
       try {
         const res = await fetch(t.url, {
           method: t.method,
@@ -197,7 +199,6 @@ export default function Angajari() {
     throw new Error(lastErr || "Nu pot salva modificările.");
   };
 
-  // ✅ deschidem modal în edit (folosit și din URL și din butonul de pe card)
   const openEditJob = async (id, fromUrl = false) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -220,10 +221,11 @@ export default function Angajari() {
       }
 
       const realId = String(l._id || l.id || id);
+      const draft = String(l?.visibility || "").toLowerCase() === "draft";
 
       setEditing(true);
       setEditingId(realId);
-      setIsDraftJob(String(l?.visibility || "").toLowerCase() === "draft");
+      setIsDraftJob(draft);
 
       setForm({
         title: l?.title || "",
@@ -242,14 +244,14 @@ export default function Angajari() {
     }
   };
 
-  // ✅ dacă avem ?edit=..., intrăm automat în edit
+  // auto-edit din URL
   useEffect(() => {
     if (!editIdFromUrl) return;
     openEditJob(editIdFromUrl, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editIdFromUrl]);
 
-  // ✅ creare draft + checkout (job nou)
+  // job nou: draft + checkout
   const startPaidJobCheckout = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -291,10 +293,7 @@ export default function Angajari() {
         draftData?._id ||
         draftData?.listing?._id;
 
-      if (!listingId) {
-        alert("Nu am primit ID-ul draftului.");
-        return;
-      }
+      if (!listingId) return alert("Nu am primit ID-ul draftului.");
 
       const payRes = await fetch(`${API_URL}/stripe/create-checkout-session`, {
         method: "POST",
@@ -316,7 +315,7 @@ export default function Angajari() {
     }
   };
 
-  // ✅ salvare edit (NU te duce la plată!)
+  // ✅ edit: SALVEAZĂ și confirmă prin re-fetch
   const saveJobEdits = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -342,9 +341,21 @@ export default function Angajari() {
         intent: "vand",
       };
 
-      await saveListingEdits(editingId, token, payload);
+      // ✅ dacă e draft, încercăm draft endpoint primul
+      await saveListingEdits(editingId, token, payload, isDraftJob);
 
-      setNotice("✅ Salvat! Acum poți continua către plată (dacă este draft).");
+      // ✅ confirmare reală: re-fetch și update form
+      const latest = await fetchForEdit(editingId, token);
+      setIsDraftJob(String(latest?.visibility || "").toLowerCase() === "draft");
+      setForm({
+        title: latest?.title || "",
+        description: latest?.description || "",
+        location: latest?.location || "Oltenița",
+        phone: latest?.phone || localStorage.getItem("userPhone") || "",
+        email: latest?.email || "",
+      });
+
+      setNotice("✅ Salvat! (confirmat din baza de date)");
       fetchJobs();
     } catch (e) {
       alert(e?.message || "Eroare la salvarea modificărilor.");
@@ -353,7 +364,6 @@ export default function Angajari() {
     }
   };
 
-  // ✅ plata pentru draft (se apasă DOAR când vrei tu)
   const continueDraftPayment = async () => {
     try {
       if (!editingId) return alert("Lipsește ID-ul.");
@@ -402,7 +412,7 @@ export default function Angajari() {
     if (editIdFromUrl) navigate("/angajari", { replace: true });
   };
 
-  // ✅ arătăm buton “Editează” pe card doar dacă e job-ul meu (după telefon)
+  // ✅ buton edit pe card doar dacă e al meu (după telefon)
   const myPhone = normalizePhone(localStorage.getItem("userPhone") || "");
   const canEditJob = (j) => {
     const token = localStorage.getItem("token");
@@ -419,8 +429,7 @@ export default function Angajari() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Angajări</h1>
               <p className="mt-2 text-gray-600">
-                Anunțuri de locuri de muncă și colaborări în Oltenița și localitățile din jur.{" "}
-                <span className="font-semibold">Publicarea este doar plătită</span> și anunțul devine automat promovat 30 zile.
+                Anunțuri de locuri de muncă și colaborări. <span className="font-semibold">Publicarea este doar plătită</span>.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -458,9 +467,6 @@ export default function Angajari() {
             {!loading && !err && jobs.length === 0 && (
               <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
                 Nu există încă anunțuri de angajare.
-                <div className="mt-2 text-sm text-gray-500">
-                  Publică primul anunț (plătit) și va fi afișat aici.
-                </div>
               </div>
             )}
 
@@ -468,12 +474,6 @@ export default function Angajari() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
                   <div key={j._id} className="relative bg-white rounded-xl border shadow-sm p-5">
-                    {j.featuredUntil && new Date(j.featuredUntil).getTime() > Date.now() && (
-                      <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                        ⭐ PROMOVAT
-                      </span>
-                    )}
-
                     <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
                       <img
                         src={(j?.images && j.images[0]) || angajariImg}
@@ -497,7 +497,6 @@ export default function Angajari() {
                       <span>ID: {String(j._id).slice(-6).toUpperCase()}</span>
                     </div>
 
-                    {/* ✅ Buton edit pe card (doar dacă e job-ul meu) */}
                     {canEditJob(j) && (
                       <div className="mt-4">
                         <button
@@ -517,7 +516,6 @@ export default function Angajari() {
         </div>
       </div>
 
-      {/* MODAL FORM */}
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
@@ -530,13 +528,9 @@ export default function Angajari() {
 
             <p className="text-sm text-gray-600 mt-2">
               {editing ? (
-                <>
-                  Editezi anunțul existent. <b>Întâi salvezi</b>, apoi (dacă e draft) poți plăti.
-                </>
+                <>Întâi <b>salvezi</b>. Apoi (dacă e draft) poți plăti.</>
               ) : (
-                <>
-                  Completezi anunțul, se salvează ca draft și apoi mergi la plată.
-                </>
+                <>Se creează draft și apoi mergi la plată.</>
               )}
             </p>
 
@@ -547,43 +541,18 @@ export default function Angajari() {
             )}
 
             <div className="mt-4 space-y-3">
-              <input
-                className="w-full border rounded-lg px-3 py-2"
-                placeholder="Titlu (ex: Angajăm vânzătoare magazin)"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-
-              <input
-                className="w-full border rounded-lg px-3 py-2"
-                placeholder="Localitate (ex: Oltenița)"
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-              />
-
-              <input
-                className="w-full border rounded-lg px-3 py-2"
-                placeholder="Telefon"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-
-              <input
-                className="w-full border rounded-lg px-3 py-2"
-                placeholder="Email (opțional)"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-
-              <textarea
-                className="w-full border rounded-lg px-3 py-2 h-28"
-                placeholder="Descriere (program, cerințe, salariu, etc.)"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
+              <input className="w-full border rounded-lg px-3 py-2" placeholder="Titlu"
+                value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <input className="w-full border rounded-lg px-3 py-2" placeholder="Localitate"
+                value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+              <input className="w-full border rounded-lg px-3 py-2" placeholder="Telefon"
+                value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <input className="w-full border rounded-lg px-3 py-2" placeholder="Email (opțional)"
+                value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <textarea className="w-full border rounded-lg px-3 py-2 h-28" placeholder="Descriere"
+                value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
 
-            {/* ✅ Butoane corecte: la edit -> SALVEAZĂ mereu, și separat plata (dacă e draft) */}
             {!editing ? (
               <button
                 disabled={sending}
@@ -606,17 +575,10 @@ export default function Angajari() {
                   disabled={sending || !isDraftJob}
                   onClick={continueDraftPayment}
                   className="w-full rounded-xl bg-green-600 text-white py-2 font-semibold disabled:opacity-40"
-                  title={!isDraftJob ? "Plata este disponibilă doar pentru drafturi" : ""}
                 >
                   {sending ? "Se procesează..." : "Continuă către plată"}
                 </button>
               </div>
-            )}
-
-            {!editing && (
-              <p className="mt-3 text-xs text-gray-500">
-                După plată, anunțul va apărea automat în lista de angajări ca “Promovat”.
-              </p>
             )}
           </div>
         </div>
