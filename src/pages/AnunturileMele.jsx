@@ -113,6 +113,30 @@ export default function AnunturileMele() {
     );
   }
 
+  // ✅ detectăm dacă anunțul e de tip angajări (robust la diacritice / litere mari)
+  const isJobListing = (listing) => {
+    const cat = String(listing?.category || "").toLowerCase();
+    const type = String(listing?.type || "").toLowerCase();
+    const kind = String(listing?.kind || "").toLowerCase();
+    const section = String(listing?.section || "").toLowerCase();
+
+    return (
+      cat.includes("angaj") ||
+      type.includes("angaj") ||
+      kind.includes("angaj") ||
+      section.includes("angaj")
+    );
+  };
+
+  // ✅ ruta corectă de editare, în funcție de tip
+  // Pentru angajări NU avem rută separată de editare, deci folosim /angajari?edit=<id>
+  const getEditPath = (listing) => {
+    const id = String(listing?._id || listing?.id || "");
+    if (!id) return "/";
+
+    return isJobListing(listing) ? `/angajari?edit=${encodeURIComponent(id)}` : `/editeaza-anunt/${id}`;
+  };
+
   const Card = ({ listing, isDraft }) => (
     <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
       <div>
@@ -153,11 +177,11 @@ export default function AnunturileMele() {
         </Link>
 
         <Link
-  to={`/editeaza-anunt/${String(listing._id || listing.id || "")}`}
-  className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
->
-  Editează
-</Link>
+          to={getEditPath(listing)}
+          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Editează
+        </Link>
 
         <button
           type="button"
