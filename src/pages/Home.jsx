@@ -226,12 +226,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BANNER PARTENER */}
-      <section className="max-w-7xl mx-auto mt-12 px-4">
-        <div className="bg-white rounded-2xl shadow-md p-6 flex justify-center">
-          <PromoBanner />
+      {/* BANNERE: PARTENER + ANGAJĂRI */}
+<section className="max-w-7xl mx-auto mt-12 px-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* PARTENER */}
+    <div className="bg-white rounded-2xl shadow-md p-6 flex justify-center">
+      <PromoBanner />
+    </div>
+
+    {/* ANGAJĂRI */}
+    <Link
+      to="/angajari"
+      className="relative bg-white rounded-2xl shadow-md p-6 overflow-hidden border hover:shadow-lg transition"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            Angajări
+          </span>
+
+          <h3 className="mt-3 text-xl font-bold text-gray-900">
+            Joburi & colaborări în zonă
+          </h3>
+
+          <p className="mt-1 text-sm text-gray-600">
+            Caută locuri de muncă sau publică anunțuri de angajare rapid.
+          </p>
+
+          <div className="mt-4 inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
+            Intră la Angajări →
+          </div>
         </div>
-      </section>
+
+        {/* icon simplu (fără imagine externă) */}
+        <div className="hidden sm:flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 text-2xl font-bold">
+          💼
+        </div>
+      </div>
+
+      {/* decor discret */}
+      <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-blue-50 opacity-70" />
+      <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
+    </Link>
+  </div>
+</section>
 
       {/* BUTOANE VIEW (doar pentru anunțuri) */}
       <div className="max-w-6xl mx-auto px-4 mt-10">
