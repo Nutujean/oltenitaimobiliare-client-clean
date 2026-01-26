@@ -235,38 +235,45 @@ export default function Home() {
           </div>
 
           {/* ANGAJĂRI */}
-          <Link
-            to="/angajari"
-            className="relative bg-white rounded-2xl shadow-md overflow-hidden border hover:shadow-lg transition"
-          >
-            {/* imagine header */}
-            <div className="relative">
-              <img
-  src={angajariImg}
-  alt="Angajări în Oltenița"
-  className="w-full h-32 sm:h-36 object-cover object-center scale-[1.06]"
-/>
-<div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-transparent" />
-              <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-blue-700">
-                💼 Angajări
-              </span>
-            </div>
+<Link
+  to="/angajari"
+  className="relative bg-white rounded-2xl shadow-md border overflow-hidden hover:shadow-lg transition"
+>
+  <div className="flex">
+    {/* stânga: text */}
+    <div className="flex-1 p-6 relative z-10">
+      <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+        💼 Angajări
+      </span>
 
-            {/* conținut */}
-            <div className="p-5">
-              <h3 className="text-xl font-bold text-gray-900">
-                Joburi & colaborări în zonă
-              </h3>
+      <h3 className="mt-3 text-xl font-bold text-gray-900">
+        Joburi & colaborări în zonă
+      </h3>
 
-              <p className="mt-1 text-sm text-gray-600">
-                Caută locuri de muncă sau publică anunțuri de angajare rapid.
-              </p>
+      <p className="mt-1 text-sm text-gray-600">
+        Caută locuri de muncă sau publică anunțuri de angajare rapid.
+      </p>
 
-              <div className="mt-4 inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
-                Intră la Angajări →
-              </div>
-            </div>
+      <div className="mt-4 inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
+        Intră la Angajări →
+      </div>
+    </div>
 
+    {/* dreapta: imagine (discretă) */}
+    <div className="hidden sm:block w-52 relative">
+      <img
+        src={angajariImg}
+        alt="Angajări"
+        className="h-full w-full object-cover object-right"
+      />
+      {/* gradient ca să nu “bată” peste text */}
+      <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
+    </div>
+  </div>
+
+  {/* decor discret */}
+  <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
+</Link>
             {/* decor discret */}
             <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-blue-50 opacity-70" />
             <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
