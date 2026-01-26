@@ -87,7 +87,7 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
-      setListings((prev) => prev.filter((l) => l._id !== id));
+      setListings((prev) => prev.filter((l) => (l._id || l.id) !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
       console.error("Eroare la ștergere anunț:", err);
@@ -119,7 +119,7 @@ export default function AnunturileMele() {
     );
   }
 
-  // ✅ Detectăm strict “Angajări/Joburi/Locuri de muncă” (cu/fără diacritice)
+  // ✅ Detectăm “Angajări/Joburi/Locuri de muncă” (cu/fără diacritice)
   const isJobListing = (listing) => {
     const cat = normText(listing?.category);
     const type = normText(listing?.type);
@@ -130,7 +130,6 @@ export default function AnunturileMele() {
       cat.includes("angaj") ||
       cat.includes("job") ||
       cat.includes("locuri de munca") ||
-      cat.includes("munca") ||
       type.includes("angaj") ||
       type.includes("job") ||
       section.includes("angaj") ||
@@ -138,6 +137,15 @@ export default function AnunturileMele() {
       kind.includes("angaj") ||
       kind.includes("job")
     );
+  };
+
+  // ✅ Ruta de “Vezi detalii” (important!)
+  const getDetailsPath = (listing) => {
+    const id = String(listing?._id || listing?.id || "");
+    if (!id) return "/";
+
+    // pentru joburi nu mai mergem pe /anunt/:id (ăla e imobiliare)
+    return isJobListing(listing) ? `/angajari?view=${encodeURIComponent(id)}` : `/anunt/${id}`;
   };
 
   // ✅ Ruta de editare
@@ -183,7 +191,7 @@ export default function AnunturileMele() {
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
-          to={`/anunt/${listing._id || listing.id}`}
+          to={getDetailsPath(listing)}
           className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
         >
           Vezi detalii
@@ -235,17 +243,19 @@ export default function AnunturileMele() {
         </div>
       )}
 
+      {/* DRAFTURI */}
       {drafts.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {drafts.map((l) => (
-              <Card key={l._id} listing={l} isDraft />
+              <Card key={l._id || l.id} listing={l} isDraft />
             ))}
           </div>
         </div>
       )}
 
+      {/* PUBLICATE */}
       <div>
         <h2 className="text-lg font-bold mb-3">Anunțuri publicate</h2>
 
@@ -254,7 +264,7 @@ export default function AnunturileMele() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {published.map((l) => (
-              <Card key={l._id} listing={l} isDraft={false} />
+              <Card key={l._id || l.id} listing={l} isDraft={false} />
             ))}
           </div>
         )}
