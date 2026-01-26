@@ -10,7 +10,7 @@ function normalizePhone(value) {
   return digits.replace(/^4/, "");
 }
 
-// ✅ normalizare text (diacritice + lowercase)
+// ✅ normalizare text (lowercase + fără diacritice)
 function normText(v) {
   return String(v || "")
     .toLowerCase()
@@ -35,7 +35,6 @@ export default function AnunturileMele() {
       return;
     }
 
-    // (îl păstrez, chiar dacă nu-l folosești acum)
     normalizePhone(userPhoneRaw);
 
     const fetchMyListings = async () => {
@@ -98,7 +97,6 @@ export default function AnunturileMele() {
 
   // ⭐ Plătește/Publică (pentru draft) / Promovează (pentru public)
   const handlePayOrPromote = (id) => {
-    // păstrăm flow-ul tău existent: detaliu anunț
     navigate(`/anunt/${id}`);
   };
 
@@ -107,7 +105,7 @@ export default function AnunturileMele() {
     const p = [];
     for (const l of listings) {
       if (l?.visibility === "draft") d.push(l);
-      else p.push(l); // include și anunțurile vechi fără visibility
+      else p.push(l);
     }
     return { drafts: d, published: p };
   }, [listings]);
@@ -121,48 +119,28 @@ export default function AnunturileMele() {
     );
   }
 
-  // ✅ liste categorie imobiliare (dacă se potrivește cu una din astea => e imobiliare)
-  const REAL_ESTATE_CATEGORIES = [
-    "apartamente",
-    "case",
-    "garsoniere",
-    "terenuri",
-    "spatiu comercial",
-    "spatiu_comercial",
-    "spațiu comercial",
-    "garaj",
-    "imobiliare",
-  ];
-
-  // ✅ detectăm dacă e angajări/job (întâi pozitiv), apoi fallback: dacă NU e imobiliare => tratăm ca angajări
+  // ✅ Detectăm strict “Angajări/Joburi/Locuri de muncă” (cu/fără diacritice)
   const isJobListing = (listing) => {
     const cat = normText(listing?.category);
     const type = normText(listing?.type);
-    const kind = normText(listing?.kind);
     const section = normText(listing?.section);
+    const kind = normText(listing?.kind);
 
-    const positive =
+    return (
       cat.includes("angaj") ||
       cat.includes("job") ||
+      cat.includes("locuri de munca") ||
       cat.includes("munca") ||
-      cat.includes("locuri") ||
       type.includes("angaj") ||
       type.includes("job") ||
-      kind.includes("angaj") ||
-      kind.includes("job") ||
       section.includes("angaj") ||
-      section.includes("job");
-
-    const isRealEstate = REAL_ESTATE_CATEGORIES.some((x) => cat === x || cat.includes(x));
-
-    // dacă e clar job => job
-    if (positive) return true;
-
-    // fallback: dacă NU e una dintre categoriile de imobiliare => o tratăm ca job (ca să nu mai ajungă la imobiliare)
-    return !isRealEstate;
+      section.includes("job") ||
+      kind.includes("angaj") ||
+      kind.includes("job")
+    );
   };
 
-  // ✅ ruta corectă de editare, în funcție de tip
+  // ✅ Ruta de editare
   const getEditPath = (listing) => {
     const id = String(listing?._id || listing?.id || "");
     if (!id) return "/";
@@ -212,16 +190,12 @@ export default function AnunturileMele() {
         </Link>
 
         <Link
-  to={(() => {
-    const id = String(listing?._id || listing?.id || "");
-    const cat = String(listing?.category || "");
-    const isJob = cat.toLowerCase().includes("angaj");
-    return isJob ? `/angajari?edit=${encodeURIComponent(id)}` : `/editeaza-anunt/${id}`;
-  })()}
-  className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
->
-  Editează
-</Link>
+          to={getEditPath(listing)}
+          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Editează
+        </Link>
+
         <button
           type="button"
           onClick={() => handlePayOrPromote(listing._id || listing.id)}
@@ -261,7 +235,6 @@ export default function AnunturileMele() {
         </div>
       )}
 
-      {/* DRAFTURI */}
       {drafts.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
@@ -273,7 +246,6 @@ export default function AnunturileMele() {
         </div>
       )}
 
-      {/* PUBLICATE */}
       <div>
         <h2 className="text-lg font-bold mb-3">Anunțuri publicate</h2>
 
