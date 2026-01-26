@@ -242,18 +242,18 @@ export default function Home() {
             {/* imagine header */}
             <div className="relative">
               <img
-                src={angajariImg}
-                alt="Angajări în Oltenița"
-                className="w-full h-44 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/10" />
+  src={angajariImg}
+  alt="Angajări în Oltenița"
+  className="w-full h-32 sm:h-36 object-cover object-center scale-[1.06]"
+/>
+<div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-transparent" />
               <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-blue-700">
                 💼 Angajări
               </span>
             </div>
 
             {/* conținut */}
-            <div className="p-6">
+            <div className="p-5">
               <h3 className="text-xl font-bold text-gray-900">
                 Joburi & colaborări în zonă
               </h3>
