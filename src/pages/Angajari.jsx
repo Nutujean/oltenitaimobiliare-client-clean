@@ -83,6 +83,71 @@ export default function Angajari() {
     return s.includes("angaj") || c.includes("angaj");
   };
 
+  // ✅ SALVARE robustă: JSON (principal) + fallback FormData (dacă backend are multer pe PUT)
+  const saveListingEdits = async (id, token, obj) => {
+    const jsonTries = [
+      { url: `${API_URL}/listings/${id}`, method: "PUT" },
+      { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
+    ];
+
+    let lastErr = null;
+
+    // 1) încercăm JSON
+    for (const t of jsonTries) {
+      try {
+        const res = await fetch(t.url, {
+          method: t.method,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        });
+
+        const payload = await res.json().catch(() => null);
+        if (!res.ok) {
+          lastErr = payload?.error || `Nu pot salva (${res.status}).`;
+          continue;
+        }
+        return true;
+      } catch (e) {
+        lastErr = "Eroare de rețea la salvare (JSON).";
+      }
+    }
+
+    // 2) fallback: FormData
+    const fd = new FormData();
+    Object.entries(obj || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) fd.append(k, String(v));
+    });
+
+    const fdTries = [
+      { url: `${API_URL}/listings/${id}`, method: "PUT" },
+      { url: `${API_URL}/listings/draft/${id}`, method: "PUT" },
+    ];
+
+    for (const t of fdTries) {
+      try {
+        const res = await fetch(t.url, {
+          method: t.method,
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+
+        const payload = await res.json().catch(() => null);
+        if (!res.ok) {
+          lastErr = payload?.error || `Nu pot salva (${res.status}).`;
+          continue;
+        }
+        return true;
+      } catch (e) {
+        lastErr = "Eroare de rețea la salvare (FormData).";
+      }
+    }
+
+    throw new Error(lastErr || "Nu pot salva modificările.");
+  };
+
   // ✅ deschidem modalul în edit dacă avem ?edit=<id>
   useEffect(() => {
     const run = async () => {
@@ -150,7 +215,12 @@ export default function Angajari() {
       const token = localStorage.getItem("token");
       if (!token) return alert("Trebuie să fii logat ca să publici un job.");
 
-      if (!form.title.trim() || !form.description.trim() || !form.location.trim() || !form.phone.trim()) {
+      if (
+        !form.title.trim() ||
+        !form.description.trim() ||
+        !form.location.trim() ||
+        !form.phone.trim()
+      ) {
         return alert("Completează obligatoriu: Titlu, Descriere, Localitate, Telefon.");
       }
 
@@ -201,47 +271,43 @@ export default function Angajari() {
     }
   };
 
-  // ✅ salvare edit (PUT)
+  // ✅ salvare edit (PUT) — FIX: trimitem JSON (și fallback în saveListingEdits)
   const saveJobEdits = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return alert("Trebuie să fii logat ca să editezi un job.");
       if (!editingId) return alert("Lipsește ID-ul de editare.");
 
-      if (!form.title.trim() || !form.description.trim() || !form.location.trim() || !form.phone.trim()) {
+      if (
+        !form.title.trim() ||
+        !form.description.trim() ||
+        !form.location.trim() ||
+        !form.phone.trim()
+      ) {
         return alert("Completează obligatoriu: Titlu, Descriere, Localitate, Telefon.");
       }
 
       setSending(true);
 
-      const fd = new FormData();
-      fd.append("title", form.title.trim());
-      fd.append("description", form.description.trim());
-      fd.append("location", form.location.trim());
-      fd.append("phone", form.phone.trim());
-      fd.append("email", (form.email || "").trim());
-      fd.append("category", "Angajări");
-      fd.append("section", "angajari");
-      fd.append("price", "1");
-      fd.append("intent", "vand");
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        location: form.location.trim(),
+        phone: form.phone.trim(),
+        email: (form.email || "").trim(),
+        category: "Angajări",
+        section: "angajari",
+        price: 1,
+        intent: "vand",
+      };
 
-      const res = await fetch(`${API_URL}/listings/${editingId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-
-      const payload = await res.json();
-      if (!res.ok) {
-        alert(payload?.error || "Nu pot salva modificările.");
-        return;
-      }
+      await saveListingEdits(editingId, token, payload);
 
       alert("✅ Modificările au fost salvate.");
       closeModal(true);
       fetchJobs();
     } catch (e) {
-      alert("Eroare la salvarea modificărilor.");
+      alert(e?.message || "Eroare la salvarea modificărilor.");
     } finally {
       setSending(false);
     }
@@ -304,8 +370,9 @@ export default function Angajari() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Angajări</h1>
               <p className="mt-2 text-gray-600">
-                Anunțuri de locuri de muncă și colaborări în Oltenița și localitățile din jur.{" "}
-                <span className="font-semibold">Publicarea este doar plătită</span> și anunțul devine automat promovat 30 zile.
+                Anunțuri de locuri de muncă și colaborări în Oltenița și localitățile din
+                jur. <span className="font-semibold">Publicarea este doar plătită</span>{" "}
+                și anunțul devine automat promovat 30 zile.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -355,12 +422,16 @@ export default function Angajari() {
             {!loading && !err && jobs.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
-                  <div key={j._id} className="relative bg-white rounded-xl border shadow-sm p-5">
-                    {j.featuredUntil && new Date(j.featuredUntil).getTime() > Date.now() && (
-                      <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                        ⭐ PROMOVAT
-                      </span>
-                    )}
+                  <div
+                    key={j._id}
+                    className="relative bg-white rounded-xl border shadow-sm p-5"
+                  >
+                    {j.featuredUntil &&
+                      new Date(j.featuredUntil).getTime() > Date.now() && (
+                        <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                          ⭐ PROMOVAT
+                        </span>
+                      )}
 
                     <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
                       <img
@@ -375,12 +446,18 @@ export default function Angajari() {
                     <p className="text-sm text-gray-600 mt-1">{j.location}</p>
 
                     {j.description && (
-                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>
+                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">
+                        {j.description}
+                      </p>
                     )}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <span>
-                        {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
+                        {j.createdAt
+                          ? `Publicat: ${new Date(j.createdAt).toLocaleDateString(
+                              "ro-RO"
+                            )}`
+                          : ""}
                       </span>
                       <span>ID: {String(j._id).slice(-6).toUpperCase()}</span>
                     </div>
@@ -397,8 +474,14 @@ export default function Angajari() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-xl font-bold">{editing ? "Editează job" : "Publică job (plătit)"}</h3>
-              <button className="px-3 py-1 rounded-lg border" onClick={() => closeModal(true)} disabled={sending}>
+              <h3 className="text-xl font-bold">
+                {editing ? "Editează job" : "Publică job (plătit)"}
+              </h3>
+              <button
+                className="px-3 py-1 rounded-lg border"
+                onClick={() => closeModal(true)}
+                disabled={sending}
+              >
                 Închide
               </button>
             </div>
@@ -406,11 +489,15 @@ export default function Angajari() {
             <p className="text-sm text-gray-600 mt-2">
               {editing ? (
                 <>
-                  Modifici anunțul existent. {isDraftJob ? "Este DRAFT — poți continua către plată." : "Apasă Salvează modificările."}
+                  Modifici anunțul existent.{" "}
+                  {isDraftJob
+                    ? "Este DRAFT — poți continua către plată."
+                    : "Apasă Salvează modificările."}
                 </>
               ) : (
                 <>
-                  Publicarea este contra cost și anunțul devine automat <b>promovat 30 zile</b>.
+                  Publicarea este contra cost și anunțul devine automat{" "}
+                  <b>promovat 30 zile</b>.
                 </>
               )}
             </p>
@@ -448,7 +535,9 @@ export default function Angajari() {
                 className="w-full border rounded-lg px-3 py-2 h-28"
                 placeholder="Descriere (program, cerințe, salariu, etc.)"
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
               />
             </div>
 
@@ -475,7 +564,8 @@ export default function Angajari() {
 
             {!editing && (
               <p className="mt-3 text-xs text-gray-500">
-                După plată, anunțul va apărea automat în lista de angajări ca “Promovat”.
+                După plată, anunțul va apărea automat în lista de angajări ca
+                “Promovat”.
               </p>
             )}
           </div>
