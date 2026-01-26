@@ -1,10 +1,18 @@
 // src/pages/Angajari.jsx
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 import angajariImg from "../assets/angajari.png";
 
 export default function Angajari() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const editId = useMemo(() => {
+    const sp = new URLSearchParams(location.search);
+    return sp.get("edit") || "";
+  }, [location.search]);
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -12,6 +20,9 @@ export default function Angajari() {
   // modal + form
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editingId, setEditingId] = useState("");
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -19,6 +30,16 @@ export default function Angajari() {
     phone: localStorage.getItem("userPhone") || "",
     email: "",
   });
+
+  const resetForm = () => {
+    setForm({
+      title: "",
+      description: "",
+      location: "Oltenița",
+      phone: localStorage.getItem("userPhone") || "",
+      email: "",
+    });
+  };
 
   const fetchJobs = async () => {
     try {
@@ -52,6 +73,67 @@ export default function Angajari() {
     fetchJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ✅ Dacă venim din "Anunțurile mele" cu ?edit=<id>, intrăm în modul edit
+  useEffect(() => {
+    const run = async () => {
+      if (!editId) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Trebuie să fii logat ca să editezi un job.");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        setSending(true);
+        setErr("");
+
+        const res = await fetch(`${API_URL}/listings/${editId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data?.ok || !data?.listing) {
+          throw new Error(data?.error || "Nu pot încărca anunțul pentru editare.");
+        }
+
+        const l = data.listing;
+
+        // Protecție: să fie într-adevăr job (section angajari sau category Angajări)
+        const isJob =
+          String(l?.section || "").toLowerCase().includes("angaj") ||
+          String(l?.category || "").toLowerCase().includes("angaj");
+
+        if (!isJob) {
+          alert("Acest anunț nu este de tip angajări.");
+          // curățăm query
+          navigate("/angajari", { replace: true });
+          return;
+        }
+
+        setEditing(true);
+        setEditingId(editId);
+        setForm({
+          title: l?.title || "",
+          description: l?.description || "",
+          location: l?.location || "Oltenița",
+          phone: l?.phone || localStorage.getItem("userPhone") || "",
+          email: l?.email || "",
+        });
+
+        setOpen(true);
+      } catch (e) {
+        alert(e.message || "Eroare la încărcarea anunțului.");
+        navigate("/angajari", { replace: true });
+      } finally {
+        setSending(false);
+      }
+    };
+
+    run();
+  }, [editId, navigate]);
 
   const startPaidJobCheckout = async () => {
     try {
@@ -119,10 +201,87 @@ export default function Angajari() {
     }
   };
 
+  // ✅ Salvare modificări (edit)
+  const saveJobEdits = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Trebuie să fii logat ca să editezi un job.");
+
+      if (!editingId) return alert("Lipsește ID-ul de editare.");
+
+      if (
+        !form.title.trim() ||
+        !form.description.trim() ||
+        !form.location.trim() ||
+        !form.phone.trim()
+      ) {
+        return alert("Completează obligatoriu: Titlu, Descriere, Localitate, Telefon.");
+      }
+
+      setSending(true);
+
+      // trimitem FormData ca să fie compatibil cu multer dacă route-ul tău așa e
+      const fd = new FormData();
+      fd.append("title", form.title.trim());
+      fd.append("description", form.description.trim());
+      fd.append("location", form.location.trim());
+      fd.append("phone", form.phone.trim());
+      fd.append("email", (form.email || "").trim());
+      // păstrăm explicit job flags
+      fd.append("category", "Angajări");
+      fd.append("section", "angajari");
+      fd.append("price", "1");
+      fd.append("intent", "vand");
+
+      const res = await fetch(`${API_URL}/listings/${editingId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data?.error || "Nu pot salva modificările.");
+        return;
+      }
+
+      alert("✅ Modificările au fost salvate.");
+      setOpen(false);
+      setEditing(false);
+      setEditingId("");
+      resetForm();
+
+      // curățăm query-ul ?edit=...
+      navigate("/angajari", { replace: true });
+
+      // refresh listă
+      fetchJobs();
+    } catch (e) {
+      alert("Eroare la salvarea modificărilor.");
+    } finally {
+      setSending(false);
+    }
+  };
+
   const openModal = () => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Trebuie să fii logat ca să publici un job.");
+
+    // mod publicare nouă
+    setEditing(false);
+    setEditingId("");
+    resetForm();
     setOpen(true);
+  };
+
+  const closeModal = () => {
+    if (sending) return;
+    setOpen(false);
+    setEditing(false);
+    setEditingId("");
+    resetForm();
+    // dacă era în edit, curățăm URL-ul
+    if (editId) navigate("/angajari", { replace: true });
   };
 
   return (
@@ -196,7 +355,6 @@ export default function Angajari() {
                         </span>
                       )}
 
-                    {/* ✅ IMAGINE fallback (dacă jobul nu are poze) */}
                     <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
                       <img
                         src={(j?.images && j.images[0]) || angajariImg}
@@ -238,10 +396,12 @@ export default function Angajari() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-xl font-bold">Publică job (plătit)</h3>
+              <h3 className="text-xl font-bold">
+                {editing ? "Editează job" : "Publică job (plătit)"}
+              </h3>
               <button
                 className="px-3 py-1 rounded-lg border"
-                onClick={() => setOpen(false)}
+                onClick={closeModal}
                 disabled={sending}
               >
                 Închide
@@ -249,8 +409,16 @@ export default function Angajari() {
             </div>
 
             <p className="text-sm text-gray-600 mt-2">
-              Publicarea este contra cost și anunțul devine automat{" "}
-              <b>promovat 30 zile</b>.
+              {editing ? (
+                <>
+                  Modifici anunțul existent. Apasă <b>Salvează modificările</b>.
+                </>
+              ) : (
+                <>
+                  Publicarea este contra cost și anunțul devine automat{" "}
+                  <b>promovat 30 zile</b>.
+                </>
+              )}
             </p>
 
             <div className="mt-4 space-y-3">
@@ -286,24 +454,27 @@ export default function Angajari() {
                 className="w-full border rounded-lg px-3 py-2 h-28"
                 placeholder="Descriere (program, cerințe, salariu, etc.)"
                 value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
 
             <button
               disabled={sending}
-              onClick={startPaidJobCheckout}
+              onClick={editing ? saveJobEdits : startPaidJobCheckout}
               className="mt-5 w-full rounded-xl bg-blue-700 text-white py-2 font-semibold disabled:opacity-60"
             >
-              {sending ? "Se inițiază plata..." : "Continuă către plată"}
+              {sending
+                ? "Se procesează..."
+                : editing
+                ? "Salvează modificările"
+                : "Continuă către plată"}
             </button>
 
-            <p className="mt-3 text-xs text-gray-500">
-              După plată, anunțul va apărea automat în lista de angajări ca
-              “Promovat”.
-            </p>
+            {!editing && (
+              <p className="mt-3 text-xs text-gray-500">
+                După plată, anunțul va apărea automat în lista de angajări ca “Promovat”.
+              </p>
+            )}
           </div>
         </div>
       )}
