@@ -10,6 +10,15 @@ function normalizePhone(value) {
   return digits.replace(/^4/, "");
 }
 
+// ✅ normalizare text (diacritice + lowercase)
+function normText(v) {
+  return String(v || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +48,6 @@ export default function AnunturileMele() {
         });
 
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
 
         const arr = Array.isArray(data) ? data : [];
@@ -113,28 +121,55 @@ export default function AnunturileMele() {
     );
   }
 
-  // ✅ detectăm dacă anunțul e de tip angajări (robust la diacritice / litere mari)
-  const isJobListing = (listing) => {
-    const cat = String(listing?.category || "").toLowerCase();
-    const type = String(listing?.type || "").toLowerCase();
-    const kind = String(listing?.kind || "").toLowerCase();
-    const section = String(listing?.section || "").toLowerCase();
+  // ✅ liste categorie imobiliare (dacă se potrivește cu una din astea => e imobiliare)
+  const REAL_ESTATE_CATEGORIES = [
+    "apartamente",
+    "case",
+    "garsoniere",
+    "terenuri",
+    "spatiu comercial",
+    "spatiu_comercial",
+    "spațiu comercial",
+    "garaj",
+    "imobiliare",
+  ];
 
-    return (
+  // ✅ detectăm dacă e angajări/job (întâi pozitiv), apoi fallback: dacă NU e imobiliare => tratăm ca angajări
+  const isJobListing = (listing) => {
+    const cat = normText(listing?.category);
+    const type = normText(listing?.type);
+    const kind = normText(listing?.kind);
+    const section = normText(listing?.section);
+
+    const positive =
       cat.includes("angaj") ||
+      cat.includes("job") ||
+      cat.includes("munca") ||
+      cat.includes("locuri") ||
       type.includes("angaj") ||
+      type.includes("job") ||
       kind.includes("angaj") ||
-      section.includes("angaj")
-    );
+      kind.includes("job") ||
+      section.includes("angaj") ||
+      section.includes("job");
+
+    const isRealEstate = REAL_ESTATE_CATEGORIES.some((x) => cat === x || cat.includes(x));
+
+    // dacă e clar job => job
+    if (positive) return true;
+
+    // fallback: dacă NU e una dintre categoriile de imobiliare => o tratăm ca job (ca să nu mai ajungă la imobiliare)
+    return !isRealEstate;
   };
 
   // ✅ ruta corectă de editare, în funcție de tip
-  // Pentru angajări NU avem rută separată de editare, deci folosim /angajari?edit=<id>
   const getEditPath = (listing) => {
     const id = String(listing?._id || listing?.id || "");
     if (!id) return "/";
 
-    return isJobListing(listing) ? `/angajari?edit=${encodeURIComponent(id)}` : `/editeaza-anunt/${id}`;
+    return isJobListing(listing)
+      ? `/angajari?edit=${encodeURIComponent(id)}`
+      : `/editeaza-anunt/${id}`;
   };
 
   const Card = ({ listing, isDraft }) => (
