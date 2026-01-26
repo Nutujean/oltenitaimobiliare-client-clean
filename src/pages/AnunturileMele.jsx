@@ -87,17 +87,12 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
-      setListings((prev) => prev.filter((l) => (l._id || l.id) !== id));
+      setListings((prev) => prev.filter((l) => l._id !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
       console.error("Eroare la ștergere anunț:", err);
       setMessage(err.message || "A apărut o eroare la ștergerea anunțului.");
     }
-  };
-
-  // ⭐ Plătește/Publică (pentru draft) / Promovează (pentru public)
-  const handlePayOrPromote = (id) => {
-    navigate(`/anunt/${id}`);
   };
 
   const { drafts, published } = useMemo(() => {
@@ -130,6 +125,7 @@ export default function AnunturileMele() {
       cat.includes("angaj") ||
       cat.includes("job") ||
       cat.includes("locuri de munca") ||
+      cat.includes("munca") ||
       type.includes("angaj") ||
       type.includes("job") ||
       section.includes("angaj") ||
@@ -139,23 +135,39 @@ export default function AnunturileMele() {
     );
   };
 
-  // ✅ Ruta de “Vezi detalii” (important!)
-  const getDetailsPath = (listing) => {
-    const id = String(listing?._id || listing?.id || "");
-    if (!id) return "/";
-
-    // pentru joburi nu mai mergem pe /anunt/:id (ăla e imobiliare)
-    return isJobListing(listing) ? `/angajari?view=${encodeURIComponent(id)}` : `/anunt/${id}`;
-  };
-
   // ✅ Ruta de editare
   const getEditPath = (listing) => {
     const id = String(listing?._id || listing?.id || "");
     if (!id) return "/";
-
     return isJobListing(listing)
       ? `/angajari?edit=${encodeURIComponent(id)}`
       : `/editeaza-anunt/${id}`;
+  };
+
+  // ✅ Ruta pentru "Vezi detalii"
+  // IMPORTANT: Pentru joburi NU mai mergem în /anunt/:id (imobiliare),
+  // ci tot în /angajari?edit=id (acolo ai modalul și editarea)
+  const getDetailsPath = (listing) => {
+    const id = String(listing?._id || listing?.id || "");
+    if (!id) return "/";
+    return isJobListing(listing)
+      ? `/angajari?edit=${encodeURIComponent(id)}`
+      : `/anunt/${id}`;
+  };
+
+  // ⭐ Plătește/Publică (draft) / Promovează (public)
+  // IMPORTANT: Pentru joburi NU mai mergem în /anunt/:id (imobiliare)
+  const handlePayOrPromote = (listing) => {
+    const id = String(listing?._id || listing?.id || "");
+    if (!id) return;
+
+    if (isJobListing(listing)) {
+      navigate(`/angajari?edit=${encodeURIComponent(id)}`);
+      return;
+    }
+
+    // flow-ul tău existent pentru imobiliare
+    navigate(`/anunt/${id}`);
   };
 
   const Card = ({ listing, isDraft }) => (
@@ -206,7 +218,7 @@ export default function AnunturileMele() {
 
         <button
           type="button"
-          onClick={() => handlePayOrPromote(listing._id || listing.id)}
+          onClick={() => handlePayOrPromote(listing)}
           className={`text-sm px-3 py-2 rounded-lg text-white ${
             isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
           }`}
@@ -249,7 +261,7 @@ export default function AnunturileMele() {
           <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {drafts.map((l) => (
-              <Card key={l._id || l.id} listing={l} isDraft />
+              <Card key={l._id} listing={l} isDraft />
             ))}
           </div>
         </div>
@@ -264,7 +276,7 @@ export default function AnunturileMele() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {published.map((l) => (
-              <Card key={l._id || l.id} listing={l} isDraft={false} />
+              <Card key={l._id} listing={l} isDraft={false} />
             ))}
           </div>
         )}
