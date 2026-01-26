@@ -95,12 +95,16 @@ export default function Angajari() {
         });
         const data = await res.json();
 
-        if (!res.ok || !data?.ok || !data?.listing) {
-          throw new Error(data?.error || "Nu pot încărca anunțul pentru editare.");
-        }
+        const data = await res.json();
 
-        const l = data.listing;
+// acceptăm ambele formate:
+// 1) { ok: true, listing: {...} }
+// 2) direct obiectul listingului
+const l = data?.listing || data;
 
+if (!res.ok || !l || (!l._id && !l.id)) {
+  throw new Error(data?.error || "Nu pot încărca anunțul pentru editare.");
+}
         // Protecție: să fie într-adevăr job (section angajari sau category Angajări)
         const isJob =
           String(l?.section || "").toLowerCase().includes("angaj") ||
