@@ -68,33 +68,33 @@ export default function Angajari() {
 
       setSending(true);
 
-      // 1) draft job (section=angajari)
-      const draftRes = await fetch(`${API_URL}/listings/draft`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title: form.title.trim(),
-          description: form.description.trim(),
-          price: 1, // ruta cere numeric; la joburi nu folosim preț
-          category: "Angajări",
-          location: form.location.trim(),
-          phone: form.phone.trim(),
-          email: (form.email || "").trim(),
-          intent: "vand", // doar ca să treacă enum-ul existent
-          section: "angajari",
-        }),
-      });
+      // 1) draft job (section=angajari) — TRIMITEM FormData (multer)
+const fd = new FormData();
+fd.append("title", form.title.trim());
+fd.append("description", form.description.trim());
+fd.append("price", "1");
+fd.append("category", "Angajări");
+fd.append("location", form.location.trim());
+fd.append("phone", form.phone.trim());
+fd.append("email", (form.email || "").trim());
+fd.append("intent", "vand");      // doar ca să treacă enum
+fd.append("section", "angajari"); // IMPORTANT
 
-      const draftData = await draftRes.json();
-      if (!draftRes.ok) {
-        alert(draftData?.error || "Nu pot salva draftul.");
-        return;
-      }
+const draftRes = await fetch(`${API_URL}/listings/draft`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: fd,
+});
 
-      const listingId = draftData.draftId;
+const draftData = await draftRes.json();
+if (!draftRes.ok) {
+  alert(draftData?.error || "Nu pot salva draftul.");
+  return;
+}
+
+const listingId = draftData.draftId;
 
       // 2) Stripe checkout (job30)
       const payRes = await fetch(`${API_URL}/stripe/create-checkout-session`, {
