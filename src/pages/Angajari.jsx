@@ -91,19 +91,18 @@ export default function Angajari() {
         setErr("");
 
         const res = await fetch(`${API_URL}/listings/${editId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-        const data = await res.json();
+const payload = await res.json();
 
 // acceptăm ambele formate:
 // 1) { ok: true, listing: {...} }
 // 2) direct obiectul listingului
-const l = data?.listing || data;
+const l = payload?.listing || payload;
 
 if (!res.ok || !l || (!l._id && !l.id)) {
-  throw new Error(data?.error || "Nu pot încărca anunțul pentru editare.");
+  throw new Error(payload?.error || "Nu pot încărca anunțul pentru editare.");
 }
         // Protecție: să fie într-adevăr job (section angajari sau category Angajări)
         const isJob =
