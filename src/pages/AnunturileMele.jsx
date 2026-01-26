@@ -67,6 +67,58 @@ export default function AnunturileMele() {
 
   const handleAdaugaAnunt = () => navigate("/adauga-anunt");
 
+  // ✅ Detectăm “Angajări/Joburi” (robust)
+  const isJobListing = (listing) => {
+    const cat = normText(listing?.category);
+    const type = normText(listing?.type);
+    const section = normText(listing?.section);
+    const kind = normText(listing?.kind);
+
+    return (
+      section.includes("angaj") ||
+      cat.includes("angaj") ||
+      type.includes("angaj") ||
+      kind.includes("angaj") ||
+      cat.includes("job") ||
+      type.includes("job") ||
+      section.includes("job") ||
+      kind.includes("job")
+    );
+  };
+
+  const getId = (listing) => String(listing?._id || listing?.id || "");
+
+  // ✅ “Detalii” pentru job = pagina Angajari cu edit
+  const getDetailsPath = (listing) => {
+    const id = getId(listing);
+    if (!id) return "/";
+    return isJobListing(listing) ? `/angajari?edit=${encodeURIComponent(id)}` : `/anunt/${id}`;
+  };
+
+  // ✅ “Editează” pentru job = tot Angajari cu edit
+  const getEditPath = (listing) => {
+    const id = getId(listing);
+    if (!id) return "/";
+    return isJobListing(listing)
+      ? `/angajari?edit=${encodeURIComponent(id)}`
+      : `/editeaza-anunt/${id}`;
+  };
+
+  // ✅ “Plătește / Promovează”
+  const handlePayOrPromote = (listing) => {
+    const id = getId(listing);
+    if (!id) return;
+
+    // Job = tot în Angajari (edit modal)
+    if (isJobListing(listing)) {
+      navigate(`/angajari?edit=${encodeURIComponent(id)}`);
+      return;
+    }
+
+    // Imobiliare = flow-ul existent (detaliu anunț)
+    navigate(`/anunt/${id}`);
+  };
+
   // 🗑️ Ștergere anunț
   const handleDelete = async (id) => {
     if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
@@ -87,7 +139,7 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
-      setListings((prev) => prev.filter((l) => l._id !== id));
+      setListings((prev) => prev.filter((l) => (l._id || l.id) !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
       console.error("Eroare la ștergere anunț:", err);
@@ -114,128 +166,76 @@ export default function AnunturileMele() {
     );
   }
 
-  // ✅ Detectăm “Angajări/Joburi/Locuri de muncă” (cu/fără diacritice)
-  const isJobListing = (listing) => {
-    const cat = normText(listing?.category);
-    const type = normText(listing?.type);
-    const section = normText(listing?.section);
-    const kind = normText(listing?.kind);
+  const Card = ({ listing, isDraft }) => {
+    const id = getId(listing);
 
     return (
-      cat.includes("angaj") ||
-      cat.includes("job") ||
-      cat.includes("locuri de munca") ||
-      cat.includes("munca") ||
-      type.includes("angaj") ||
-      type.includes("job") ||
-      section.includes("angaj") ||
-      section.includes("job") ||
-      kind.includes("angaj") ||
-      kind.includes("job")
-    );
-  };
+      <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-lg font-semibold text-blue-700 mb-1">{listing.title}</h2>
 
-  // ✅ Ruta de editare
-  const getEditPath = (listing) => {
-    const id = String(listing?._id || listing?.id || "");
-    if (!id) return "/";
-    return isJobListing(listing)
-      ? `/angajari?edit=${encodeURIComponent(id)}`
-      : `/editeaza-anunt/${id}`;
-  };
+            {isDraft && (
+              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
+                DRAFT (nepublicat)
+              </span>
+            )}
+          </div>
 
-  // ✅ Ruta pentru "Vezi detalii"
-  // IMPORTANT: Pentru joburi NU mai mergem în /anunt/:id (imobiliare),
-  // ci tot în /angajari?edit=id (acolo ai modalul și editarea)
-  const getDetailsPath = (listing) => {
-    const id = String(listing?._id || listing?.id || "");
-    if (!id) return "/";
-    return isJobListing(listing)
-      ? `/angajari?edit=${encodeURIComponent(id)}`
-      : `/anunt/${id}`;
-  };
+          <p className="text-sm text-gray-500 mb-2">
+            {listing.location} • {listing.category}
+          </p>
 
-  // ⭐ Plătește/Publică (draft) / Promovează (public)
-  // IMPORTANT: Pentru joburi NU mai mergem în /anunt/:id (imobiliare)
-  const handlePayOrPromote = (listing) => {
-    const id = String(listing?._id || listing?.id || "");
-    if (!id) return;
+          <p className="font-bold text-green-700 mb-2">
+            {listing.price ? `${listing.price} €` : "Preț la cerere"}
+          </p>
 
-    if (isJobListing(listing)) {
-      navigate(`/angajari?edit=${encodeURIComponent(id)}`);
-      return;
-    }
-
-    // flow-ul tău existent pentru imobiliare
-    navigate(`/anunt/${id}`);
-  };
-
-  const Card = ({ listing, isDraft }) => (
-    <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-blue-700 mb-1">{listing.title}</h2>
+          <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
 
           {isDraft && (
-            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
-              DRAFT (nepublicat)
-            </span>
+            <div className="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
+              Acest anunț este salvat ca <b>Draft</b> și nu apare pe prima pagină.
+              Apasă <b>„Plătește și publică”</b> ca să îl faci public.
+            </div>
           )}
         </div>
 
-        <p className="text-sm text-gray-500 mb-2">
-          {listing.location} • {listing.category}
-        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            to={getDetailsPath(listing)}
+            className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+          >
+            Vezi detalii
+          </Link>
 
-        <p className="font-bold text-green-700 mb-2">
-          {listing.price ? `${listing.price} €` : "Preț la cerere"}
-        </p>
+          <Link
+            to={getEditPath(listing)}
+            className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Editează
+          </Link>
 
-        <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
+          <button
+            type="button"
+            onClick={() => handlePayOrPromote(listing)}
+            className={`text-sm px-3 py-2 rounded-lg text-white ${
+              isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
+            }`}
+          >
+            {isDraft ? "Plătește și publică" : "Promovează"}
+          </button>
 
-        {isDraft && (
-          <div className="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
-            Acest anunț este salvat ca <b>Draft</b> și nu apare pe prima pagină.
-            Apasă <b>„Plătește și publică”</b> ca să îl faci public.
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() => handleDelete(id)}
+            className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+          >
+            Șterge
+          </button>
+        </div>
       </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Link
-          to={getDetailsPath(listing)}
-          className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
-        >
-          Vezi detalii
-        </Link>
-
-        <Link
-          to={getEditPath(listing)}
-          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Editează
-        </Link>
-
-        <button
-          type="button"
-          onClick={() => handlePayOrPromote(listing)}
-          className={`text-sm px-3 py-2 rounded-lg text-white ${
-            isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
-          }`}
-        >
-          {isDraft ? "Plătește și publică" : "Promovează"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleDelete(listing._id || listing.id)}
-          className="text-sm px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
-        >
-          Șterge
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -255,19 +255,17 @@ export default function AnunturileMele() {
         </div>
       )}
 
-      {/* DRAFTURI */}
       {drafts.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {drafts.map((l) => (
-              <Card key={l._id} listing={l} isDraft />
+              <Card key={l._id || l.id} listing={l} isDraft />
             ))}
           </div>
         </div>
       )}
 
-      {/* PUBLICATE */}
       <div>
         <h2 className="text-lg font-bold mb-3">Anunțuri publicate</h2>
 
@@ -276,7 +274,7 @@ export default function AnunturileMele() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {published.map((l) => (
-              <Card key={l._id} listing={l} isDraft={false} />
+              <Card key={l._id || l.id} listing={l} isDraft={false} />
             ))}
           </div>
         )}
