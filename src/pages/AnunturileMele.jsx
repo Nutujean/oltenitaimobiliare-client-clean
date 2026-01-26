@@ -212,12 +212,16 @@ export default function AnunturileMele() {
         </Link>
 
         <Link
-          to={getEditPath(listing)}
-          className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Editează
-        </Link>
-
+  to={(() => {
+    const id = String(listing?._id || listing?.id || "");
+    const cat = String(listing?.category || "");
+    const isJob = cat.toLowerCase().includes("angaj");
+    return isJob ? `/angajari?edit=${encodeURIComponent(id)}` : `/editeaza-anunt/${id}`;
+  })()}
+  className="text-sm px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+>
+  Editează
+</Link>
         <button
           type="button"
           onClick={() => handlePayOrPromote(listing._id || listing.id)}
