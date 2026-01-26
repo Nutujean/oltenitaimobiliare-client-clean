@@ -15,6 +15,7 @@ import BannerTest from "./pages/BannerTest";
 import CumAdaugi from "./pages/CumAdaugi";
 import Share from "./pages/Share";
 import Promovare from "./pages/Promovare";
+import Angajari from "./pages/Angajari";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -67,6 +68,7 @@ function App() {
           <Route path="/cum-adaugi" element={<CumAdaugi />} />
           <Route path="/share/:id" element={<Share />} />
           <Route path="/promovare" element={<Promovare />} />
+          <Route path="/angajari" element={<Angajari />} />
 
           {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
