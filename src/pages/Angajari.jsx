@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../api";
+import angajariImg from "../assets/angajari.png";
 
 export default function Angajari() {
   const [jobs, setJobs] = useState([]);
@@ -69,32 +70,32 @@ export default function Angajari() {
       setSending(true);
 
       // 1) draft job (section=angajari) — TRIMITEM FormData (multer)
-const fd = new FormData();
-fd.append("title", form.title.trim());
-fd.append("description", form.description.trim());
-fd.append("price", "1");
-fd.append("category", "Angajări");
-fd.append("location", form.location.trim());
-fd.append("phone", form.phone.trim());
-fd.append("email", (form.email || "").trim());
-fd.append("intent", "vand");      // doar ca să treacă enum
-fd.append("section", "angajari"); // IMPORTANT
+      const fd = new FormData();
+      fd.append("title", form.title.trim());
+      fd.append("description", form.description.trim());
+      fd.append("price", "1"); // schema cere numeric; la joburi nu folosim preț
+      fd.append("category", "Angajări");
+      fd.append("location", form.location.trim());
+      fd.append("phone", form.phone.trim());
+      fd.append("email", (form.email || "").trim());
+      fd.append("intent", "vand"); // doar ca să treacă enum
+      fd.append("section", "angajari"); // IMPORTANT
 
-const draftRes = await fetch(`${API_URL}/listings/draft`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-  body: fd,
-});
+      const draftRes = await fetch(`${API_URL}/listings/draft`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: fd,
+      });
 
-const draftData = await draftRes.json();
-if (!draftRes.ok) {
-  alert(draftData?.error || "Nu pot salva draftul.");
-  return;
-}
+      const draftData = await draftRes.json();
+      if (!draftRes.ok) {
+        alert(draftData?.error || "Nu pot salva draftul.");
+        return;
+      }
 
-const listingId = draftData.draftId;
+      const listingId = draftData.draftId;
 
       // 2) Stripe checkout (job30)
       const payRes = await fetch(`${API_URL}/stripe/create-checkout-session`, {
@@ -132,9 +133,9 @@ const listingId = draftData.draftId;
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Angajări</h1>
               <p className="mt-2 text-gray-600">
-                Anunțuri de locuri de muncă și colaborări în Oltenița și localitățile din jur.
-                <span className="font-semibold"> Publicarea este doar plătită</span> și anunțul devine automat promovat
-                30 zile.
+                Anunțuri de locuri de muncă și colaborări în Oltenița și localitățile din
+                jur. <span className="font-semibold">Publicarea este doar plătită</span>{" "}
+                și anunțul devine automat promovat 30 zile.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -184,24 +185,42 @@ const listingId = draftData.draftId;
             {!loading && !err && jobs.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
-                  <div key={j._id} className="relative bg-white rounded-xl border shadow-sm p-5">
-                    {j.featuredUntil && new Date(j.featuredUntil).getTime() > Date.now() && (
-                      <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                        ⭐ PROMOVAT
-                      </span>
-                    )}
+                  <div
+                    key={j._id}
+                    className="relative bg-white rounded-xl border shadow-sm p-5"
+                  >
+                    {j.featuredUntil &&
+                      new Date(j.featuredUntil).getTime() > Date.now() && (
+                        <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                          ⭐ PROMOVAT
+                        </span>
+                      )}
+
+                    {/* ✅ IMAGINE fallback (dacă jobul nu are poze) */}
+                    <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
+                      <img
+                        src={(j?.images && j.images[0]) || angajariImg}
+                        alt={j?.title || "Anunț angajare"}
+                        className="w-full h-36 object-cover"
+                        loading="lazy"
+                      />
+                    </div>
 
                     <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
                     <p className="text-sm text-gray-600 mt-1">{j.location}</p>
 
                     {j.description && (
-                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>
+                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">
+                        {j.description}
+                      </p>
                     )}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <span>
                         {j.createdAt
-                          ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}`
+                          ? `Publicat: ${new Date(j.createdAt).toLocaleDateString(
+                              "ro-RO"
+                            )}`
                           : ""}
                       </span>
                       <span>ID: {String(j._id).slice(-6).toUpperCase()}</span>
@@ -230,7 +249,8 @@ const listingId = draftData.draftId;
             </div>
 
             <p className="text-sm text-gray-600 mt-2">
-              Publicarea este contra cost și anunțul devine automat <b>promovat 30 zile</b>.
+              Publicarea este contra cost și anunțul devine automat{" "}
+              <b>promovat 30 zile</b>.
             </p>
 
             <div className="mt-4 space-y-3">
@@ -266,7 +286,9 @@ const listingId = draftData.draftId;
                 className="w-full border rounded-lg px-3 py-2 h-28"
                 placeholder="Descriere (program, cerințe, salariu, etc.)"
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
               />
             </div>
 
@@ -279,7 +301,8 @@ const listingId = draftData.draftId;
             </button>
 
             <p className="mt-3 text-xs text-gray-500">
-              După plată, anunțul va apărea automat în lista de angajări ca “Promovat”.
+              După plată, anunțul va apărea automat în lista de angajări ca
+              “Promovat”.
             </p>
           </div>
         </div>
