@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
 // ✅ fallback servit direct din /public (stabil pe mobil)
-const FALLBACK_IMG = "/angajari.png";
+const FALLBACK_IMG = "/angajari.png?v=4";
 
 function normalizePhone(v) {
   const digits = String(v || "").replace(/\D/g, "");
@@ -487,63 +487,89 @@ export default function Angajari() {
           </div>
 
           <div className="mt-8">
-            {loading && <div className="text-gray-600">Se încarcă...</div>}
-            {err && <div className="text-red-600">{err}</div>}
+  {/* ✅ Banner imagine (mereu vizibil) */}
+  <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50">
+    <img
+      src={FALLBACK_IMG}
+      alt="Angajări"
+      className="w-full h-44 md:h-56 object-cover block"
+      loading="eager"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        // cache-bust ca să nu rămână blocat pe mobil
+        e.currentTarget.src = "/angajari.png?v=4";
+      }}
+    />
+  </div>
 
-            {!loading && !err && jobs.length === 0 && (
-              <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
-                Nu există încă anunțuri de angajare.
-              </div>
-            )}
+  {loading && <div className="text-gray-600">Se încarcă...</div>}
+  {err && <div className="text-red-600">{err}</div>}
 
-            {!loading && !err && jobs.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {jobs.map((j) => (
-                  <div key={j._id || j.id} className="relative bg-white rounded-xl border shadow-sm p-5">
-                    <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
-                      <img
-                        src={getJobImage(j)}
-                        alt={j?.title || "Anunț angajare"}
-                        className="w-full h-36 object-cover block"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_IMG;
-                        }}
-                      />
-                    </div>
+  {!loading && !err && jobs.length === 0 && (
+    <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
+      <img
+        src={FALLBACK_IMG}
+        alt="Angajări"
+        className="mx-auto w-full max-w-md h-44 object-cover rounded-xl border bg-gray-50"
+        loading="eager"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={(e) => {
+          e.currentTarget.src = "/angajari.png?v=4";
+        }}
+      />
+      <div className="mt-4">Nu există încă anunțuri de angajare.</div>
+    </div>
+  )}
 
-                    <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{j.location}</p>
-
-                    {j.description && <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>}
-
-                    <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-                      <span>
-                        {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
-                      </span>
-                      <span>ID: {String(j._id || j.id || "").slice(-6).toUpperCase()}</span>
-                    </div>
-
-                    {canEditJob(j) && (
-                      <div className="mt-4">
-                        <button
-                          type="button"
-                          onClick={() => openEditJob(String(j._id || j.id))}
-                          className="w-full px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
-                        >
-                          ✏️ Editează (salvează înainte de plată)
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+  {!loading && !err && jobs.length > 0 && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {jobs.map((j) => (
+        <div key={j._id || j.id} className="relative bg-white rounded-xl border shadow-sm p-5">
+          {/* ✅ Imagine FIXĂ pe fiecare card (aceeași poză) */}
+          <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
+            <img
+              src={FALLBACK_IMG}
+              alt={j?.title || "Anunț angajare"}
+              className="w-full h-36 object-cover block"
+              loading="eager"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = "/angajari.png?v=4";
+              }}
+            />
           </div>
-        </div>
-      </div>
 
+          <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
+          <p className="text-sm text-gray-600 mt-1">{j.location}</p>
+
+          {j.description && <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>}
+
+          <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+            <span>
+              {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
+            </span>
+            <span>ID: {String(j._id || j.id || "").slice(-6).toUpperCase()}</span>
+          </div>
+
+          {canEditJob(j) && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => openEditJob(String(j._id || j.id))}
+                className="w-full px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
+              >
+                ✏️ Editează (salvează înainte de plată)
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
