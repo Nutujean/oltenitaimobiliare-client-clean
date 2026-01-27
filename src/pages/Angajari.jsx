@@ -523,8 +523,9 @@ export default function Angajari() {
         decoding="async"
         referrerPolicy="no-referrer"
         onError={(e) => {
-          e.currentTarget.src = "/angajari.png?v=4";
-        }}
+  e.currentTarget.onerror = null; // oprește bucla
+  e.currentTarget.src = "/angajari.png"; // fallback simplu, fără ?v=
+}}
       />
     </div>
   </div>
