@@ -508,7 +508,7 @@ export default function Angajari() {
 </div>
           <div className="mt-8">
             {/* ✅ Banner imagine (mereu vizibil) */}
-            <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50">
+            <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50 max-w-4xl mx-auto">
               <img
                 src={FALLBACK_IMG}
                 alt="Angajări"
