@@ -491,12 +491,31 @@ export default function Angajari() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {/* ✅ Factura -> deschide direct email */}
                     <a
-                      href="mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!"
-                      className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
-                    >
-                      📧 Factură
-                    </a>
+  href="mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!"
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={(e) => {
+    e.preventDefault();
 
+    const mailto =
+      "mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
+
+    // 1) încearcă mailto
+    window.location.href = mailto;
+
+    // 2) fallback: deschide Gmail Web (dacă mailto e blocat / nu e configurat)
+    setTimeout(() => {
+      if (!document.hidden) {
+        const gmail =
+          "https://mail.google.com/mail/?view=cm&fs=1&to=support@oltenitaimobiliare.ro&su=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
+        window.open(gmail, "_blank", "noopener,noreferrer");
+      }
+    }, 650);
+  }}
+  className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
+>
+  📧 Factură
+</a>
                     <Link to="/termeni" className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50">
                       📄 Termeni și condiții
                     </Link>
@@ -518,7 +537,7 @@ export default function Angajari() {
                 <img
                   src={FALLBACK_IMG}
                   alt="Angajări"
-                  className="w-full h-56 sm:h-64 md:h-44 lg:h-40 object-cover block"
+                  className="w-full h-50 sm:h-64 md:h-44 lg:h-40 object-cover block"
                   loading="eager"
                   decoding="async"
                   referrerPolicy="no-referrer"
