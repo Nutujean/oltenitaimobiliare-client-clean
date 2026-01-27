@@ -514,7 +514,7 @@ export default function Angajari() {
             {/* ✅ Banner imagine (mobil = cover, desktop = contain ca să nu se taie) */}
 <div className="mb-6">
   <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
-    <div className="relative w-full h-52 sm:h-60 md:h-64 lg:h-72 bg-gray-50">
+    <div className="relative w-full h-50 sm:h-60 md:h-64 lg:h-72 bg-gray-50">
       <img
         src={FALLBACK_IMG}
         alt="Angajări"
