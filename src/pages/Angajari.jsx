@@ -90,7 +90,7 @@ export default function Angajari() {
     }
     meta.setAttribute(
       "content",
-      "Angajări în Oltenița și împrejurimi: locuri de muncă, colaborări și servicii. Publicarea este disponibilă doar contra cost."
+      "Angajări în Oltenița și împrejurimi: locuri de muncă, colaborări și servicii. Publicarea este disponibilă doar contra cost!"
     );
 
     fetchJobs();
@@ -465,7 +465,47 @@ export default function Angajari() {
 
             <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl">💼</div>
           </div>
+{/* ✅ Termeni / Factură (rubrică fixă) */}
+<div className="mt-8 mb-6 rounded-2xl border bg-blue-50 p-5 text-gray-900">
+  <div className="flex items-start gap-3">
+    <div className="text-2xl">ℹ️</div>
+    <div className="flex-1">
+      <h2 className="text-lg font-bold">Publicare joburi – Termeni & Factură</h2>
+      <p className="mt-1 text-sm text-gray-700">
+        Publicarea anunțurilor din această secțiune este <b>doar contra cost</b>. După plată, anunțul devine vizibil.
+      </p>
 
+      <ul className="mt-3 space-y-1 text-sm text-gray-800">
+        <li>• Dacă dorești <b>factură</b>, trimite: <b>Nume firmă</b>, <b>CUI</b>, <b>Adresă</b>, <b>Email</b>.</li>
+        <li>• Pentru întrebări / suport: scrie în formular (Email opțional) sau contactează-ne.</li>
+        <li>• Prin publicare confirmi că anunțul respectă regulile site-ului și nu conține conținut interzis.</li>
+      </ul>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <a
+          href="mailto:support@oltenitaimobiliare.ro?subject=Facturare%20Angaj%C4%83ri"
+          className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
+        >
+          📧 Factură / suport
+        </a>
+
+        <Link
+          to="/termeni"
+          className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
+        >
+          📄 Termeni și condiții
+        </Link>
+
+        <Link
+          to="/confidentialitate"
+          className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
+        >
+          🔒 Confidențialitate
+        </Link>
+      </div>
+    </div>
+  </div>
+</div>
           <div className="mt-8">
             {/* ✅ Banner imagine (mereu vizibil) */}
             <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50">
