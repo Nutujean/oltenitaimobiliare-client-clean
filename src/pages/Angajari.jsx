@@ -9,6 +9,27 @@ function normalizePhone(v) {
   return digits.replace(/^4/, "");
 }
 
+// ✅ imagine robust (merge pe mobil chiar dacă backend trimite obiect / http / alt câmp)
+const getJobImage = (j) => {
+  const candidates = [j?.imageUrl, j?.image, j?.images?.[0], j?.photos?.[0]].filter(Boolean);
+
+  let first = candidates[0];
+
+  // dacă e obiect (ex: {url} / {secure_url})
+  if (first && typeof first === "object") {
+    first = first.url || first.secure_url || first.path || first.href || "";
+  }
+
+  // dacă e string
+  if (typeof first === "string") {
+    first = first.trim();
+    // evităm mixed content pe mobil
+    if (first.startsWith("http://")) first = first.replace("http://", "https://");
+  }
+
+  return first || angajariImg;
+};
+
 export default function Angajari() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,13 +77,7 @@ export default function Angajari() {
 
   const pickListingFromPayload = (payload) => {
     if (!payload) return null;
-    return (
-      payload.listing ||
-      payload.draft ||
-      payload.data?.listing ||
-      payload.data?.draft ||
-      payload
-    );
+    return payload.listing || payload.draft || payload.data?.listing || payload.data?.draft || payload;
   };
 
   const fetchJobs = async () => {
@@ -134,7 +149,7 @@ export default function Angajari() {
     throw new Error(lastErr || "Nu pot încărca anunțul pentru editare.");
   };
 
-  // ✅ Salvare: încearcă ENDPOINTUL CORECT ÎN PRIMUL RÂND (draft vs public) + JSON + fallback FormData
+  // ✅ Salvare: draft vs public + JSON + fallback FormData
   const saveListingEdits = async (id, token, obj, draftFirst = false) => {
     const order = draftFirst
       ? [
@@ -221,7 +236,13 @@ export default function Angajari() {
       }
 
       const realId = String(l._id || l.id || id);
-      const draft = String(l?.visibility || "").toLowerCase() === "draft";
+
+      // ⚠️ IMPORTANT: draft-ul poate veni ca visibility/status/isFree etc.
+      const draft =
+        String(l?.visibility || "").toLowerCase() === "draft" ||
+        String(l?.status || "").toLowerCase() === "draft" ||
+        String(l?.state || "").toLowerCase() === "draft" ||
+        Boolean(l?.isDraft);
 
       setEditing(true);
       setEditingId(realId);
@@ -341,12 +362,19 @@ export default function Angajari() {
         intent: "vand",
       };
 
-      // ✅ dacă e draft, încercăm draft endpoint primul
       await saveListingEdits(editingId, token, payload, isDraftJob);
 
-      // ✅ confirmare reală: re-fetch și update form
+      // confirmare reală
       const latest = await fetchForEdit(editingId, token);
-      setIsDraftJob(String(latest?.visibility || "").toLowerCase() === "draft");
+
+      const draftNow =
+        String(latest?.visibility || "").toLowerCase() === "draft" ||
+        String(latest?.status || "").toLowerCase() === "draft" ||
+        String(latest?.state || "").toLowerCase() === "draft" ||
+        Boolean(latest?.isDraft);
+
+      setIsDraftJob(draftNow);
+
       setForm({
         title: latest?.title || "",
         description: latest?.description || "",
@@ -429,11 +457,15 @@ export default function Angajari() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Angajări</h1>
               <p className="mt-2 text-gray-600">
-                Anunțuri de locuri de muncă și colaborări. <span className="font-semibold">Publicarea este doar plătită</span>.
+                Anunțuri de locuri de muncă și colaborări.{" "}
+                <span className="font-semibold">Publicarea este doar plătită</span>.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link to="/" className="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50">
+                <Link
+                  to="/"
+                  className="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50"
+                >
                   ← Înapoi acasă
                 </Link>
 
@@ -473,13 +505,19 @@ export default function Angajari() {
             {!loading && !err && jobs.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
-                  <div key={j._id} className="relative bg-white rounded-xl border shadow-sm p-5">
+                  <div
+                    key={j._id}
+                    className="relative bg-white rounded-xl border shadow-sm p-5"
+                  >
                     <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
                       <img
-                        src={(j?.images && j.images[0]) || angajariImg}
+                        src={getJobImage(j)}
                         alt={j?.title || "Anunț angajare"}
                         className="w-full h-36 object-cover"
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = angajariImg;
+                        }}
                       />
                     </div>
 
@@ -487,12 +525,18 @@ export default function Angajari() {
                     <p className="text-sm text-gray-600 mt-1">{j.location}</p>
 
                     {j.description && (
-                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>
+                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">
+                        {j.description}
+                      </p>
                     )}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <span>
-                        {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
+                        {j.createdAt
+                          ? `Publicat: ${new Date(j.createdAt).toLocaleDateString(
+                              "ro-RO"
+                            )}`
+                          : ""}
                       </span>
                       <span>ID: {String(j._id).slice(-6).toUpperCase()}</span>
                     </div>
@@ -520,15 +564,23 @@ export default function Angajari() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-xl font-bold">{editing ? "Editează job" : "Publică job (plătit)"}</h3>
-              <button className="px-3 py-1 rounded-lg border" onClick={closeModal} disabled={sending}>
+              <h3 className="text-xl font-bold">
+                {editing ? "Editează job" : "Publică job (plătit)"}
+              </h3>
+              <button
+                className="px-3 py-1 rounded-lg border"
+                onClick={closeModal}
+                disabled={sending}
+              >
                 Închide
               </button>
             </div>
 
             <p className="text-sm text-gray-600 mt-2">
               {editing ? (
-                <>Întâi <b>salvezi</b>. Apoi (dacă e draft) poți plăti.</>
+                <>
+                  Întâi <b>salvezi</b>. Apoi (dacă e draft) poți plăti.
+                </>
               ) : (
                 <>Se creează draft și apoi mergi la plată.</>
               )}
@@ -541,16 +593,40 @@ export default function Angajari() {
             )}
 
             <div className="mt-4 space-y-3">
-              <input className="w-full border rounded-lg px-3 py-2" placeholder="Titlu"
-                value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-              <input className="w-full border rounded-lg px-3 py-2" placeholder="Localitate"
-                value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-              <input className="w-full border rounded-lg px-3 py-2" placeholder="Telefon"
-                value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-              <input className="w-full border rounded-lg px-3 py-2" placeholder="Email (opțional)"
-                value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <textarea className="w-full border rounded-lg px-3 py-2 h-28" placeholder="Descriere"
-                value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <input
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Titlu"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
+              <input
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Localitate"
+                value={form.location}
+                onChange={(e) =>
+                  setForm({ ...form, location: e.target.value })
+                }
+              />
+              <input
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Telefon"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+              <input
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Email (opțional)"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+              <textarea
+                className="w-full border rounded-lg px-3 py-2 h-28"
+                placeholder="Descriere"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+              />
             </div>
 
             {!editing ? (
