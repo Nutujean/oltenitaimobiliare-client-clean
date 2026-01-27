@@ -506,22 +506,21 @@ export default function Angajari() {
     </div>
   </div>
 </div>
-          <div className="mt-8">
-            {/* ✅ Banner imagine (mereu vizibil) */}
-            <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50 max-w-4xl mx-auto">
-              <img
-                src={FALLBACK_IMG}
-                alt="Angajări"
-                className="w-full h-50 md:h-60 object-cover block"
-                loading="eager"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.src = "/angajari.png?v=4";
-                }}
-              />
-            </div>
-
+          <div className="mb-6">
+  <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
+    <img
+      src={FALLBACK_IMG}
+      alt="Angajări"
+      className="w-full h-44 sm:h-52 md:h-40 lg:h-36 object-cover block"
+      loading="eager"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        e.currentTarget.src = "/angajari.png?v=4";
+      }}
+    />
+  </div>
+</div>
             {loading && <div className="text-gray-600">Se încarcă...</div>}
             {err && <div className="text-red-600">{err}</div>}
 
