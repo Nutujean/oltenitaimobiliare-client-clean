@@ -511,23 +511,24 @@ export default function Angajari() {
               </div>
             </div>
 
-            {/* ✅ Banner imagine (1 singură poză pe pagină, mai mic pe desktop) */}
-            <div className="mb-6">
-              <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
-                <img
-                  src={FALLBACK_IMG}
-                  alt="Angajări"
-                  className="w-full h-44 sm:h-52 md:h-40 lg:h-36 object-cover block"
-                  loading="eager"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = "/angajari.png?v=4";
-                  }}
-                />
-              </div>
-            </div>
-
+            {/* ✅ Banner imagine (mobil = cover, desktop = contain ca să nu se taie) */}
+<div className="mb-6">
+  <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
+    <div className="relative w-full h-52 sm:h-60 md:h-64 lg:h-72 bg-gray-50">
+      <img
+        src={FALLBACK_IMG}
+        alt="Angajări"
+        className="absolute inset-0 w-full h-full object-cover md:object-contain block"
+        loading="eager"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={(e) => {
+          e.currentTarget.src = "/angajari.png?v=4";
+        }}
+      />
+    </div>
+  </div>
+</div>
             {loading && <div className="text-gray-600">Se încarcă...</div>}
             {err && <div className="text-red-600">{err}</div>}
 
