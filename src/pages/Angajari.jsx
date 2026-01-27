@@ -472,7 +472,7 @@ export default function Angajari() {
               <img
                 src={FALLBACK_IMG}
                 alt="Angajări"
-                className="w-full h-48 md:h-50 object-cover block"
+                className="w-full h-50 md:h-48 object-cover block"
                 loading="eager"
                 decoding="async"
                 referrerPolicy="no-referrer"
