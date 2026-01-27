@@ -486,22 +486,11 @@ export default function Angajari() {
             {err && <div className="text-red-600">{err}</div>}
 
             {!loading && !err && jobs.length === 0 && (
-              <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
-                <img
-                  src={FALLBACK_IMG}
-                  alt="Angajări"
-                  className="mx-auto w-full max-w-md h-44 object-cover rounded-xl border bg-gray-50"
-                  loading="eager"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = "/angajari.png?v=4";
-                  }}
-                />
-                <div className="mt-4">Nu există încă anunțuri de angajare.</div>
-              </div>
-            )}
-
+  <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
+    <div className="text-base font-semibold">Nu există încă anunțuri de angajare.</div>
+    <div className="mt-2 text-sm text-gray-500">Apasă „💼 Publică job (plătit)” ca să adaugi primul anunț.</div>
+  </div>
+)}
             {!loading && !err && jobs.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
