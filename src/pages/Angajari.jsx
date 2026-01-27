@@ -506,7 +506,8 @@ export default function Angajari() {
     </div>
   </div>
 </div>
-          <div className="mb-6">
+          {/* ✅ Banner imagine (MEREU vizibil) */}
+<div className="mb-6">
   <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
     <img
       src={FALLBACK_IMG}
