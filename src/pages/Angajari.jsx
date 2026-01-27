@@ -3,33 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
-// ✅ fallback servit direct din /public (stabil pe mobil)
+// ✅ fallback servit direct din /public (stabil pe mobil) + cache-bust
 const FALLBACK_IMG = "/angajari.png?v=4";
 
 function normalizePhone(v) {
   const digits = String(v || "").replace(/\D/g, "");
   return digits.replace(/^4/, "");
 }
-
-// ✅ imagine robust (string / object / http->https / fallback garantat)
-const getJobImage = (j) => {
-  const candidates = [j?.imageUrl, j?.image, j?.images?.[0], j?.photos?.[0]].filter(Boolean);
-
-  let first = candidates[0];
-
-  // obiect (ex: {url} / {secure_url})
-  if (first && typeof first === "object") {
-    first = first.url || first.secure_url || first.path || first.href || "";
-  }
-
-  // string (curățare)
-  if (typeof first === "string") {
-    first = first.trim();
-    if (first.startsWith("http://")) first = first.replace("http://", "https://"); // evităm mixed content
-  }
-
-  return first || FALLBACK_IMG;
-};
 
 export default function Angajari() {
   const location = useLocation();
@@ -487,89 +467,91 @@ export default function Angajari() {
           </div>
 
           <div className="mt-8">
-  {/* ✅ Banner imagine (mereu vizibil) */}
-  <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50">
-    <img
-      src={FALLBACK_IMG}
-      alt="Angajări"
-      className="w-full h-44 md:h-56 object-cover block"
-      loading="eager"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      onError={(e) => {
-        // cache-bust ca să nu rămână blocat pe mobil
-        e.currentTarget.src = "/angajari.png?v=4";
-      }}
-    />
-  </div>
-
-  {loading && <div className="text-gray-600">Se încarcă...</div>}
-  {err && <div className="text-red-600">{err}</div>}
-
-  {!loading && !err && jobs.length === 0 && (
-    <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
-      <img
-        src={FALLBACK_IMG}
-        alt="Angajări"
-        className="mx-auto w-full max-w-md h-44 object-cover rounded-xl border bg-gray-50"
-        loading="eager"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={(e) => {
-          e.currentTarget.src = "/angajari.png?v=4";
-        }}
-      />
-      <div className="mt-4">Nu există încă anunțuri de angajare.</div>
-    </div>
-  )}
-
-  {!loading && !err && jobs.length > 0 && (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {jobs.map((j) => (
-        <div key={j._id || j.id} className="relative bg-white rounded-xl border shadow-sm p-5">
-          {/* ✅ Imagine FIXĂ pe fiecare card (aceeași poză) */}
-          <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
-            <img
-              src={FALLBACK_IMG}
-              alt={j?.title || "Anunț angajare"}
-              className="w-full h-36 object-cover block"
-              loading="eager"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                e.currentTarget.src = "/angajari.png?v=4";
-              }}
-            />
-          </div>
-
-          <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
-          <p className="text-sm text-gray-600 mt-1">{j.location}</p>
-
-          {j.description && <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>}
-
-          <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-            <span>
-              {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
-            </span>
-            <span>ID: {String(j._id || j.id || "").slice(-6).toUpperCase()}</span>
-          </div>
-
-          {canEditJob(j) && (
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => openEditJob(String(j._id || j.id))}
-                className="w-full px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
-              >
-                ✏️ Editează (salvează înainte de plată)
-              </button>
+            {/* ✅ Banner imagine (mereu vizibil) */}
+            <div className="mb-6 rounded-2xl overflow-hidden border bg-gray-50">
+              <img
+                src={FALLBACK_IMG}
+                alt="Angajări"
+                className="w-full h-44 md:h-56 object-cover block"
+                loading="eager"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = "/angajari.png?v=4";
+                }}
+              />
             </div>
-          )}
+
+            {loading && <div className="text-gray-600">Se încarcă...</div>}
+            {err && <div className="text-red-600">{err}</div>}
+
+            {!loading && !err && jobs.length === 0 && (
+              <div className="rounded-xl border border-dashed p-6 text-center text-gray-600">
+                <img
+                  src={FALLBACK_IMG}
+                  alt="Angajări"
+                  className="mx-auto w-full max-w-md h-44 object-cover rounded-xl border bg-gray-50"
+                  loading="eager"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = "/angajari.png?v=4";
+                  }}
+                />
+                <div className="mt-4">Nu există încă anunțuri de angajare.</div>
+              </div>
+            )}
+
+            {!loading && !err && jobs.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {jobs.map((j) => (
+                  <div key={j._id || j.id} className="relative bg-white rounded-xl border shadow-sm p-5">
+                    {/* ✅ Imagine FIXĂ pe fiecare card (aceeași poză) */}
+                    <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
+                      <img
+                        src={FALLBACK_IMG}
+                        alt={j?.title || "Anunț angajare"}
+                        className="w-full h-36 object-cover block"
+                        loading="eager"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = "/angajari.png?v=4";
+                        }}
+                      />
+                    </div>
+
+                    <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{j.location}</p>
+
+                    {j.description && <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>}
+
+                    <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+                      <span>
+                        {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
+                      </span>
+                      <span>ID: {String(j._id || j.id || "").slice(-6).toUpperCase()}</span>
+                    </div>
+
+                    {canEditJob(j) && (
+                      <div className="mt-4">
+                        <button
+                          type="button"
+                          onClick={() => openEditJob(String(j._id || j.id))}
+                          className="w-full px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
+                        >
+                          ✏️ Editează (salvează înainte de plată)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      ))}
-    </div>
-  )}
-</div>
+      </div>
+
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
