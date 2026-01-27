@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
 
-// ✅ fallback servit direct din /public (stabil pe mobil) + cache-bust
-const FALLBACK_IMG = "/angajari.png?v=4";
+// ✅ imagine din /public + funcționează și dacă site-ul are BASE_URL (subfolder)
+const FALLBACK_IMG = `${import.meta.env.BASE_URL}angajari.png?v=4`;
 
 function normalizePhone(v) {
   const digits = String(v || "").replace(/\D/g, "");
@@ -489,11 +489,12 @@ export default function Angajari() {
                   </ul>
 
                   <div className="mt-4 flex flex-wrap gap-2">
+                    {/* ✅ Factura -> deschide direct email */}
                     <a
-                      href="mailto:support@oltenitaimobiliare.ro?subject=Facturare%20Angaj%C4%83ri&body=Nume%20firm%C4%83%3A%0ACUI%3A%0AAdres%C4%83%3A%0AEmail%3A%0AID%20anun%C8%9B%3A%0A"
+                      href="mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!"
                       className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50"
                     >
-                      📧 Factură / suport
+                      📧 Factură
                     </a>
 
                     <Link to="/termeni" className="px-3 py-2 rounded-lg bg-white border text-sm hover:bg-gray-50">
@@ -511,25 +512,24 @@ export default function Angajari() {
               </div>
             </div>
 
-            {/* ✅ Banner imagine (mobil = cover, desktop = contain ca să nu se taie) */}
-<div className="mb-6">
-  <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
-    <div className="relative w-full h-50 sm:h-60 md:h-64 lg:h-72 bg-gray-50">
-      <img
-        src={FALLBACK_IMG}
-        alt="Angajări"
-        className="absolute inset-0 w-full h-full object-cover md:object-contain block"
-        loading="eager"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={(e) => {
-  e.currentTarget.onerror = null; // oprește bucla
-  e.currentTarget.src = "/angajari.png"; // fallback simplu, fără ?v=
-}}
-      />
-    </div>
-  </div>
-</div>
+            {/* ✅ Banner imagine (mobil mare, desktop mai mic) */}
+            <div className="mb-6">
+              <div className="rounded-2xl overflow-hidden border bg-gray-50 w-full md:max-w-3xl md:mx-auto">
+                <img
+                  src={FALLBACK_IMG}
+                  alt="Angajări"
+                  className="w-full h-56 sm:h-64 md:h-44 lg:h-40 object-cover block"
+                  loading="eager"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const fallback = FALLBACK_IMG;
+                    if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+                  }}
+                />
+              </div>
+            </div>
+
             {loading && <div className="text-gray-600">Se încarcă...</div>}
             {err && <div className="text-red-600">{err}</div>}
 
@@ -549,12 +549,13 @@ export default function Angajari() {
                       <img
                         src={FALLBACK_IMG}
                         alt={j?.title || "Anunț angajare"}
-                        className="w-full h-36 object-cover block"
+                        className="w-full h-40 object-cover block"
                         loading="eager"
                         decoding="async"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = "/angajari.png?v=4";
+                          const fallback = FALLBACK_IMG;
+                          if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
                         }}
                       />
                     </div>
