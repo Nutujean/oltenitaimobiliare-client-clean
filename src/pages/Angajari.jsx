@@ -2,32 +2,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_URL from "../api";
-import angajariImg from "../assets/angajari.png";
+
+// ✅ fallback servit direct din /public (stabil pe mobil)
+const FALLBACK_IMG = "/angajari.png";
 
 function normalizePhone(v) {
   const digits = String(v || "").replace(/\D/g, "");
   return digits.replace(/^4/, "");
 }
 
-// ✅ imagine robust (merge pe mobil chiar dacă backend trimite obiect / http / alt câmp)
+// ✅ imagine robust (string / object / http->https / fallback garantat)
 const getJobImage = (j) => {
   const candidates = [j?.imageUrl, j?.image, j?.images?.[0], j?.photos?.[0]].filter(Boolean);
 
   let first = candidates[0];
 
-  // dacă e obiect (ex: {url} / {secure_url})
+  // obiect (ex: {url} / {secure_url})
   if (first && typeof first === "object") {
     first = first.url || first.secure_url || first.path || first.href || "";
   }
 
-  // dacă e string
+  // string (curățare)
   if (typeof first === "string") {
     first = first.trim();
-    // evităm mixed content pe mobil
-    if (first.startsWith("http://")) first = first.replace("http://", "https://");
+    if (first.startsWith("http://")) first = first.replace("http://", "https://"); // evităm mixed content
   }
 
-  return first || angajariImg;
+  return first || FALLBACK_IMG;
 };
 
 export default function Angajari() {
@@ -85,7 +86,6 @@ export default function Angajari() {
       setLoading(true);
       setErr("");
 
-      // ✅ cache-busting + no-store
       const url = `${API_URL}/listings?section=angajari&sort=newest&_=${Date.now()}`;
       const res = await fetch(url, { cache: "no-store" });
       const data = await res.json().catch(() => null);
@@ -237,7 +237,6 @@ export default function Angajari() {
 
       const realId = String(l._id || l.id || id);
 
-      // ⚠️ IMPORTANT: draft-ul poate veni ca visibility/status/isFree etc.
       const draft =
         String(l?.visibility || "").toLowerCase() === "draft" ||
         String(l?.status || "").toLowerCase() === "draft" ||
@@ -364,7 +363,6 @@ export default function Angajari() {
 
       await saveListingEdits(editingId, token, payload, isDraftJob);
 
-      // confirmare reală
       const latest = await fetchForEdit(editingId, token);
 
       const draftNow =
@@ -461,11 +459,9 @@ export default function Angajari() {
                 <span className="font-semibold">Publicarea este doar plătită</span>.
               </p>
 
+              {/* ✅ BUTOANELE (nu se ating) */}
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  to="/"
-                  className="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50"
-                >
+                <Link to="/" className="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50">
                   ← Înapoi acasă
                 </Link>
 
@@ -487,9 +483,7 @@ export default function Angajari() {
               </div>
             </div>
 
-            <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl">
-              💼
-            </div>
+            <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl">💼</div>
           </div>
 
           <div className="mt-8">
@@ -505,18 +499,16 @@ export default function Angajari() {
             {!loading && !err && jobs.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jobs.map((j) => (
-                  <div
-                    key={j._id}
-                    className="relative bg-white rounded-xl border shadow-sm p-5"
-                  >
+                  <div key={j._id || j.id} className="relative bg-white rounded-xl border shadow-sm p-5">
                     <div className="mt-1 mb-3 rounded-xl overflow-hidden border bg-gray-50">
                       <img
                         src={getJobImage(j)}
                         alt={j?.title || "Anunț angajare"}
-                        className="w-full h-36 object-cover"
-                        loading="lazy"
+                        className="w-full h-36 object-cover block"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = angajariImg;
+                          e.currentTarget.src = FALLBACK_IMG;
                         }}
                       />
                     </div>
@@ -524,28 +516,20 @@ export default function Angajari() {
                     <h3 className="text-lg font-bold text-gray-900">{j.title}</h3>
                     <p className="text-sm text-gray-600 mt-1">{j.location}</p>
 
-                    {j.description && (
-                      <p className="text-sm text-gray-700 mt-3 line-clamp-4">
-                        {j.description}
-                      </p>
-                    )}
+                    {j.description && <p className="text-sm text-gray-700 mt-3 line-clamp-4">{j.description}</p>}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <span>
-                        {j.createdAt
-                          ? `Publicat: ${new Date(j.createdAt).toLocaleDateString(
-                              "ro-RO"
-                            )}`
-                          : ""}
+                        {j.createdAt ? `Publicat: ${new Date(j.createdAt).toLocaleDateString("ro-RO")}` : ""}
                       </span>
-                      <span>ID: {String(j._id).slice(-6).toUpperCase()}</span>
+                      <span>ID: {String(j._id || j.id || "").slice(-6).toUpperCase()}</span>
                     </div>
 
                     {canEditJob(j) && (
                       <div className="mt-4">
                         <button
                           type="button"
-                          onClick={() => openEditJob(String(j._id))}
+                          onClick={() => openEditJob(String(j._id || j.id))}
                           className="w-full px-4 py-2 rounded-lg bg-blue-700 text-white hover:opacity-90"
                         >
                           ✏️ Editează (salvează înainte de plată)
@@ -564,14 +548,8 @@ export default function Angajari() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-xl font-bold">
-                {editing ? "Editează job" : "Publică job (plătit)"}
-              </h3>
-              <button
-                className="px-3 py-1 rounded-lg border"
-                onClick={closeModal}
-                disabled={sending}
-              >
+              <h3 className="text-xl font-bold">{editing ? "Editează job" : "Publică job (plătit)"}</h3>
+              <button className="px-3 py-1 rounded-lg border" onClick={closeModal} disabled={sending}>
                 Închide
               </button>
             </div>
@@ -603,9 +581,7 @@ export default function Angajari() {
                 className="w-full border rounded-lg px-3 py-2"
                 placeholder="Localitate"
                 value={form.location}
-                onChange={(e) =>
-                  setForm({ ...form, location: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
               />
               <input
                 className="w-full border rounded-lg px-3 py-2"
@@ -623,9 +599,7 @@ export default function Angajari() {
                 className="w-full border rounded-lg px-3 py-2 h-28"
                 placeholder="Descriere"
                 value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
 
