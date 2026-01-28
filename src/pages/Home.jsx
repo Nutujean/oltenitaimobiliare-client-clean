@@ -344,7 +344,8 @@ className="h-full w-full object-cover object-right"
         >
           {filtered.map((l) => {
             const isFeatured =
-              l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now();
+  l.featured === true ||
+  (l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now());
 
             const isNew =
               l.createdAt &&
