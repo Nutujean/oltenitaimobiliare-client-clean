@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../api"; // păstrat ca la tine
+import anpcSal from "../assets/anpc-sal.png";
+import anpcSol from "../assets/anpc-sol.png";
 
 const Footer = () => {
   const [statusMsg, setStatusMsg] = useState("");
@@ -60,11 +62,8 @@ const Footer = () => {
             </h3>
 
             <p className="text-sm leading-relaxed text-gray-400">
-              Platformă locală de anunțuri imobiliare pentru Oltenița și
-              împrejurimi. Publică anunțuri gratuit sau promovează-le pentru
-              vizibilitate maximă. Oltenitaimobiliare.ro este cea mai mare
-              platformă de anunțuri imobiliare din județul Călărași! Postează
-              anunțul tău GRATUIT acum!
+              OltenițaImobiliare.ro este platforma locală de anunțuri imobiliare pentru Oltenița și împrejurimi. 
+              Publică GRATUIT sau promovează-ți anunțul pentru vizibilitate maximă și contacte mai rapide, simplu și rapid.
             </p>
 
             {/* Contact scurt */}
@@ -99,6 +98,62 @@ const Footer = () => {
               >
                 TikTok
               </a>
+            </div>
+
+            {/* ✅ ANPC / SAL / SOL (corect în cardul Brand + culori pentru dark footer) */}
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <div className="flex flex-col items-start gap-3">
+                <a
+                  href="https://anpc.ro/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-gray-200 hover:text-white underline underline-offset-4"
+                >
+                  ANPC – Autoritatea Națională pentru Protecția Consumatorilor
+                </a>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* SAL */}
+                  <a
+                    href="https://anpc.ro/ce-este-sal/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-white/5 rounded-xl border border-white/10 p-2 hover:bg-white/10 transition"
+                    aria-label="Soluționarea Alternativă a Litigiilor (SAL) – ANPC"
+                    title="Soluționarea Alternativă a Litigiilor (SAL) – ANPC"
+                  >
+                    <img
+                      src={anpcSal}
+                      alt="ANPC – Soluționarea Alternativă a Litigiilor (SAL)"
+                      className="h-14 w-auto"
+                      loading="lazy"
+                    />
+                  </a>
+
+                  {/* SOL */}
+                  <a
+                    href="https://consumer-redress.ec.europa.eu/site-relocation_en"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-white/5 rounded-xl border border-white/10 p-2 hover:bg-white/10 transition"
+                    aria-label="Soluționarea Online a Litigiilor (SOL) – UE"
+                    title="Soluționarea Online a Litigiilor (SOL) – UE"
+                  >
+                    <img
+                      src={anpcSol}
+                      alt="Soluționarea Online a Litigiilor (SOL)"
+                      className="h-14 w-auto"
+                      loading="lazy"
+                    />
+                  </a>
+                </div>
+
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Notă: Platforma europeană ODR (SOL) a fost închisă începând cu
+                  20 iulie 2025; linkul de mai sus indică alternativa oficială
+                  („Consumer Redress”).
+                </p>
+              </div>
             </div>
           </div>
 
@@ -156,7 +211,9 @@ const Footer = () => {
 
             {/* CTA mic, ca pe site-urile mari */}
             <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">
-              <p className="text-sm text-gray-200 font-semibold">Postează rapid</p>
+              <p className="text-sm text-gray-200 font-semibold">
+                Postează rapid
+              </p>
               <p className="text-xs text-gray-400 mt-1">
                 Adaugă un anunț în 1 minut.
               </p>
