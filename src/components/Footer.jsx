@@ -62,10 +62,10 @@ const Footer = () => {
             </h3>
 
             <p className="text-sm leading-relaxed text-gray-400">
-              OltenițaImobiliare.ro este platforma locală de anunțuri imobiliare pentru Oltenița și împrejurimi. 
-              Publică GRATUIT sau promovează-ți anunțul pentru vizibilitate maximă și contacte mai rapide, simplu și rapid.
+              OltenițaImobiliare.ro este platforma locală de anunțuri imobiliare pentru
+              Oltenița și împrejurimi. Publică GRATUIT sau promovează-ți anunțul pentru
+              vizibilitate maximă și contacte mai rapide, simplu și rapid.
             </p>
-
             {/* Contact scurt */}
             <div className="mt-5 space-y-2 text-sm text-gray-400">
               <p>
@@ -78,28 +78,53 @@ const Footer = () => {
                 </a>
               </p>
               <p>Oltenița, Călărași</p>
+              <p>Ne gasiti si pe</p>
             </div>
 
-            {/* Social (pune linkurile tale reale) */}
-            <div className="mt-5 flex gap-3">
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200"
-              >
-                Facebook
-              </a>
-              <a
-                href="https://www.tiktok.com"
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200"
-              >
-                TikTok
-              </a>
-            </div>
+            {/* Social */}
+<div className="mt-5 flex flex-wrap gap-3">
+  <a
+    href="https://www.facebook.com/profile.php?id=61583435146065"
+    target="_blank"
+    rel="noreferrer"
+    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200 transition"
+    aria-label="Facebook"
+    title="Facebook"
+  >
+    {/* Facebook icon */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.62.77-1.62 1.56V12h2.76l-.44 2.89h-2.32v6.99A10 10 0 0 0 22 12z" />
+    </svg>
+    Facebook
+  </a>
 
+  <a
+    href="https://www.tiktok.com/@oltenitaimobiliare.ro?_r=1&_t=ZN-93RkuGYOsvG"
+    target="_blank"
+    rel="noreferrer"
+    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-200 transition"
+    aria-label="TikTok"
+    title="TikTok"
+  >
+    {/* TikTok icon (simplified) */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M16.7 3c.5 2.8 2.5 4.7 5.3 4.9v3.2c-1.8-.1-3.4-.7-4.8-1.7v6.7c0 3.7-3 6.7-6.7 6.7S4 20.9 4 17.2s3-6.7 6.7-6.7c.4 0 .9 0 1.3.1v3.6c-.4-.2-.8-.3-1.3-.3-1.7 0-3.1 1.4-3.1 3.1s1.4 3.1 3.1 3.1 3.1-1.4 3.1-3.1V3h3.6z" />
+    </svg>
+    TikTok
+  </a>
+</div>
             {/* ✅ ANPC / SAL / SOL (corect în cardul Brand + culori pentru dark footer) */}
             <div className="mt-6 border-t border-white/10 pt-6">
               <div className="flex flex-col items-start gap-3">
