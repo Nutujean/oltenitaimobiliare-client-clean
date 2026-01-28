@@ -26,7 +26,7 @@ export default function Home() {
     try {
       setLoading(true);
       const sortParam = overrideSort || sort || "newest";
-      const res = await fetch(`${API_URL}/listings?sort=${sortParam}`);
+      const res = await fetch(`${API_URL}/listings?sort=${sortParam}&limit=200`);
       const data = await res.json();
       setListings(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -339,9 +339,30 @@ className="h-full w-full object-cover object-right"
               l.createdAt &&
               (Date.now() - new Date(l.createdAt)) / (1000 * 60 * 60 * 24) <= 5;
 
-            const isExpired =
-              l.status === "expirat" ||
-              (l.expiresAt && new Date(l.expiresAt) < new Date());
+            const expiresAtMs = (() => {
+  const x = l.expiresAt;
+
+  // 1) Date / string / number
+  const d1 = new Date(x);
+  if (x && !Number.isNaN(d1.getTime())) return d1.getTime();
+
+  // 2) obiect (ex: {$date: "..."} / {date: "..."} etc.)
+  const maybe =
+    x?.$date ||
+    x?.date ||
+    x?.value ||
+    x?.iso ||
+    (typeof x?.toString === "function" ? x.toString() : null);
+
+  const d2 = new Date(maybe);
+  if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+  return null;
+})();
+
+const isExpired =
+  String(l.status || "").toLowerCase() === "expirat" ||
+  (expiresAtMs !== null && expiresAtMs < Date.now());
 
             const listingHref = `/anunt/${l._id}`;
 
