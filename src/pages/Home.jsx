@@ -56,7 +56,18 @@ export default function Home() {
         (l) => l.intent && l.intent.toLowerCase() === intent.toLowerCase()
       );
     }
+results.sort((a, b) => {
+  const aFeatured =
+    a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now();
+  const bFeatured =
+    b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now();
 
+  if (aFeatured !== bFeatured) return bFeatured - aFeatured;
+
+  const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+  const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+  return bTime - aTime;
+});
     setFiltered(results);
   }, [listings, location, intent]);
 
