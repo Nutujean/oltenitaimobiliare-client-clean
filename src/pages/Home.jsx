@@ -57,12 +57,49 @@ export default function Home() {
       );
     }
 results.sort((a, b) => {
-  const aFeatured =
-    a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now();
-  const bFeatured =
-    b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now();
+  const getMs = (x) => {
+    if (!x) return null;
+    const d1 = new Date(x);
+    if (!Number.isNaN(d1.getTime())) return d1.getTime();
 
-  if (aFeatured !== bFeatured) return bFeatured - aFeatured;
+    const maybe =
+      x?.$date ||
+      x?.date ||
+      x?.value ||
+      x?.iso ||
+      (typeof x?.toString === "function" ? x.toString() : null);
+
+    const d2 = new Date(maybe);
+    if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+    return null;
+  };
+
+  const aExpMs = getMs(a.expiresAt);
+  const bExpMs = getMs(b.expiresAt);
+
+  const aExpired =
+    String(a.status || "").toLowerCase() === "expirat" ||
+    (aExpMs !== null && aExpMs < Date.now());
+
+  const bExpired =
+    String(b.status || "").toLowerCase() === "expirat" ||
+    (bExpMs !== null && bExpMs < Date.now());
+
+  const aFeaturedActive =
+    !aExpired &&
+    (a.featured === true ||
+      (a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now()));
+
+  const bFeaturedActive =
+    !bExpired &&
+    (b.featured === true ||
+      (b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now()));
+
+  const aGroup = aFeaturedActive ? 0 : aExpired ? 2 : 1;
+  const bGroup = bFeaturedActive ? 0 : bExpired ? 2 : 1;
+
+  if (aGroup !== bGroup) return aGroup - bGroup;
 
   const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
   const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
