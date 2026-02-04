@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../api";
+import { LOCATII } from "../constants/localitati";
 
 const CATEGORII = [
   { value: "apartamente", label: "Apartamente" },
@@ -18,45 +19,6 @@ const TIPURI_TRANZACTIE = [
   { value: "schimb", label: "Schimb" },
 ];
 
-const LOCALITATI_OLTENITA = [
-  "Oltenița",
-  "Chirnogi",
-  "Ulmeni",
-  "Mitreni",
-  "Clatesti",
-  "Spantov",
-  "Spanțov",
-  "Cascioarele",
-  "Soldanu",
-  "Negoesti",
-  "Valea rosie",
-  "Radovanu",
-  "Curcani",
-  "Luica",
-  "Nana",
-  "Chiselet",
-  "Manastirea",
-  "Budesti",
-  "Gruiu",
-  "Aprozi",
-  "Buciumeni",
-  "Frumusani",
-  "Vasilati",
-  "Galbinasi",
-  "Cucuieti",
-  "Podul Pitarului",
-  "Sohatu",
-  "Fundeni",
-  "Dorobantu",
-  "Varasti",
-  "Ciocanesti",
-  "Cunesti",
-  "Bogata",
-  "Gradistea",
-  "Rasa",
-  "Cuza Voda",
-  "Modelu",
-];
 
 export default function EditareAnunt() {
   const { id } = useParams();
@@ -374,7 +336,7 @@ export default function EditareAnunt() {
           required
         >
           <option value="">Alege localitatea</option>
-          {LOCALITATI_OLTENITA.map((loc) => (
+          {LOCATII.map((loc) => (
             <option key={loc} value={loc}>
               {loc}
             </option>

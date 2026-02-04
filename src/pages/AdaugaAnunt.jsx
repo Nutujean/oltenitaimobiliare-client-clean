@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
+import { LOCATII } from "../constants/localitati";
 
 export default function AdaugaAnunt() {
   const [title, setTitle] = useState("");
@@ -33,12 +34,7 @@ export default function AdaugaAnunt() {
     }
   }, [token]);
 
-  const localitati = [
-    "Oltenița", "Chirnogi", "Curcani", "Spanțov", "Radovanu", "Ulmeni",
-    "Clătești", "Negoești", "Șoldanu", "Luica", "Nana", "Budesti",
-    "Chiselet", "Căscioarele", "Mănăstirea", "Valea Roșie", "Mitreni",
-  ];
-
+  
   const categorii = [
     "Apartamente",
     "Garsoniere",
@@ -331,7 +327,7 @@ navigate("/anunturile-mele");
           className="w-full border p-2 rounded"
         >
           <option value="">Selectează localitatea</option>
-          {localitati.map((loc) => (
+          {LOCATII.map((loc) => (
             <option key={loc} value={loc}>
               {loc}
             </option>
