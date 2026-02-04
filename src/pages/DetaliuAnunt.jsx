@@ -139,7 +139,7 @@ export default function DetaliuAnunt() {
   const listingId = listing?._id || listing?.id;
 
   // ✅ URL-uri share/public
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/fb/${listingId}`;
+  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listingId}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
 
   const backendFbDirect = backendShareUrl;
