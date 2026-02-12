@@ -322,6 +322,7 @@ className="h-full w-full object-cover object-right"
 />
 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
 </div>
+</div>
 
 {/* decor discret */}
 <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
