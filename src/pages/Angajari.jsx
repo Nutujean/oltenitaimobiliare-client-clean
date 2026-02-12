@@ -491,14 +491,14 @@ export default function Angajari() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {/* ✅ Factura -> deschide direct email */}
                     <a
-  href="mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!"
+  href="mailto:oltenitaimobiliare@gmail.com?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!"
   target="_blank"
   rel="noopener noreferrer"
   onClick={(e) => {
     e.preventDefault();
 
     const mailto =
-      "mailto:support@oltenitaimobiliare.ro?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
+      "mailto:oltenitaimobiliare@gmail.com?subject=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
 
     // 1) încearcă mailto
     window.location.href = mailto;
@@ -507,7 +507,7 @@ export default function Angajari() {
     setTimeout(() => {
       if (!document.hidden) {
         const gmail =
-          "https://mail.google.com/mail/?view=cm&fs=1&to=support@oltenitaimobiliare.ro&su=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
+          "https://mail.google.com/mail/?view=cm&fs=1&to=oltenitaimobiliare@gmail.com&su=Factura%20job%20-%20OltenitaImobiliare.ro&body=Salut!%0A%0AVa%20rog%20emiterea%20facturii%20pentru%20publicarea%20anun%C8%9Bului%20de%20angajare.%0A%0AID%20anun%C8%9B%3A%20%0ANume%20firm%C4%83%3A%20%0ACUI%3A%20%0AAdres%C4%83%3A%20%0AEmail%3A%20%0ATelefon%3A%20%0A%0AMul%C8%9Bumesc!";
         window.open(gmail, "_blank", "noopener,noreferrer");
       }
     }, 650);
