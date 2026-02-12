@@ -127,6 +127,7 @@ results.sort((a, b) => {
     "Negoești",
     "Valea Roșie",
     "Radovanu",
+    "Crivat",
     "Curcani",
     "Luica",
     "Nana",
@@ -313,7 +314,7 @@ Intră la Angajări →
 
 
 {/* dreapta: imagine (discretă) */}
-<div className="hidden sm:block w-52 relative">
+<div className="block w-24 sm:w-52 relative"
 <img
 src={angajariImg}
 alt="Angajări"
