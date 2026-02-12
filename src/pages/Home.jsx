@@ -318,7 +318,7 @@ Intră la Angajări →
 <img
 src={angajariImg}
 alt="Angajări"
-className="h-full w-full object-cover object-right"
+className="h-full w-full object-contain sm:object-cover object-right"
 />
 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
 </div>
