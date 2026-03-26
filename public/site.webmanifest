@@ -1,6 +1,6 @@
 {
-  "name": "Oltenița Imobiliare",
-  "short_name": "Oltenița Imobiliare",
+  "name": "OltenițaImobiliare",
+  "short_name": "OltenițaImobiliare",
   "description": "Platformă imobiliară locală pentru anunțuri gratuite din Oltenița: apartamente, case, terenuri și spații comerciale.",
   "start_url": "/",
   "display": "standalone",

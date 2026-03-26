@@ -80,7 +80,9 @@ export default function ListingDetails() {
 
       {/* 🔵 Distribuire Facebook */}
       <a
-        href={`https://www.facebook.com/sharer.php?u=https://oltenitaimobiliare.ro/share/${listing._id}`}
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+  `https://share.oltenitaimobiliare.ro/share/${listing._id}`
+)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mb-3 transition"

@@ -1,6 +1,6 @@
 <?php
 // ===============================================================
-// Oltenița Imobiliare - Proxy pentru distribuire Facebook
+// OltenițaImobiliare - Proxy pentru distribuire Facebook
 // ===============================================================
 // Acest fișier redirecționează cererile de tip:
 //   https://oltenitaimobiliare.ro/share.php?id=XXXXXXXXXXXXXXX
