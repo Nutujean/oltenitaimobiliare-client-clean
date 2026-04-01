@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function GhidImobiliar() {
   const categorii = [
@@ -60,64 +61,74 @@ export default function GhidImobiliar() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <div className="mb-6">
-        <Link
-          to="/"
-          className="inline-flex items-center text-blue-700 hover:text-blue-800 font-medium"
-        >
-          ← Înapoi la Acasă
-        </Link>
-      </div>
+    <>
+      <Helmet>
+        <title>Ghid imobiliar Oltenița | Sfaturi utile pentru vânzare, cumpărare și închiriere</title>
+        <meta
+          name="description"
+          content="Ghid imobiliar cu sfaturi utile pentru vânzători, cumpărători și chiriași din Oltenița și împrejurimi. Informații practice despre anunțuri, acte și închirieri."
+        />
+      </Helmet>
 
-      <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-          Ghid imobiliar
-        </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
-          Sfaturi utile pentru vânzare, cumpărare și închiriere, explicate
-          simplu și clar.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-3 mb-10">
-        {categorii.map((categorie) => (
-          <span
-            key={categorie}
-            className="inline-flex items-center rounded-full bg-white border border-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm"
+      <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center text-blue-700 hover:text-blue-800 font-medium"
           >
-            {categorie}
-          </span>
-        ))}
-      </div>
+            ← Înapoi la Acasă
+          </Link>
+        </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {articole.map((articol) => (
-          <div
-            key={articol.id}
-            className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition"
-          >
-            <span className="inline-block text-xs font-semibold bg-blue-100 text-blue-700 px-3 py-1 rounded-full mb-4">
-              {articol.categorie}
-            </span>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            Ghid imobiliar
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
+            Sfaturi utile pentru vânzare, cumpărare și închiriere, explicate
+            simplu și clar.
+          </p>
+        </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-3">
-              {articol.titlu}
-            </h2>
-
-            <p className="text-gray-600 text-sm leading-6 mb-5">
-              {articol.descriere}
-            </p>
-
-            <Link
-              to={articol.link}
-              className="text-blue-700 font-semibold hover:text-blue-800 transition"
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          {categorii.map((categorie) => (
+            <span
+              key={categorie}
+              className="inline-flex items-center rounded-full bg-white border border-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm"
             >
-              Citește articolul →
-            </Link>
-          </div>
-        ))}
+              {categorie}
+            </span>
+          ))}
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {articole.map((articol) => (
+            <div
+              key={articol.id}
+              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition"
+            >
+              <span className="inline-block text-xs font-semibold bg-blue-100 text-blue-700 px-3 py-1 rounded-full mb-4">
+                {articol.categorie}
+              </span>
+
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                {articol.titlu}
+              </h2>
+
+              <p className="text-gray-600 text-sm leading-6 mb-5">
+                {articol.descriere}
+              </p>
+
+              <Link
+                to={articol.link}
+                className="text-blue-700 font-semibold hover:text-blue-800 transition"
+              >
+                Citește articolul →
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
