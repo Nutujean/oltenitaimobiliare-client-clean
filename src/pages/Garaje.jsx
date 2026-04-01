@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API_URL from "../api";
 import ListingCard from "../components/ListingCard";
+import { Helmet } from "react-helmet-async";
 
 export default function Garaje() {
   const [listings, setListings] = useState([]);
@@ -23,20 +24,32 @@ export default function Garaje() {
   if (loading) return <p className="text-center py-10">Se încarcă...</p>;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-24 pb-10">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        Garaje disponibile în Oltenița și împrejurimi
-      </h1>
+    <>
+      <Helmet>
+        <title>Garaje disponibile în Oltenița și împrejurimi | Oltenița Imobiliare</title>
+        <meta
+          name="description"
+          content="Vezi garaje disponibile în Oltenița și împrejurimi. Anunțuri actualizate pentru vânzare și închiriere, direct pe Oltenița Imobiliare."
+        />
+      </Helmet>
 
-      {listings.length === 0 ? (
-        <p className="text-center text-gray-500">Momentan nu există anunțuri pentru garaje.</p>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.map((listing) => (
-            <ListingCard key={listing._id} listing={listing} />
-          ))}
-        </div>
-      )}
-    </div>
+      <div className="max-w-6xl mx-auto px-4 pt-24 pb-10">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+          Garaje disponibile în Oltenița și împrejurimi
+        </h1>
+
+        {listings.length === 0 ? (
+          <p className="text-center text-gray-500">
+            Momentan nu există anunțuri pentru garaje.
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((listing) => (
+              <ListingCard key={listing._id} listing={listing} />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
