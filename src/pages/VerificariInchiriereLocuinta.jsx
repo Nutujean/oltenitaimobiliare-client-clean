@@ -110,11 +110,11 @@ export default function VerificariInchiriereLocuinta() {
 
         <div className="mt-10 pt-8 border-t border-gray-200">
           <Link
-            to="/anunturi"
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 transition"
-          >
-            Vezi anunțurile disponibile
-          </Link>
+  to="/"
+  className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 transition"
+>
+  Vezi anunțurile de pe homepage
+</Link>
         </div>
       </article>
     </div>
