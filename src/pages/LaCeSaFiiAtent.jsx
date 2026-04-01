@@ -124,7 +124,7 @@ export default function LaCeSaFiiAtent() {
   to="/"
   className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 transition"
 >
-  Vezi anunțurile de pe homepage
+  Vezi proprietatile disponibile
 </Link>
         </div>
       </article>
