@@ -10,7 +10,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔄 actualizare stare login la schimbare pagină
+  // actualizare stare login la schimbare pagină
   useEffect(() => {
     const u = localStorage.getItem("user");
     const token = localStorage.getItem("token");
@@ -91,6 +91,10 @@ export default function Navbar() {
               Acasă
             </Link>
 
+            <Link to="/ghid-imobiliar" className="hover:text-gray-200">
+              Ghid imobiliar
+            </Link>
+
             <button
               onClick={handlePosteazaClick}
               className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-4 py-2 rounded-lg transition"
@@ -122,13 +126,21 @@ export default function Navbar() {
 
         {/* MENIU MOBIL */}
         {menuOpen && (
-          <div className="md:hidden bg-blue-700 px-4 py-3 space-y-2 text-sm">
+          <div className="md:hidden bg-blue-700 px-4 py-3 space-y-2 text-sm text-white">
             <Link
               to="/"
               onClick={() => setMenuOpen(false)}
               className="block hover:text-gray-200"
             >
               Acasă
+            </Link>
+
+            <Link
+              to="/ghid-imobiliar"
+              onClick={() => setMenuOpen(false)}
+              className="block hover:text-gray-200"
+            >
+              Ghid imobiliar
             </Link>
 
             <button

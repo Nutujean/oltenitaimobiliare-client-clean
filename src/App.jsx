@@ -16,6 +16,13 @@ import CumAdaugi from "./pages/CumAdaugi";
 import Share from "./pages/Share";
 import Promovare from "./pages/Promovare";
 import Angajari from "./pages/Angajari";
+import GhidImobiliar from "./pages/GhidImobiliar";
+import CumScriiUnAnuntBun from "./pages/CumScriiUnAnuntBun";
+import CumFaciPozeBune from "./pages/CumFaciPozeBune";
+import LaCeSaFiiAtent from "./pages/LaCeSaFiiAtent";
+import ActeVanzareImobil from "./pages/ActeVanzareImobil";
+import CumAlegiUnChirias from "./pages/CumAlegiUnChirias";
+import VerificariInchiriereLocuinta from "./pages/VerificariInchiriereLocuinta";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -26,7 +33,7 @@ import Profil from "./pages/Profil";
 import AnunturileMele from "./pages/AnunturileMele";
 import Favorite from "./pages/Favorite";
 
-/* ✅ Stripe: promovare */
+/* Stripe: promovare */
 import PromovareSucces from "./pages/PromovareSucces";
 import PromovareAnulata from "./pages/PromovareAnulata";
 
@@ -37,7 +44,7 @@ import DetaliuAnunt from "./pages/DetaliuAnunt";
 import Categories from "./pages/Categories";
 import ToateAnunturile from "./pages/ToateAnunturile";
 
-/* ✅ Pagini SEO dedicate */
+/* Pagini SEO dedicate */
 import Case from "./pages/Case";
 import Apartamente from "./pages/Apartamente";
 import Terenuri from "./pages/Terenuri";
@@ -51,14 +58,12 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* ✅ Navbar fix sus */}
       <Navbar />
-      {/* ✅ Scroll to top la schimbare de pagină */}
       <ScrollToTop />
 
       <main className="flex-grow pt-24">
         <Routes>
-          {/* 🔹 Public */}
+          {/* Public */}
           <Route path="/" element={<Home />} />
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/termeni" element={<Termeni />} />
@@ -69,12 +74,37 @@ function App() {
           <Route path="/share/:id" element={<Share />} />
           <Route path="/promovare" element={<Promovare />} />
           <Route path="/angajari" element={<Angajari />} />
+          <Route path="/ghid-imobiliar" element={<GhidImobiliar />} />
+          <Route
+            path="/ghid-imobiliar/cum-scrii-un-anunt-bun"
+            element={<CumScriiUnAnuntBun />}
+          />
+          <Route
+            path="/ghid-imobiliar/cum-faci-poze-bune"
+            element={<CumFaciPozeBune />}
+          />
+          <Route
+            path="/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament"
+            element={<LaCeSaFiiAtent />}
+          />
+          <Route
+            path="/ghid-imobiliar/acte-necesare-pentru-vanzarea-unui-imobil"
+            element={<ActeVanzareImobil />}
+          />
+          <Route
+            path="/ghid-imobiliar/cum-alegi-un-chirias-potrivit"
+            element={<CumAlegiUnChirias />}
+          />
+          <Route
+            path="/ghid-imobiliar/ce-trebuie-sa-verifici-inainte-sa-inchiriezi-o-locuinta"
+            element={<VerificariInchiriereLocuinta />}
+          />
 
-          {/* 🔹 Autentificare (prin SMS - login + înregistrare) */}
+          {/* Autentificare */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
           <Route path="/inregistrare" element={<LoginSMS mode="register" />} />
 
-          {/* 🔹 Profil protejat */}
+          {/* Profil protejat */}
           <Route
             path="/profil"
             element={
@@ -84,21 +114,21 @@ function App() {
             }
           />
 
-          {/* 🔹 Utilizator */}
+          {/* Utilizator */}
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
 
-          {/* 🔹 Stripe - Promovare */}
+          {/* Stripe */}
           <Route path="/promovare-succes" element={<PromovareSucces />} />
           <Route path="/promovare-anulata" element={<PromovareAnulata />} />
 
-          {/* 🔹 Anunțuri */}
+          {/* Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
           <Route path="/anunturi" element={<ToateAnunturile />} />
 
-          {/* 🔹 Categoriile SEO */}
+          {/* SEO */}
           <Route path="/case" element={<Case />} />
           <Route path="/apartamente" element={<Apartamente />} />
           <Route path="/terenuri" element={<Terenuri />} />
@@ -106,18 +136,15 @@ function App() {
           <Route path="/garsoniere" element={<Garsoniere />} />
           <Route path="/garaje" element={<Garaje />} />
 
-          {/* 🔹 Categorii dinamice */}
+          {/* Categorii dinamice */}
           <Route path="/categorie/:slug" element={<Categories />} />
 
-          {/* 🔹 404 */}
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
-      {/* ✅ Footer global */}
       <Footer />
-
-      {/* ✅ Banner cookies legal */}
       <CookiesConsent />
     </div>
   );

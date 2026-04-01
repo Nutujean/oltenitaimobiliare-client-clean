@@ -14,7 +14,7 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("newest");
   const [intent, setIntent] = useState("");
-  const [view, setView] = useState("grid"); // doar pentru anunțuri
+  const [view, setView] = useState("grid");
 
   useEffect(() => {
     fetch(`${API_URL}/health`).catch(() => {});
@@ -56,59 +56,60 @@ export default function Home() {
         (l) => l.intent && l.intent.toLowerCase() === intent.toLowerCase()
       );
     }
-results.sort((a, b) => {
-  const getMs = (x) => {
-    if (!x) return null;
-    const d1 = new Date(x);
-    if (!Number.isNaN(d1.getTime())) return d1.getTime();
 
-    const maybe =
-      x?.$date ||
-      x?.date ||
-      x?.value ||
-      x?.iso ||
-      (typeof x?.toString === "function" ? x.toString() : null);
+    results.sort((a, b) => {
+      const getMs = (x) => {
+        if (!x) return null;
+        const d1 = new Date(x);
+        if (!Number.isNaN(d1.getTime())) return d1.getTime();
 
-    const d2 = new Date(maybe);
-    if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+        const maybe =
+          x?.$date ||
+          x?.date ||
+          x?.value ||
+          x?.iso ||
+          (typeof x?.toString === "function" ? x.toString() : null);
 
-    return null;
-  };
+        const d2 = new Date(maybe);
+        if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
 
-  const aExpMs = getMs(a.expiresAt);
-  const bExpMs = getMs(b.expiresAt);
+        return null;
+      };
 
-  const aExpired =
-    String(a.status || "").toLowerCase() === "expirat" ||
-    (aExpMs !== null && aExpMs < Date.now());
+      const aExpMs = getMs(a.expiresAt);
+      const bExpMs = getMs(b.expiresAt);
 
-  const bExpired =
-    String(b.status || "").toLowerCase() === "expirat" ||
-    (bExpMs !== null && bExpMs < Date.now());
+      const aExpired =
+        String(a.status || "").toLowerCase() === "expirat" ||
+        (aExpMs !== null && aExpMs < Date.now());
 
-  const aFeaturedActive =
-    !aExpired &&
-    (a.featured === true ||
-      (a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now()));
+      const bExpired =
+        String(b.status || "").toLowerCase() === "expirat" ||
+        (bExpMs !== null && bExpMs < Date.now());
 
-  const bFeaturedActive =
-    !bExpired &&
-    (b.featured === true ||
-      (b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now()));
+      const aFeaturedActive =
+        !aExpired &&
+        (a.featured === true ||
+          (a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now()));
 
-  const aGroup = aFeaturedActive ? 0 : aExpired ? 2 : 1;
-  const bGroup = bFeaturedActive ? 0 : bExpired ? 2 : 1;
+      const bFeaturedActive =
+        !bExpired &&
+        (b.featured === true ||
+          (b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now()));
 
-  if (aGroup !== bGroup) return aGroup - bGroup;
+      const aGroup = aFeaturedActive ? 0 : aExpired ? 2 : 1;
+      const bGroup = bFeaturedActive ? 0 : bExpired ? 2 : 1;
 
-  const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-  const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-  return bTime - aTime;
-});
+      if (aGroup !== bGroup) return aGroup - bGroup;
+
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
     setFiltered(results);
   }, [listings, location, intent]);
 
-  // dacă schimbi sort, refacem fetch
   useEffect(() => {
     fetchListings(sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,9 +156,35 @@ results.sort((a, b) => {
     "Modelu",
   ];
 
+  const ghidArticole = [
+    {
+      id: 1,
+      titlu: "Cum scrii un anunț imobiliar care atrage mai multe vizualizări",
+      descriere:
+        "Află ce informații contează cel mai mult într-un anunț și cum îl faci mai convingător pentru potențialii cumpărători sau chiriași.",
+      categorie: "Pentru vânzători",
+      link: "/ghid-imobiliar/cum-scrii-un-anunt-bun",
+    },
+    {
+      id: 2,
+      titlu: "Cum faci poze bune pentru apartamentul sau casa ta",
+      descriere:
+        "Pozele bune pot face diferența dintre un anunț ignorat și unul care primește rapid mesaje și apeluri.",
+      categorie: "Pentru vânzători",
+      link: "/ghid-imobiliar/cum-faci-poze-bune",
+    },
+    {
+      id: 3,
+      titlu: "La ce să fii atent când cumperi un apartament",
+      descriere:
+        "Vezi ce detalii trebuie să verifici înainte de vizionare și ce întrebări merită puse înainte de a lua o decizie.",
+      categorie: "Pentru cumpărători",
+      link: "/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#f4f6fb]">
-      {/* HERO */}
       <div
         className="relative h-[60vh] flex items-center justify-center text-center text-white"
         style={{
@@ -187,7 +214,6 @@ results.sort((a, b) => {
         </div>
       </div>
 
-      {/* FILTRE */}
       <section className="-mt-8 max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 z-20 relative flex flex-col md:flex-row gap-4">
         <select
           className="border rounded-lg px-4 py-2 flex-1"
@@ -231,7 +257,6 @@ results.sort((a, b) => {
         </Link>
       </section>
 
-      {/* BANDA DE AUTORITATE */}
       <div className="max-w-6xl mx-auto mt-6 px-4">
         <div className="bg-white rounded-xl shadow-sm border flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 text-sm text-gray-700">
           <span>✔ Platformă imobiliară locală</span>
@@ -241,7 +266,6 @@ results.sort((a, b) => {
         </div>
       </div>
 
-      {/* CATEGORII */}
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h2 className="text-3xl font-bold text-center mb-8 text-blue-800">
           Categorii populare
@@ -275,62 +299,95 @@ results.sort((a, b) => {
         </div>
       </section>
 
-      {/* BANNERE: PARTENER + ANGAJĂRI */}
-<section className="max-w-7xl mx-auto mt-12 px-4">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-{/* PARTENER */}
-<div className="bg-white rounded-2xl shadow-md p-6 flex justify-center">
-<PromoBanner />
-</div>
+      <section className="max-w-6xl mx-auto pb-12 px-4">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-blue-800">Ghid imobiliar</h2>
+            <p className="text-gray-600 mt-2 max-w-2xl">
+              Sfaturi utile pentru vânzare, cumpărare și închiriere, explicate
+              simplu și clar.
+            </p>
+          </div>
 
+          <Link
+            to="/ghid-imobiliar"
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-3 transition"
+          >
+            Vezi toate articolele
+          </Link>
+        </div>
 
-{/* ANGAJĂRI */}
-<Link
-to="/angajari"
-className="relative bg-white rounded-2xl shadow-md border overflow-hidden hover:shadow-lg transition"
->
-<div className="flex">
-{/* stânga: text */}
-<div className="flex-1 p-6 relative z-10">
-<span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-💼 Angajări
-</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {ghidArticole.map((articol) => (
+            <Link
+              key={articol.id}
+              to={articol.link}
+              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition"
+            >
+              <span className="inline-block text-xs font-semibold bg-blue-100 text-blue-700 px-3 py-1 rounded-full mb-4">
+                {articol.categorie}
+              </span>
 
+              <h3 className="text-xl font-bold text-gray-900 mb-3 leading-snug">
+                {articol.titlu}
+              </h3>
 
-<h3 className="mt-3 text-xl font-bold text-gray-900">
-Joburi & colaborări în zonă
-</h3>
+              <p className="text-gray-600 text-sm leading-6 mb-5">
+                {articol.descriere}
+              </p>
 
+              <span className="text-blue-700 font-semibold hover:text-blue-800 transition">
+                Citește articolul →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-<p className="mt-1 text-sm text-gray-600">
-Caută locuri de muncă sau publică anunțuri de angajare rapid.
-</p>
+      <section className="max-w-7xl mx-auto mt-12 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-md p-6 flex justify-center">
+            <PromoBanner />
+          </div>
 
+          <Link
+            to="/angajari"
+            className="relative bg-white rounded-2xl shadow-md border overflow-hidden hover:shadow-lg transition"
+          >
+            <div className="flex">
+              <div className="flex-1 p-6 relative z-10">
+                <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  💼 Angajări
+                </span>
 
-<div className="mt-4 inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
-Intră la Angajări →
-</div>
-</div>
+                <h3 className="mt-3 text-xl font-bold text-gray-900">
+                  Joburi & colaborări în zonă
+                </h3>
 
+                <p className="mt-1 text-sm text-gray-600">
+                  Caută locuri de muncă sau publică anunțuri de angajare rapid.
+                </p>
 
-{/* dreapta: imagine (discretă) */}
-<div className="block w-24 sm:w-52 relative">
-<img
-src={angajariImg}
-alt="Angajări"
-className="h-full w-full object-contain sm:object-cover object-right"
-/>
-<div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
-</div>
-</div>
+                <div className="mt-4 inline-flex items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
+                  Intră la Angajări →
+                </div>
+              </div>
 
-{/* decor discret */}
-<div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
-</Link>
-</div>
-</section>
+              <div className="block w-24 sm:w-52 relative">
+                <img
+                  src={angajariImg}
+                  alt="Angajări"
+                  className="h-full w-full object-contain sm:object-cover object-right"
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
+              </div>
+            </div>
 
-      {/* BUTOANE VIEW (doar pentru anunțuri) */}
+            <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-blue-100 opacity-50" />
+          </Link>
+        </div>
+      </section>
+
       <div className="max-w-6xl mx-auto px-4 mt-10">
         <div className="flex justify-end gap-2 mb-4">
           <button
@@ -355,7 +412,6 @@ className="h-full w-full object-contain sm:object-cover object-right"
         </div>
       </div>
 
-      {/* LISTĂ ANUNȚURI */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold text-gray-800 mb-1">
           Ultimele anunțuri imobiliare din Oltenița
@@ -381,37 +437,34 @@ className="h-full w-full object-contain sm:object-cover object-right"
         >
           {filtered.map((l) => {
             const isFeatured =
-  l.featured === true ||
-  (l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now());
+              l.featured === true ||
+              (l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now());
 
             const isNew =
               l.createdAt &&
               (Date.now() - new Date(l.createdAt)) / (1000 * 60 * 60 * 24) <= 5;
 
             const expiresAtMs = (() => {
-  const x = l.expiresAt;
+              const x = l.expiresAt;
+              const d1 = new Date(x);
+              if (x && !Number.isNaN(d1.getTime())) return d1.getTime();
 
-  // 1) Date / string / number
-  const d1 = new Date(x);
-  if (x && !Number.isNaN(d1.getTime())) return d1.getTime();
+              const maybe =
+                x?.$date ||
+                x?.date ||
+                x?.value ||
+                x?.iso ||
+                (typeof x?.toString === "function" ? x.toString() : null);
 
-  // 2) obiect (ex: {$date: "..."} / {date: "..."} etc.)
-  const maybe =
-    x?.$date ||
-    x?.date ||
-    x?.value ||
-    x?.iso ||
-    (typeof x?.toString === "function" ? x.toString() : null);
+              const d2 = new Date(maybe);
+              if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
 
-  const d2 = new Date(maybe);
-  if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+              return null;
+            })();
 
-  return null;
-})();
-
-const isExpired =
-  String(l.status || "").toLowerCase() === "expirat" ||
-  (expiresAtMs !== null && expiresAtMs < Date.now());
+            const isExpired =
+              String(l.status || "").toLowerCase() === "expirat" ||
+              (expiresAtMs !== null && expiresAtMs < Date.now());
 
             const listingHref = `/anunt/${l._id}`;
 
@@ -561,7 +614,6 @@ const isExpired =
         </div>
       </div>
 
-      {/* HARTĂ */}
       <div className="mt-16 mb-10 text-center px-4">
         <h2 className="text-2xl font-bold text-blue-700 mb-3">
           Zona noastră - Oltenița și împrejurimi
