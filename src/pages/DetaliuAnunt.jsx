@@ -326,9 +326,9 @@ export default function DetaliuAnunt() {
         )}
 
         <div
-          className={`relative w-full aspect-[16/9] overflow-hidden rounded-xl shadow ${
-            isExpired ? "bg-gray-200 opacity-80" : "bg-gray-100 cursor-pointer"
-          }`}
+  className={`relative w-full aspect-[16/9] overflow-hidden rounded-xl shadow ${
+    isExpired ? "bg-gray-100" : "bg-gray-100 cursor-pointer"
+  }`}
           onClick={() => !isExpired && images.length > 0 && setIsZoomed(true)}
         >
           {images.length ? (
