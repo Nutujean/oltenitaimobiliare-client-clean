@@ -9,13 +9,38 @@ export default function ListingCard({ listing }) {
     setFavorites(getFavIds());
   }, []);
 
-  const isPromoted =
-    listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
+  const getDateMs = (x) => {
+    if (!x) return null;
+
+    const d1 = new Date(x);
+    if (!Number.isNaN(d1.getTime())) return d1.getTime();
+
+    const maybe =
+      x?.$date ||
+      x?.date ||
+      x?.value ||
+      x?.iso ||
+      (typeof x?.toString === "function" ? x.toString() : null);
+
+    const d2 = new Date(maybe);
+    if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+    return null;
+  };
+
+  const expiresAtMs = getDateMs(listing.expiresAt);
+
   const isExpired =
-    listing.expiresAt && new Date(listing.expiresAt) < new Date();
+    String(listing.status || "").toLowerCase() === "expirat" ||
+    (expiresAtMs !== null && expiresAtMs < Date.now());
+
+  const isPromoted =
+    !isExpired &&
+    listing.featuredUntil &&
+    new Date(listing.featuredUntil) > new Date();
+
   const isFavorite = favorites.includes(listing._id);
 
-  // 🆕 Nou (în ultimele 3 zile)
   const isNew = (() => {
     if (!listing.createdAt) return false;
     const created = new Date(listing.createdAt);
@@ -34,28 +59,30 @@ export default function ListingCard({ listing }) {
 
   return (
     <div
-      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
-        isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""
-      }`}
+      className={`relative rounded-xl shadow-md transition-all duration-300 overflow-hidden ${
+        isExpired
+          ? "bg-gray-100 opacity-75"
+          : "bg-white hover:shadow-lg transform hover:-translate-y-1"
+      } ${isPromoted ? "border-2 border-yellow-400 shadow-yellow-200" : ""}`}
     >
-      {/* 🏷️ Banner PROMOVAT / EXPIRAT / NOU */}
       {isPromoted && (
         <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⭐ PROMOVAT
         </div>
       )}
-      {isExpired && !isPromoted && (
+
+      {isExpired && (
         <div className="absolute top-3 left-3 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           ⏰ EXPIRAT
         </div>
       )}
+
       {!isPromoted && !isExpired && isNew && (
         <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-md z-10">
           🆕 NOU
         </div>
       )}
 
-      {/* ❤️ Favorite */}
       <button
         onClick={handleFavorite}
         className={`absolute top-3 right-3 p-2 rounded-full z-20 shadow-md transition ${
@@ -68,33 +95,45 @@ export default function ListingCard({ listing }) {
         ❤️
       </button>
 
-      {/* 🖼️ Imagine */}
-      <Link to={`/anunt/${listing._id}`}>
-        <img
-          src={
-            listing.images?.[0] ||
-            listing.imageUrl ||
-            "https://via.placeholder.com/400x250?text=Fără+imagine"
-          }
-          alt={listing.title}
-          className={`w-full h-48 object-cover transition-transform duration-300 ${
-            isExpired ? "opacity-70 grayscale" : "hover:scale-105"
-          }`}
-          loading="lazy"
-        />
-      </Link>
+      {isExpired ? (
+        <div>
+          <img
+            src={
+              listing.images?.[0] ||
+              listing.imageUrl ||
+              "https://via.placeholder.com/400x250?text=Fără+imagine"
+            }
+            alt={listing.title}
+            className="w-full h-48 object-cover opacity-70 grayscale"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <Link to={`/anunt/${listing._id}`}>
+          <img
+            src={
+              listing.images?.[0] ||
+              listing.imageUrl ||
+              "https://via.placeholder.com/400x250?text=Fără+imagine"
+            }
+            alt={listing.title}
+            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+            loading="lazy"
+          />
+        </Link>
+      )}
 
-      {/* 📋 Detalii */}
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
           {listing.title}
         </h3>
+
         <p className="text-sm text-gray-500 line-clamp-2">
           {listing.location || "Oltenița și împrejurimi"}
         </p>
 
         {listing.price && (
-          <p className="text-blue-700 font-bold text-lg">
+          <p className={`font-bold text-lg ${isExpired ? "text-gray-500" : "text-blue-700"}`}>
             {listing.price.toLocaleString("ro-RO")} €
           </p>
         )}
@@ -107,23 +146,22 @@ export default function ListingCard({ listing }) {
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
         </div>
 
-        {/* 🔹 Butoane acțiune */}
         <div className="flex flex-col gap-2 mt-3">
-          <Link
-            to={`/anunt/${listing._id}`}
-            className={`text-center font-medium py-2 rounded-lg ${
-              isExpired
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700 transition"
-            }`}
-          >
-            {isExpired ? "Expirat" : "Vezi detalii"}
-          </Link>
+          {isExpired ? (
+            <div className="text-center font-medium py-2 rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed">
+              Expirat
+            </div>
+          ) : (
+            <Link
+              to={`/anunt/${listing._id}`}
+              className="text-center font-medium py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Vezi detalii
+            </Link>
+          )}
 
-          {/* 🔹 Butoane de distribuire */}
           {!isExpired && (
             <div className="flex justify-between items-center gap-2 mt-2">
-              {/* 📘 Facebook */}
               <button
                 onClick={() =>
                   window.open(
@@ -139,7 +177,6 @@ export default function ListingCard({ listing }) {
                 📘 Facebook
               </button>
 
-              {/* 💬 WhatsApp */}
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
                   `🏡 ${listing.title} – vezi detalii: ${adUrl}`
@@ -151,7 +188,6 @@ export default function ListingCard({ listing }) {
                 💬 WhatsApp
               </a>
 
-              {/* 🎵 TikTok */}
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(adUrl);
