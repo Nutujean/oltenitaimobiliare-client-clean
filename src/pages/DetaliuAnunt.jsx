@@ -22,6 +22,26 @@ function getUserIdFromToken(token) {
   }
 }
 
+// 🔧 helper: parsează date robuste
+function getDateMs(x) {
+  if (!x) return null;
+
+  const d1 = new Date(x);
+  if (!Number.isNaN(d1.getTime())) return d1.getTime();
+
+  const maybe =
+    x?.$date ||
+    x?.date ||
+    x?.value ||
+    x?.iso ||
+    (typeof x?.toString === "function" ? x.toString() : null);
+
+  const d2 = new Date(maybe);
+  if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+  return null;
+}
+
 // 🔸 Pachete de promovare – ID-urile TREBUIE să fie ca în backend: featured7/14/30
 const PROMO_OPTIONS = [
   { id: "featured7", label: "Promovat 7 zile", priceRON: 30, days: 7 },
@@ -90,22 +110,16 @@ export default function DetaliuAnunt() {
 
       const myUserId = getUserIdFromToken(token);
 
-      // suportă mai multe forme în listing:
-      // - user: "ObjectId"
-      // - user: { _id: "ObjectId" }
-      // - userId: "ObjectId"
       const listingUserId =
         (typeof listing?.user === "string" ? listing.user : listing?.user?._id) ||
         listing?.userId ||
         null;
 
-      // 1) match pe userId (cea mai bună variantă)
       if (myUserId && listingUserId && String(myUserId) === String(listingUserId)) {
         setCanPromote(true);
         return;
       }
 
-      // 2) fallback pe telefon (compatibilitate anunțuri vechi)
       if (
         rawPhone &&
         rawPhone !== "undefined" &&
@@ -135,14 +149,16 @@ export default function DetaliuAnunt() {
   const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
-  // ✅ ID robust pentru share/public URL (vechi/nou)
   const listingId = listing?._id || listing?.id;
 
-  // ✅ URL-uri share/public
   const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listingId}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
-
   const backendFbDirect = backendShareUrl;
+
+  const expiresAtMs = getDateMs(listing?.expiresAt);
+  const isExpired =
+    String(listing?.status || "").toLowerCase() === "expirat" ||
+    (expiresAtMs !== null && expiresAtMs < Date.now());
 
   const handleShare = (platform) => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -185,11 +201,17 @@ export default function DetaliuAnunt() {
     window.open(backendFbDirect, "_blank");
   };
 
-  // 🔸 Anunțul este deja promovat?
-  const isFeatured = listing.featuredUntil && new Date(listing.featuredUntil) > new Date();
+  const isFeatured =
+    !isExpired &&
+    listing.featuredUntil &&
+    new Date(listing.featuredUntil) > new Date();
 
-  // 🔸 Pornire flux de plată Stripe pentru promovare
   const startPromotion = async () => {
+    if (isExpired) {
+      setPromoError("Anunțul este expirat și nu poate fi promovat.");
+      return;
+    }
+
     if (!selectedPromo) {
       setPromoError("Selectează un pachet de promovare.");
       return;
@@ -229,7 +251,6 @@ export default function DetaliuAnunt() {
 
   return (
     <div className="relative">
-      {/* 🔶 Banner pentru utilizatorii iPhone în aplicația Facebook */}
       {isFacebookAppWebView && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-50 border-b border-yellow-200 text-yellow-900 p-3 flex items-center justify-between gap-3">
           <div className="text-sm leading-snug">
@@ -285,7 +306,6 @@ export default function DetaliuAnunt() {
           <meta property="og:type" content="article" />
         </Helmet>
 
-        {/* ✅ Buton Înapoi */}
         <div className="mb-4">
           <button
             type="button"
@@ -296,10 +316,20 @@ export default function DetaliuAnunt() {
           </button>
         </div>
 
-        {/* Imagine principală */}
+        {isExpired && (
+          <div className="mb-5 rounded-xl border border-gray-300 bg-gray-100 px-4 py-4 text-gray-800">
+            <div className="font-bold text-sm uppercase tracking-wide mb-1">EXPIRAT</div>
+            <p className="text-sm">
+              Acest anunț nu mai este valabil. A rămas afișat doar ca anunț expirat.
+            </p>
+          </div>
+        )}
+
         <div
-          className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden rounded-xl shadow cursor-pointer"
-          onClick={() => images.length > 0 && setIsZoomed(true)}
+          className={`relative w-full aspect-[16/9] overflow-hidden rounded-xl shadow ${
+            isExpired ? "bg-gray-200 opacity-80" : "bg-gray-100 cursor-pointer"
+          }`}
+          onClick={() => !isExpired && images.length > 0 && setIsZoomed(true)}
         >
           {images.length ? (
             <>
@@ -330,6 +360,12 @@ export default function DetaliuAnunt() {
                   </button>
                 </>
               )}
+
+              {isExpired && (
+                <span className="absolute top-3 left-3 bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded">
+                  EXPIRAT
+                </span>
+              )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -338,8 +374,7 @@ export default function DetaliuAnunt() {
           )}
         </div>
 
-        {/* Zoom */}
-        {isZoomed && (
+        {isZoomed && !isExpired && (
           <div
             className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
             onClick={() => setIsZoomed(false)}
@@ -374,10 +409,15 @@ export default function DetaliuAnunt() {
           </div>
         )}
 
-        {/* Titlu + preț + badge PROMOVAT */}
         <div className="mt-5 text-center sm:text-left">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{listing.title}</h1>
-          <p className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-lg font-semibold mt-1">
+          <p
+            className={`inline-block px-4 py-2 rounded-lg text-lg font-semibold mt-1 ${
+              isExpired
+                ? "bg-gray-200 text-gray-700"
+                : "bg-blue-100 text-blue-800"
+            }`}
+          >
             💰 {listing.price} €
           </p>
 
@@ -395,7 +435,6 @@ export default function DetaliuAnunt() {
           )}
         </div>
 
-        {/* Tip tranzacție */}
         {listing.intent && (
           <div
             className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${
@@ -420,11 +459,22 @@ export default function DetaliuAnunt() {
 
         <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
 
+        {listing.createdAt && (
+          <p className="text-xs text-gray-500 mt-2">
+            🕒 Publicat:{" "}
+            {new Date(listing.createdAt).toLocaleDateString("ro-RO", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </p>
+        )}
+
         {listing.contactName && (
           <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>
         )}
 
-        {listing.phone && (
+        {listing.phone && !isExpired && (
           <p className="mt-1">
             📞{" "}
             <a href={`tel:${listing.phone}`} className="text-blue-600 font-semibold hover:underline">
@@ -433,12 +483,15 @@ export default function DetaliuAnunt() {
           </p>
         )}
 
-        <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">
+        {listing.phone && isExpired && (
+          <p className="mt-1 text-gray-500">📞 Contact indisponibil pentru anunț expirat</p>
+        )}
+
+        <div className={`mt-4 leading-relaxed whitespace-pre-line ${isExpired ? "text-gray-600" : "text-gray-700"}`}>
           {listing.description}
         </div>
 
-        {/* Promovează anunțul – DOAR pentru proprietar */}
-        {canPromote && (
+        {canPromote && !isExpired && (
           <div className="mt-8 border-t pt-6">
             <div className="flex items-center justify-between gap-2 mb-3">
               <h3 className="text-lg font-semibold text-gray-800">Promovează anunțul</h3>
@@ -498,7 +551,6 @@ export default function DetaliuAnunt() {
           </div>
         )}
 
-        {/* Distribuie */}
         <div className="mt-8 border-t pt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">Distribuie anunțul</h3>
 
