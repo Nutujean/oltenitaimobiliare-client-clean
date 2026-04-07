@@ -139,9 +139,7 @@ export default function Categories() {
                   <img
                     src={l.images[0]}
                     alt={l.title}
-                    className={`w-full h-56 object-cover ${
-                      isExpired ? "grayscale" : ""
-                    }`}
+                    className="w-full h-56 object-cover"
                   />
                 ) : (
                   <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">
