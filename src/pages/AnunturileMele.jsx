@@ -41,8 +41,9 @@ export default function AnunturileMele() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
 
-        setListings(Array.isArray(data) ? data : []);
-        setMessage("");
+        const arr = Array.isArray(data) ? data : [];
+        setListings(arr);
+        setMessage(arr.length === 0 ? "Momentan nu ai niciun anunț." : "");
       } catch (err) {
         setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
       } finally {
@@ -74,7 +75,9 @@ export default function AnunturileMele() {
   const getDetailsPath = (listing) => {
     const id = getId(listing);
     if (!id) return "/";
-    return isJobListing(listing) ? /angajari?edit=${encodeURIComponent(id)} : /anunt/${id};
+    return isJobListing(listing)
+      ? /angajari?edit=${encodeURIComponent(id)}
+      : /anunt/${id};
   };
 
   const getEditPath = (listing) => {
@@ -112,7 +115,10 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la reactivare.");
 
-      setListings((prev) => prev.map((l) => (getId(l) === id ? data.listing : l)));
+      setListings((prev) =>
+        prev.map((l) => (getId(l) === id ? data.listing : l))
+      );
+
       setMessage("✅ Anunțul a fost reactivat gratuit pentru 14 zile.");
     } catch (err) {
       setMessage(err.message || "Eroare la reactivare.");
