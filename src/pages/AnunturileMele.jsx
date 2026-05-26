@@ -3,14 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
-// 🔧 helper: normalizare telefon exact ca în backend
 function normalizePhone(value) {
   if (!value) return "";
   const digits = String(value).replace(/\D/g, "");
   return digits.replace(/^4/, "");
 }
 
-// ✅ normalizare text (lowercase + fără diacritice)
 function normText(v) {
   return String(v || "")
     .toLowerCase()
@@ -42,8 +40,8 @@ export default function AnunturileMele() {
         setLoading(true);
         setMessage("⏳ Se încarcă anunțurile tale...");
 
-        const res = await fetch(`${API_URL}/listings/mine`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(${API_URL}/listings/mine, {
+          headers: { Authorization: Bearer ${token} },
         });
 
         const data = await res.json();
@@ -67,7 +65,6 @@ export default function AnunturileMele() {
 
   const handleAdaugaAnunt = () => navigate("/adauga-anunt");
 
-  // ✅ Detectăm “Angajări/Joburi” (robust)
   const isJobListing = (listing) => {
     const cat = normText(listing?.category);
     const type = normText(listing?.type);
@@ -88,38 +85,32 @@ export default function AnunturileMele() {
 
   const getId = (listing) => String(listing?._id || listing?.id || "");
 
-  // ✅ “Detalii” pentru job = pagina Angajari cu edit
   const getDetailsPath = (listing) => {
     const id = getId(listing);
     if (!id) return "/";
-    return isJobListing(listing) ? `/angajari?edit=${encodeURIComponent(id)}` : `/anunt/${id}`;
+    return isJobListing(listing) ? /angajari?edit=${encodeURIComponent(id)} : /anunt/${id};
   };
 
-  // ✅ “Editează” pentru job = tot Angajari cu edit
   const getEditPath = (listing) => {
     const id = getId(listing);
     if (!id) return "/";
     return isJobListing(listing)
-      ? `/angajari?edit=${encodeURIComponent(id)}`
-      : `/editeaza-anunt/${id}`;
+      ? /angajari?edit=${encodeURIComponent(id)}
+      : /editeaza-anunt/${id};
   };
 
-  // ✅ “Plătește / Promovează”
   const handlePayOrPromote = (listing) => {
     const id = getId(listing);
     if (!id) return;
 
-    // Job = tot în Angajari (edit modal)
     if (isJobListing(listing)) {
-      navigate(`/angajari?edit=${encodeURIComponent(id)}`);
+      navigate(/angajari?edit=${encodeURIComponent(id)});
       return;
     }
 
-    // Imobiliare = flow-ul existent (detaliu anunț)
-    navigate(`/anunt/${id}`);
+    navigate(/anunt/${id});
   };
 
-  // 🗑️ Ștergere anunț
   const handleDelete = async (id) => {
     if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
 
@@ -131,9 +122,9 @@ export default function AnunturileMele() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/listings/${id}`, {
+      const res = await fetch(${API_URL}/listings/${id}, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: Bearer ${token} },
       });
 
       const data = await res.json();
@@ -169,17 +160,33 @@ export default function AnunturileMele() {
   const Card = ({ listing, isDraft }) => {
     const id = getId(listing);
 
+    const isExpired =
+      listing.status === "expirat" ||
+      (listing.expiresAt && new Date(listing.expiresAt) < new Date());
+const expiredMoreThan30Days =
+  listing.expiresAt &&
+  new Date() - new Date(listing.expiresAt) >
+    30 * 24 * 60 * 60 * 1000;
+
     return (
       <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
         <div>
           <div className="flex items-start justify-between gap-3">
             <h2 className="text-lg font-semibold text-blue-700 mb-1">{listing.title}</h2>
 
-            {isDraft && (
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
-                DRAFT (nepublicat)
-              </span>
-            )}
+            <div className="flex gap-2 flex-wrap justify-end">
+              {isDraft && (
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
+                  DRAFT (nepublicat)
+                </span>
+              )}
+
+              {!isDraft && isExpired && (
+                <span className="text-xs px-2 py-1 rounded-full bg-red-100 border border-red-200 text-red-700 font-semibold">
+                  EXPIRAT
+                </span>
+              )}
+            </div>
           </div>
 
           <p className="text-sm text-gray-500 mb-2">
@@ -187,7 +194,7 @@ export default function AnunturileMele() {
           </p>
 
           <p className="font-bold text-green-700 mb-2">
-            {listing.price ? `${listing.price} €` : "Preț la cerere"}
+            {listing.price ? ${listing.price} € : "Preț la cerere"}
           </p>
 
           <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
@@ -196,6 +203,13 @@ export default function AnunturileMele() {
             <div className="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
               Acest anunț este salvat ca <b>Draft</b> și nu apare pe prima pagină.
               Apasă <b>„Plătește și publică”</b> ca să îl faci public.
+            </div>
+          )}
+
+          {!isDraft && isExpired && (
+            <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-900 text-sm">
+              Acest anunț este expirat. Pentru activare și deblocarea telefonului,
+              apasă <b>„Promovează și activează”</b>.
             </div>
           )}
         </div>
@@ -216,15 +230,52 @@ export default function AnunturileMele() {
           </Link>
 
           <button
-            type="button"
-            onClick={() => handlePayOrPromote(listing)}
-            className={`text-sm px-3 py-2 rounded-lg text-white ${
-              isDraft ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600"
-            }`}
-          >
-            {isDraft ? "Plătește și publică" : "Promovează"}
-          </button>
+  type="button"
+  onClick={() =>
+    !isDraft && isExpired && expiredMoreThan30Days
+      ? handleReactivateFree(listing)
+      : handlePayOrPromote(listing)
+  }
+  className={`text-sm px-3 py-2 rounded-lg text-white ${
+    isDraft
+      ? "bg-green-600 hover:bg-green-700"
+      : !isDraft && isExpired && expiredMoreThan30Days
+      ? "bg-green-600 hover:bg-green-700"
+      : "bg-yellow-500 hover:bg-yellow-600"
+  }`}
+>
+  {isDraft
+    ? "Plătește și publică"
+    : isExpired && expiredMoreThan30Days
+    ? "Reactivează gratuit"
+    : isExpired
+    ? "Promovează și activează"
+    : "Promovează"}
+</button>
+const handleReactivateFree = async (listing) => {
+  const id = getId(listing);
+  if (!id) return;
 
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(${API_URL}/listings/${id}/reactivate, {
+      method: "PUT",
+      headers: { Authorization: Bearer ${token} },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Eroare la reactivare.");
+
+    setListings((prev) =>
+      prev.map((l) => (getId(l) === id ? data.listing : l))
+    );
+
+    setMessage("✅ Anunțul a fost reactivat gratuit pentru 14 zile.");
+  } catch (err) {
+    setMessage(err.message || "Eroare la reactivare.");
+  }
+};
           <button
             type="button"
             onClick={() => handleDelete(id)}
