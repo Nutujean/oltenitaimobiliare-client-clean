@@ -3,12 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../api";
 
-function normalizePhone(value) {
-  if (!value) return "";
-  const digits = String(value).replace(/\D/g, "");
-  return digits.replace(/^4/, "");
-}
-
 function normText(v) {
   return String(v || "")
     .toLowerCase()
@@ -23,17 +17,17 @@ export default function AnunturileMele() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  const getId = (listing) => String(listing?._id || listing?.id || "");
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-    let userPhoneRaw = localStorage.getItem("userPhone");
+    const userPhoneRaw = localStorage.getItem("userPhone");
 
     if (!token || !userPhoneRaw || userPhoneRaw === "undefined" || userPhoneRaw === "null") {
       setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
       navigate("/login");
       return;
     }
-
-    normalizePhone(userPhoneRaw);
 
     const fetchMyListings = async () => {
       try {
@@ -47,13 +41,9 @@ export default function AnunturileMele() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
 
-        const arr = Array.isArray(data) ? data : [];
-        setListings(arr);
-
-        if (arr.length === 0) setMessage("Momentan nu ai niciun anunț.");
-        else setMessage("");
+        setListings(Array.isArray(data) ? data : []);
+        setMessage("");
       } catch (err) {
-        console.error("Eroare la încărcarea anunțurilor mele:", err);
         setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
       } finally {
         setLoading(false);
@@ -62,8 +52,6 @@ export default function AnunturileMele() {
 
     fetchMyListings();
   }, [navigate]);
-
-  const handleAdaugaAnunt = () => navigate("/adauga-anunt");
 
   const isJobListing = (listing) => {
     const cat = normText(listing?.category);
@@ -82,8 +70,6 @@ export default function AnunturileMele() {
       kind.includes("job")
     );
   };
-
-  const getId = (listing) => String(listing?._id || listing?.id || "");
 
   const getDetailsPath = (listing) => {
     const id = getId(listing);
@@ -111,16 +97,33 @@ export default function AnunturileMele() {
     navigate(/anunt/${id});
   };
 
+  const handleReactivateFree = async (listing) => {
+    const id = getId(listing);
+    if (!id) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(${API_URL}/listings/${id}/reactivate, {
+        method: "PUT",
+        headers: { Authorization: Bearer ${token} },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la reactivare.");
+
+      setListings((prev) => prev.map((l) => (getId(l) === id ? data.listing : l)));
+      setMessage("✅ Anunțul a fost reactivat gratuit pentru 14 zile.");
+    } catch (err) {
+      setMessage(err.message || "Eroare la reactivare.");
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage("Trebuie să fii autentificat pentru a șterge un anunț.");
-        navigate("/login");
-        return;
-      }
 
       const res = await fetch(${API_URL}/listings/${id}, {
         method: "DELETE",
@@ -130,10 +133,9 @@ export default function AnunturileMele() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
-      setListings((prev) => prev.filter((l) => (l._id || l.id) !== id));
+      setListings((prev) => prev.filter((l) => getId(l) !== id));
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
-      console.error("Eroare la ștergere anunț:", err);
       setMessage(err.message || "A apărut o eroare la ștergerea anunțului.");
     }
   };
@@ -141,32 +143,38 @@ export default function AnunturileMele() {
   const { drafts, published } = useMemo(() => {
     const d = [];
     const p = [];
+
     for (const l of listings) {
       if (l?.visibility === "draft") d.push(l);
       else p.push(l);
     }
+
     return { drafts: d, published: p };
   }, [listings]);
-
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
-        <p>{message || "Se încarcă..."}</p>
-      </div>
-    );
-  }
 
   const Card = ({ listing, isDraft }) => {
     const id = getId(listing);
 
     const isExpired =
-      listing.status === "expirat" ||
+      String(listing.status || "").toLowerCase() === "expirat" ||
       (listing.expiresAt && new Date(listing.expiresAt) < new Date());
-const expiredMoreThan30Days =
-  listing.expiresAt &&
-  new Date() - new Date(listing.expiresAt) >
-    30 * 24 * 60 * 60 * 1000;
+
+    const expiredMoreThan30Days =
+      listing.expiresAt &&
+      new Date() - new Date(listing.expiresAt) > 30 * 24 * 60 * 60 * 1000;
+
+    const buttonLabel = isDraft
+      ? "Plătește și publică"
+      : isExpired && expiredMoreThan30Days
+      ? "Reactivează gratuit"
+      : isExpired
+      ? "Promovează și activează"
+      : "Promovează";
+
+    const buttonClass =
+      isDraft || (isExpired && expiredMoreThan30Days)
+        ? "bg-green-600 hover:bg-green-700"
+        : "bg-yellow-500 hover:bg-yellow-600";
 
     return (
       <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
@@ -177,7 +185,7 @@ const expiredMoreThan30Days =
             <div className="flex gap-2 flex-wrap justify-end">
               {isDraft && (
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold">
-                  DRAFT (nepublicat)
+                  DRAFT
                 </span>
               )}
 
@@ -199,17 +207,11 @@ const expiredMoreThan30Days =
 
           <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
 
-          {isDraft && (
-            <div className="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm">
-              Acest anunț este salvat ca <b>Draft</b> și nu apare pe prima pagină.
-              Apasă <b>„Plătește și publică”</b> ca să îl faci public.
-            </div>
-          )}
-
           {!isDraft && isExpired && (
             <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-900 text-sm">
-              Acest anunț este expirat. Pentru activare și deblocarea telefonului,
-              apasă <b>„Promovează și activează”</b>.
+              {expiredMoreThan30Days
+                ? "Acest anunț poate fi reactivat gratuit pentru 14 zile."
+                : "Acest anunț poate fi activat doar prin promovare până la 30 zile de la expirare."}
             </div>
           )}
         </div>
@@ -230,52 +232,17 @@ const expiredMoreThan30Days =
           </Link>
 
           <button
-  type="button"
-  onClick={() =>
-    !isDraft && isExpired && expiredMoreThan30Days
-      ? handleReactivateFree(listing)
-      : handlePayOrPromote(listing)
-  }
-  className={`text-sm px-3 py-2 rounded-lg text-white ${
-    isDraft
-      ? "bg-green-600 hover:bg-green-700"
-      : !isDraft && isExpired && expiredMoreThan30Days
-      ? "bg-green-600 hover:bg-green-700"
-      : "bg-yellow-500 hover:bg-yellow-600"
-  }`}
->
-  {isDraft
-    ? "Plătește și publică"
-    : isExpired && expiredMoreThan30Days
-    ? "Reactivează gratuit"
-    : isExpired
-    ? "Promovează și activează"
-    : "Promovează"}
-</button>
-const handleReactivateFree = async (listing) => {
-  const id = getId(listing);
-  if (!id) return;
+            type="button"
+            onClick={() =>
+              !isDraft && isExpired && expiredMoreThan30Days
+                ? handleReactivateFree(listing)
+                : handlePayOrPromote(listing)
+            }
+            className={text-sm px-3 py-2 rounded-lg text-white ${buttonClass}}
+          >
+            {buttonLabel}
+          </button>
 
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(${API_URL}/listings/${id}/reactivate, {
-      method: "PUT",
-      headers: { Authorization: Bearer ${token} },
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Eroare la reactivare.");
-
-    setListings((prev) =>
-      prev.map((l) => (getId(l) === id ? data.listing : l))
-    );
-
-    setMessage("✅ Anunțul a fost reactivat gratuit pentru 14 zile.");
-  } catch (err) {
-    setMessage(err.message || "Eroare la reactivare.");
-  }
-};
           <button
             type="button"
             onClick={() => handleDelete(id)}
@@ -288,12 +255,21 @@ const handleReactivateFree = async (listing) => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
+        <p>{message || "Se încarcă..."}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <h1 className="text-2xl font-bold">Anunțurile mele</h1>
         <button
-          onClick={handleAdaugaAnunt}
+          onClick={() => navigate("/adauga-anunt")}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
         >
           ➕ Adaugă un anunț nou
@@ -308,10 +284,10 @@ const handleReactivateFree = async (listing) => {
 
       {drafts.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-bold mb-3">Drafturi (nepublicate)</h2>
+          <h2 className="text-lg font-bold mb-3">Drafturi</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {drafts.map((l) => (
-              <Card key={l._id || l.id} listing={l} isDraft />
+              <Card key={getId(l)} listing={l} isDraft />
             ))}
           </div>
         </div>
@@ -325,7 +301,7 @@ const handleReactivateFree = async (listing) => {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {published.map((l) => (
-              <Card key={l._id || l.id} listing={l} isDraft={false} />
+              <Card key={getId(l)} listing={l} isDraft={false} />
             ))}
           </div>
         )}
