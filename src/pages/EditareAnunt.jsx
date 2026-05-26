@@ -97,7 +97,7 @@ export default function EditareAnunt() {
           description: payload.description || "",
           price: payload.price ?? "",
           category: payload.category || "",
-          type: payload.type || "",            // ✅ NOU
+          type: payload.intent || payload.type || "",            // ✅ NOU
           location: payload.location || "",
           phone: payload.phone || "",
           images: Array.isArray(payload.images) ? payload.images : [],
