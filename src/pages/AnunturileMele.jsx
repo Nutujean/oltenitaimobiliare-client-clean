@@ -34,8 +34,8 @@ export default function AnunturileMele() {
         setLoading(true);
         setMessage("⏳ Se încarcă anunțurile tale...");
 
-        const res = await fetch(${API_URL}/listings/mine, {
-          headers: { Authorization: Bearer ${token} },
+        const res = await fetch(API_URL + "/listings/mine", {
+          headers: { Authorization: "Bearer " + token },
         });
 
         const data = await res.json();
@@ -76,16 +76,16 @@ export default function AnunturileMele() {
     const id = getId(listing);
     if (!id) return "/";
     return isJobListing(listing)
-      ? /angajari?edit=${encodeURIComponent(id)}
-      : /anunt/${id};
+      ? "/angajari?edit=" + encodeURIComponent(id)
+      : "/anunt/" + id;
   };
 
   const getEditPath = (listing) => {
     const id = getId(listing);
     if (!id) return "/";
     return isJobListing(listing)
-      ? /angajari?edit=${encodeURIComponent(id)}
-      : /editeaza-anunt/${id};
+      ? "/angajari?edit=" + encodeURIComponent(id)
+      : "/editeaza-anunt/" + id;
   };
 
   const handlePayOrPromote = (listing) => {
@@ -93,11 +93,11 @@ export default function AnunturileMele() {
     if (!id) return;
 
     if (isJobListing(listing)) {
-      navigate(/angajari?edit=${encodeURIComponent(id)});
+      navigate("/angajari?edit=" + encodeURIComponent(id));
       return;
     }
 
-    navigate(/anunt/${id});
+    navigate("/anunt/" + id);
   };
 
   const handleReactivateFree = async (listing) => {
@@ -107,9 +107,9 @@ export default function AnunturileMele() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(${API_URL}/listings/${id}/reactivate, {
+      const res = await fetch(API_URL + "/listings/" + id + "/reactivate", {
         method: "PUT",
-        headers: { Authorization: Bearer ${token} },
+        headers: { Authorization: "Bearer " + token },
       });
 
       const data = await res.json();
@@ -131,9 +131,9 @@ export default function AnunturileMele() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(${API_URL}/listings/${id}, {
+      const res = await fetch(API_URL + "/listings/" + id, {
         method: "DELETE",
-        headers: { Authorization: Bearer ${token} },
+        headers: { Authorization: "Bearer " + token },
       });
 
       const data = await res.json();
@@ -208,7 +208,7 @@ export default function AnunturileMele() {
           </p>
 
           <p className="font-bold text-green-700 mb-2">
-            {listing.price ? ${listing.price} € : "Preț la cerere"}
+            {listing.price ? String(listing.price) + " €" : "Preț la cerere"}
           </p>
 
           <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
@@ -244,7 +244,7 @@ export default function AnunturileMele() {
                 ? handleReactivateFree(listing)
                 : handlePayOrPromote(listing)
             }
-            className={text-sm px-3 py-2 rounded-lg text-white ${buttonClass}}
+            className={"text-sm px-3 py-2 rounded-lg text-white " + buttonClass}
           >
             {buttonLabel}
           </button>
