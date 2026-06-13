@@ -58,6 +58,7 @@ export default function DetaliuAnunt() {
   const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [viewCount, setViewCount] = useState(0);
 
   const [isFacebookAppWebView, setIsFacebookAppWebView] = useState(false);
 
@@ -83,12 +84,49 @@ export default function DetaliuAnunt() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
         setListing(data);
+        setViewCount(Number(data?.views || 0));
       } catch (e) {
         setErr(e.message);
       } finally {
         setLoading(false);
       }
     })();
+  }, [id]);
+
+  // 👁️ Counting profesional: 1 vizualizare / anunț / vizitator / 24h în backend
+  useEffect(() => {
+    if (!id) return;
+
+    const sessionKey = `oltenita-view-counted-${id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/listings/${id}/view`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || cancelled) return;
+
+        if (typeof data?.views === "number") {
+          setViewCount(data.views);
+          setListing((prev) => (prev ? { ...prev, views: data.views } : prev));
+        }
+
+        sessionStorage.setItem(sessionKey, "1");
+      } catch {
+        // Nu blocăm pagina dacă numărătoarea nu răspunde.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // ✅ owner-check robust: userId din token vs listing.user / listing.userId
@@ -469,6 +507,10 @@ export default function DetaliuAnunt() {
             })}
           </p>
         )}
+
+        <p className="text-xs text-gray-500 mt-1">
+          👁️ {Number(viewCount || listing.views || 0).toLocaleString("ro-RO")} vizualizări
+        </p>
 
         {listing.contactName && (
           <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>
