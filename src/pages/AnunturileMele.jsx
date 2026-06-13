@@ -160,6 +160,7 @@ export default function AnunturileMele() {
 
   const Card = ({ listing, isDraft }) => {
     const id = getId(listing);
+    const views = Number(listing?.views || 0);
 
     const isExpired =
       String(listing.status || "").toLowerCase() === "expirat" ||
@@ -210,6 +211,12 @@ export default function AnunturileMele() {
           <p className="font-bold text-green-700 mb-2">
             {listing.price ? String(listing.price) + " €" : "Preț la cerere"}
           </p>
+
+          {!isDraft && (
+            <p className="text-xs text-gray-500 mb-2">
+              👁️ {views.toLocaleString("ro-RO")} vizualizări
+            </p>
+          )}
 
           <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
 
