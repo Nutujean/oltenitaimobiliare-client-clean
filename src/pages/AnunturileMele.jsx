@@ -11,6 +11,52 @@ function normText(v) {
     .trim();
 }
 
+function formatLastViewed(dateValue) {
+  if (!dateValue) return "Nu există încă";
+
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return "Nu există încă";
+
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffMinutes < 1) return "acum";
+  if (diffMinutes < 60) return `acum ${diffMinutes} min`;
+  if (diffHours < 24) return `acum ${diffHours} ore`;
+
+  return d.toLocaleDateString("ro-RO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function getInterestBadge(level) {
+  if (level === "ridicat") {
+    return {
+      text: "🔥 Interes ridicat",
+      className: "bg-orange-50 border-orange-200 text-orange-800",
+      hint: "Promovarea îl poate menține în fața utilizatorilor.",
+    };
+  }
+
+  if (level === "bun") {
+    return {
+      text: "🟢 Interes bun",
+      className: "bg-green-50 border-green-200 text-green-800",
+      hint: "Anunțul generează activitate constantă.",
+    };
+  }
+
+  return {
+    text: "💡 Interes scăzut",
+    className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    hint: "Promovează anunțul pentru mai multă vizibilitate.",
+  };
+}
+
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +80,7 @@ export default function AnunturileMele() {
         setLoading(true);
         setMessage("⏳ Se încarcă anunțurile tale...");
 
-        const res = await fetch(API_URL + "/listings/mine", {
+        const res = await fetch(API_URL + "/listings/mine-stats", {
           headers: { Authorization: "Bearer " + token },
         });
 
@@ -161,6 +207,8 @@ export default function AnunturileMele() {
   const Card = ({ listing, isDraft }) => {
     const id = getId(listing);
     const views = Number(listing?.views || 0);
+    const weeklyViews = Number(listing?.weeklyViews || 0);
+    const interest = getInterestBadge(listing?.interestLevel);
 
     const isExpired =
       String(listing.status || "").toLowerCase() === "expirat" ||
@@ -169,6 +217,19 @@ export default function AnunturileMele() {
     const expiredMoreThan30Days =
       listing.expiresAt &&
       new Date() - new Date(listing.expiresAt) > 30 * 24 * 60 * 60 * 1000;
+
+    const daysUntilExpire =
+      typeof listing?.daysUntilExpire === "number" ? listing.daysUntilExpire : null;
+
+    const expiryText = isDraft
+      ? "Draft nepublicat"
+      : isExpired
+      ? "Expirat"
+      : daysUntilExpire !== null
+      ? daysUntilExpire <= 0
+        ? "Expiră azi"
+        : `Expiră în ${daysUntilExpire} zile`
+      : "Valabil";
 
     const buttonLabel = isDraft
       ? "Plătește și publică"
@@ -213,9 +274,16 @@ export default function AnunturileMele() {
           </p>
 
           {!isDraft && (
-            <p className="text-xs text-gray-500 mb-2">
-              👁️ {views.toLocaleString("ro-RO")} vizualizări
-            </p>
+            <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-700 space-y-1">
+              <p>👁️ {views.toLocaleString("ro-RO")} vizualizări totale</p>
+              <p>📈 +{weeklyViews.toLocaleString("ro-RO")} în ultimele 7 zile</p>
+              <p>🕒 Ultima vizualizare: {formatLastViewed(listing.lastViewedAt)}</p>
+              <p>⏳ {expiryText}</p>
+              <div className={`mt-2 rounded-lg border px-3 py-2 ${interest.className}`}>
+                <p className="font-semibold">{interest.text}</p>
+                <p className="mt-1">{interest.hint}</p>
+              </div>
+            </div>
           )}
 
           <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
