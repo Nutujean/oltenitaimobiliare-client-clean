@@ -40,6 +40,7 @@ export default function ListingCard({ listing }) {
     new Date(listing.featuredUntil) > new Date();
 
   const isFavorite = favorites.includes(listing._id);
+  const views = Number(listing?.views || 0);
 
   const isNew = (() => {
     if (!listing.createdAt) return false;
@@ -144,6 +145,7 @@ export default function ListingCard({ listing }) {
           {listing.dealType === "vanzare" && <span>💰 Vânzare</span>}
           {listing.surface && <span>📏 {listing.surface} mp</span>}
           {listing.rooms && <span>🛏 {listing.rooms} camere</span>}
+          <span>👁️ {views.toLocaleString("ro-RO")} vizualizări</span>
         </div>
 
         <div className="flex flex-col gap-2 mt-3">
