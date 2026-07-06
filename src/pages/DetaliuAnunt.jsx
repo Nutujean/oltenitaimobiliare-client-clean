@@ -198,8 +198,8 @@ export default function DetaliuAnunt() {
     String(listing?.status || "").toLowerCase() === "expirat" ||
     (expiresAtMs !== null && expiresAtMs < Date.now());
 
-  const handleShare = (platform) => {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const handleShare = async (platform) => {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || "";
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
 
     switch (platform) {
@@ -208,7 +208,34 @@ export default function DetaliuAnunt() {
         const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           shareUrl
         )}`;
-        window.open(fbSharer, "_blank", isMobile ? undefined : "width=600,height=400");
+
+        // Pe mobil, metoda cea mai stabilă este meniul nativ de distribuire.
+        // Acolo utilizatorul alege Facebook, iar aplicația primește linkul corect.
+        if (isMobile && navigator.share) {
+          try {
+            await navigator.share({
+              title: listing.title || "Anunț Oltenița Imobiliare",
+              text: `${listing.title || "Anunț imobiliar"} - vezi detalii pe OltenitaImobiliare.ro`,
+              url: shareUrl,
+            });
+            return;
+          } catch (e) {
+            // Dacă utilizatorul anulează sau telefonul blochează share-ul, continuăm cu fallback.
+          }
+        }
+
+        if (isMobile) {
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+          } catch {
+            // Ignorăm dacă telefonul nu permite clipboard.
+          }
+
+          window.location.href = fbSharer;
+        } else {
+          window.open(fbSharer, "_blank", "width=600,height=500");
+        }
+
         break;
       }
 
