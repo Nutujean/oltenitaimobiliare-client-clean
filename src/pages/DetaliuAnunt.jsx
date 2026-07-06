@@ -205,37 +205,28 @@ export default function DetaliuAnunt() {
     switch (platform) {
       case "facebook": {
         const shareUrl = backendShareUrl;
+        const quote = `${listing.title || "Anunț imobiliar"} - vezi detalii pe OltenitaImobiliare.ro`;
         const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           shareUrl
-        )}`;
+        )}&quote=${encodeURIComponent(quote)}`;
+        const mobileFbSharer = `https://m.facebook.com/sharer.php?u=${encodeURIComponent(
+          shareUrl
+        )}&quote=${encodeURIComponent(quote)}`;
 
-        // Pe mobil, metoda cea mai stabilă este meniul nativ de distribuire.
-        // Acolo utilizatorul alege Facebook, iar aplicația primește linkul corect.
-        if (isMobile && navigator.share) {
-          try {
-            await navigator.share({
-              title: listing.title || "Anunț Oltenița Imobiliare",
-              text: `${listing.title || "Anunț imobiliar"} - vezi detalii pe OltenitaImobiliare.ro`,
-              url: shareUrl,
-            });
-            return;
-          } catch (e) {
-            // Dacă utilizatorul anulează sau telefonul blochează share-ul, continuăm cu fallback.
-          }
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+        } catch {
+          // Dacă browserul nu permite clipboard, continuăm normal.
         }
 
+        // Facebook nu permite postare automată fără confirmarea utilizatorului.
+        // Deschidem direct composer-ul de share cu anunțul încărcat.
         if (isMobile) {
-          try {
-            await navigator.clipboard.writeText(shareUrl);
-          } catch {
-            // Ignorăm dacă telefonul nu permite clipboard.
-          }
-
-          window.location.href = fbSharer;
+          window.location.href = mobileFbSharer;
         } else {
-          window.open(fbSharer, "_blank", "width=600,height=500");
+          const popup = window.open(fbSharer, "_blank", "width=650,height=520");
+          if (!popup) window.location.href = fbSharer;
         }
-
         break;
       }
 
