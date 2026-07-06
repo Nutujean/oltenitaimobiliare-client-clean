@@ -192,9 +192,8 @@ export default function DetaliuAnunt() {
     ? new Date(listing.updatedAt).getTime()
     : Date.now();
 
-  // ✅ Sistem final share: Facebook citește Open Graph din API-ul real.
-  // Nu mai folosim share.oltenitaimobiliare.ro, fiindcă nu pointează la același backend.
-  const backendShareUrl = `https://api.oltenitaimobiliare.ro/share/${listingId}?v=${shareVersion}`;
+  // ✅ Sistem final share: Facebook vede domeniul principal, iar Netlify proxy-uiește către API.
+  const backendShareUrl = `https://oltenitaimobiliare.ro/share/${listingId}?v=${shareVersion}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
   const backendFbDirect = backendShareUrl;
 
