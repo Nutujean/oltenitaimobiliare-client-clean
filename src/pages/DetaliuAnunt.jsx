@@ -188,8 +188,13 @@ export default function DetaliuAnunt() {
   const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
 
   const listingId = listing?._id || listing?.id;
+  const shareVersion = listing?.updatedAt
+    ? new Date(listing.updatedAt).getTime()
+    : Date.now();
 
-  const backendShareUrl = `https://share.oltenitaimobiliare.ro/share/${listingId}`;
+  // ✅ Sistem final share: Facebook citește Open Graph din API-ul real.
+  // Nu mai folosim share.oltenitaimobiliare.ro, fiindcă nu pointează la același backend.
+  const backendShareUrl = `https://api.oltenitaimobiliare.ro/share/${listingId}?v=${shareVersion}`;
   const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
   const backendFbDirect = backendShareUrl;
 
@@ -209,9 +214,6 @@ export default function DetaliuAnunt() {
         const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
           shareUrl
         )}&quote=${encodeURIComponent(quote)}`;
-        const mobileFbSharer = `https://m.facebook.com/sharer.php?u=${encodeURIComponent(
-          shareUrl
-        )}&quote=${encodeURIComponent(quote)}`;
 
         try {
           await navigator.clipboard.writeText(shareUrl);
@@ -219,14 +221,16 @@ export default function DetaliuAnunt() {
           // Dacă browserul nu permite clipboard, continuăm normal.
         }
 
-        // Facebook nu permite postare automată fără confirmarea utilizatorului.
-        // Deschidem direct composer-ul de share cu anunțul încărcat.
-        if (isMobile) {
-          window.location.href = mobileFbSharer;
-        } else {
-          const popup = window.open(fbSharer, "_blank", "width=650,height=520");
-          if (!popup) window.location.href = fbSharer;
+        const popup = window.open(
+          fbSharer,
+          "_blank",
+          isMobile ? undefined : "width=650,height=520"
+        );
+
+        if (!popup) {
+          window.location.href = fbSharer;
         }
+
         break;
       }
 
@@ -310,16 +314,16 @@ export default function DetaliuAnunt() {
       {isFacebookAppWebView && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-50 border-b border-yellow-200 text-yellow-900 p-3 flex items-center justify-between gap-3">
           <div className="text-sm leading-snug">
-            ⚠️ Distribuirea pe Facebook nu funcționează din aplicația Facebook pe iPhone.
+            ⚠️ Dacă aplicația Facebook nu deschide fereastra de distribuire, folosește butonul de mai jos.
             <br />
-            👉 Apasă <strong>„Deschide în Safari”</strong> pentru a partaja corect acest anunț.
+            👉 Apasă <strong>„Deschide pagina de share”</strong>, apoi distribuie din browser.
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={openInSafari}
               className="bg-black text-white px-3 py-2 rounded-md text-sm font-medium"
             >
-              Deschide în Safari
+              Deschide pagina de share
             </button>
             <button
               onClick={() => setIsFacebookAppWebView(false)}
