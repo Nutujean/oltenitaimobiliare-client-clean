@@ -4,8 +4,11 @@
 # 2️⃣ Redirect HTTP → HTTPS
 http://*  https://oltenitaimobiliare.ro/:splat  301
 
-# 3️⃣ Proxy pentru Facebook
-/share/:id  https://oltenitaimobiliare-backend.onrender.com/fbshare/:id  200!
+# 3️⃣ Proxy Open Graph pentru Facebook pe domeniul principal
+# Facebook vede: https://oltenitaimobiliare.ro/share/ID
+# Backend generează meta tag-urile reale din MongoDB.
+/share/:id  https://api.oltenitaimobiliare.ro/share/:id  200!
+
 /angajari.png  /angajari.png  200!
 
 # 4️⃣ SPA fallback — React doar pentru restul
