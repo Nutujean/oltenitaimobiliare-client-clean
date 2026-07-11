@@ -10,7 +10,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // actualizare stare login la schimbare pagină
   useEffect(() => {
     const u = localStorage.getItem("user");
     const token = localStorage.getItem("token");
@@ -62,7 +61,6 @@ export default function Navbar() {
     <>
       <nav className="bg-gradient-to-r from-blue-800 via-blue-700 to-blue-500 shadow-lg fixed top-0 left-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center text-white">
-          {/* LOGO */}
           <Link to="/" className="flex items-center gap-2 group">
             <img
               src={logo}
@@ -77,18 +75,22 @@ export default function Navbar() {
             </h1>
           </Link>
 
-          {/* Meniu mobil toggle */}
           <button
             className="md:hidden text-white text-2xl"
             onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Deschide meniul"
+            aria-expanded={menuOpen}
           >
             ☰
           </button>
 
-          {/* MENIU DESKTOP */}
-          <div className="hidden md:flex items-center gap-5 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-4 text-sm font-medium">
             <Link to="/" className="hover:text-gray-200">
               Acasă
+            </Link>
+
+            <Link to="/observator-imobiliar" className="hover:text-cyan-200">
+              Observator imobiliar
             </Link>
 
             <Link to="/ghid-imobiliar" className="hover:text-gray-200">
@@ -102,7 +104,7 @@ export default function Navbar() {
               ➕ Postează anunț
             </button>
 
-            {(user || isLogged) ? (
+            {user || isLogged ? (
               <>
                 <Link to="/anunturile-mele" className="hover:text-gray-200">
                   📋 Anunțurile mele
@@ -124,7 +126,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* MENIU MOBIL */}
         {menuOpen && (
           <div className="md:hidden bg-blue-700 px-4 py-3 space-y-2 text-sm text-white">
             <Link
@@ -133,6 +134,14 @@ export default function Navbar() {
               className="block hover:text-gray-200"
             >
               Acasă
+            </Link>
+
+            <Link
+              to="/observator-imobiliar"
+              onClick={() => setMenuOpen(false)}
+              className="block hover:text-cyan-200"
+            >
+              Observator imobiliar
             </Link>
 
             <Link
@@ -153,7 +162,7 @@ export default function Navbar() {
               ➕ Postează anunț
             </button>
 
-            {(user || isLogged) ? (
+            {user || isLogged ? (
               <>
                 <Link
                   to="/anunturile-mele"
@@ -194,7 +203,6 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* MODAL LOGIN / REGISTER */}
       {showDialog && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] px-4">
           <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full text-center">
