@@ -25,6 +25,7 @@ import CumAlegiUnChirias from "./pages/CumAlegiUnChirias";
 import VerificariInchiriereLocuinta from "./pages/VerificariInchiriereLocuinta";
 import ObservatorImobiliar from "./pages/ObservatorImobiliar";
 import ObservatorLocalitate from "./pages/ObservatorLocalitate";
+import SeoLocalitateCategorie from "./pages/SeoLocalitateCategorie";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -78,48 +79,21 @@ function App() {
           <Route path="/angajari" element={<Angajari />} />
           <Route path="/ghid-imobiliar" element={<GhidImobiliar />} />
           <Route path="/observator-imobiliar" element={<ObservatorImobiliar />} />
-          <Route
-            path="/observator-imobiliar/:slug"
-            element={<ObservatorLocalitate />}
-          />
-          <Route
-            path="/ghid-imobiliar/cum-scrii-un-anunt-bun"
-            element={<CumScriiUnAnuntBun />}
-          />
-          <Route
-            path="/ghid-imobiliar/cum-faci-poze-bune"
-            element={<CumFaciPozeBune />}
-          />
-          <Route
-            path="/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament"
-            element={<LaCeSaFiiAtent />}
-          />
-          <Route
-            path="/ghid-imobiliar/acte-necesare-pentru-vanzarea-unui-imobil"
-            element={<ActeVanzareImobil />}
-          />
-          <Route
-            path="/ghid-imobiliar/cum-alegi-un-chirias-potrivit"
-            element={<CumAlegiUnChirias />}
-          />
-          <Route
-            path="/ghid-imobiliar/ce-trebuie-sa-verifici-inainte-sa-inchiriezi-o-locuinta"
-            element={<VerificariInchiriereLocuinta />}
-          />
+          <Route path="/observator-imobiliar/:slug" element={<ObservatorLocalitate />} />
+          <Route path="/imobiliare/:categorie/:localitate" element={<SeoLocalitateCategorie />} />
+          <Route path="/ghid-imobiliar/cum-scrii-un-anunt-bun" element={<CumScriiUnAnuntBun />} />
+          <Route path="/ghid-imobiliar/cum-faci-poze-bune" element={<CumFaciPozeBune />} />
+          <Route path="/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament" element={<LaCeSaFiiAtent />} />
+          <Route path="/ghid-imobiliar/acte-necesare-pentru-vanzarea-unui-imobil" element={<ActeVanzareImobil />} />
+          <Route path="/ghid-imobiliar/cum-alegi-un-chirias-potrivit" element={<CumAlegiUnChirias />} />
+          <Route path="/ghid-imobiliar/ce-trebuie-sa-verifici-inainte-sa-inchiriezi-o-locuinta" element={<VerificariInchiriereLocuinta />} />
 
           {/* Autentificare */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
           <Route path="/inregistrare" element={<LoginSMS mode="register" />} />
 
           {/* Profil protejat */}
-          <Route
-            path="/profil"
-            element={
-              <ProtectedRoute>
-                <Profil />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
 
           {/* Utilizator */}
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
