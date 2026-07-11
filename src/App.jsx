@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import CookiesConsent from "./components/CookiesConsent";
 import SeoCountyLinks from "./components/SeoCountyLinks";
+import HomeCountyPortal from "./components/HomeCountyPortal";
 
 /* Pagini publice */
 import Home from "./pages/Home";
@@ -67,7 +68,15 @@ function App() {
 
       <main className="flex-grow pt-24">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <Home />
+                <HomeCountyPortal />
+              </>
+            }
+          />
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
