@@ -23,6 +23,8 @@ import LaCeSaFiiAtent from "./pages/LaCeSaFiiAtent";
 import ActeVanzareImobil from "./pages/ActeVanzareImobil";
 import CumAlegiUnChirias from "./pages/CumAlegiUnChirias";
 import VerificariInchiriereLocuinta from "./pages/VerificariInchiriereLocuinta";
+import ObservatorImobiliar from "./pages/ObservatorImobiliar";
+import ObservatorLocalitate from "./pages/ObservatorLocalitate";
 
 /* Autentificare prin SMS */
 import LoginSMS from "./pages/LoginSMS";
@@ -75,6 +77,11 @@ function App() {
           <Route path="/promovare" element={<Promovare />} />
           <Route path="/angajari" element={<Angajari />} />
           <Route path="/ghid-imobiliar" element={<GhidImobiliar />} />
+          <Route path="/observator-imobiliar" element={<ObservatorImobiliar />} />
+          <Route
+            path="/observator-imobiliar/:slug"
+            element={<ObservatorLocalitate />}
+          />
           <Route
             path="/ghid-imobiliar/cum-scrii-un-anunt-bun"
             element={<CumScriiUnAnuntBun />}
