@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import CookiesConsent from "./components/CookiesConsent";
+import SeoCountyLinks from "./components/SeoCountyLinks";
 
 /* Pagini publice */
 import Home from "./pages/Home";
@@ -66,7 +67,6 @@ function App() {
 
       <main className="flex-grow pt-24">
         <Routes>
-          {/* Public */}
           <Route path="/" element={<Home />} />
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/termeni" element={<Termeni />} />
@@ -88,43 +88,29 @@ function App() {
           <Route path="/ghid-imobiliar/cum-alegi-un-chirias-potrivit" element={<CumAlegiUnChirias />} />
           <Route path="/ghid-imobiliar/ce-trebuie-sa-verifici-inainte-sa-inchiriezi-o-locuinta" element={<VerificariInchiriereLocuinta />} />
 
-          {/* Autentificare */}
           <Route path="/login" element={<LoginSMS mode="login" />} />
           <Route path="/inregistrare" element={<LoginSMS mode="register" />} />
-
-          {/* Profil protejat */}
           <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
-
-          {/* Utilizator */}
           <Route path="/anunturile-mele" element={<AnunturileMele />} />
           <Route path="/favorite" element={<Favorite />} />
-
-          {/* Stripe */}
           <Route path="/promovare-succes" element={<PromovareSucces />} />
           <Route path="/promovare-anulata" element={<PromovareAnulata />} />
-
-          {/* Anunțuri */}
           <Route path="/adauga-anunt" element={<AdaugaAnunt />} />
           <Route path="/editeaza-anunt/:id" element={<EditareAnunt />} />
           <Route path="/anunt/:id" element={<DetaliuAnunt />} />
           <Route path="/anunturi" element={<ToateAnunturile />} />
-
-          {/* SEO */}
           <Route path="/case" element={<Case />} />
           <Route path="/apartamente" element={<Apartamente />} />
           <Route path="/terenuri" element={<Terenuri />} />
           <Route path="/spatii-comerciale" element={<SpatiiComerciale />} />
           <Route path="/garsoniere" element={<Garsoniere />} />
           <Route path="/garaje" element={<Garaje />} />
-
-          {/* Categorii dinamice */}
           <Route path="/categorie/:slug" element={<Categories />} />
-
-          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
+      <SeoCountyLinks />
       <Footer />
       <CookiesConsent />
     </div>
