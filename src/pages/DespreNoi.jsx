@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 
 export default function DespreNoi() {
   return (
@@ -11,26 +12,41 @@ export default function DespreNoi() {
         lineHeight: "1.8",
       }}
     >
+      <Helmet>
+        <title>Despre Oltenița Imobiliare | Platformă pentru județul Călărași</title>
+        <meta
+          name="description"
+          content="Află mai multe despre OltenițaImobiliare.ro, platforma de anunțuri imobiliare dedicată tuturor localităților din județul Călărași."
+        />
+      </Helmet>
+
       <h2 style={{ color: "#0a58ca", textAlign: "center", marginBottom: "20px" }}>
         Despre Oltenița Imobiliare
       </h2>
 
       <p>
-        <strong>Oltenița Imobiliare</strong> este platforma dedicată comunității
-        din Oltenița și împrejurimi, unde proprietarii, dezvoltatorii și
-        cumpărătorii se întâlnesc într-un spațiu sigur și transparent.
+        <strong>Oltenița Imobiliare</strong> este platforma de anunțuri imobiliare
+        dedicată întregului județ Călărași. Aici, proprietarii, cumpărătorii,
+        chiriașii, dezvoltatorii și agențiile imobiliare se întâlnesc într-un spațiu
+        simplu, modern și transparent.
       </p>
 
       <p>
-        Scopul nostru este să oferim o experiență simplă și rapidă pentru
-        publicarea și găsirea anunțurilor imobiliare. Credem în transparență,
-        corectitudine și servicii adaptate nevoilor locale.
+        Platforma acoperă municipiile, orașele, comunele și satele din județul
+        Călărași și oferă acces rapid la anunțuri pentru apartamente, case, terenuri,
+        garsoniere, garaje și spații comerciale.
       </p>
 
       <p>
-        Platforma este administrată independent și sprijină mediul imobiliar
-        local, oferind vizibilitate reală și soluții moderne pentru promovarea
-        proprietăților.
+        Scopul nostru este să facem publicarea și găsirea unei proprietăți cât mai
+        ușoare, prin anunțuri clare, filtre utile, promovare eficientă și instrumente
+        adaptate pieței imobiliare locale.
+      </p>
+
+      <p>
+        OltenițaImobiliare.ro este administrată independent și susține dezvoltarea
+        pieței imobiliare din județul Călărași, oferind vizibilitate reală
+        proprietăților din toate localitățile județului.
       </p>
 
       <p style={{ marginTop: "30px", color: "#0a58ca", fontWeight: "bold" }}>
