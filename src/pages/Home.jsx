@@ -5,6 +5,7 @@ import PromoBanner from "../components/PromoBanner";
 import API_URL from "../api";
 import logo from "../assets/OltenitaImobiliare.png";
 import angajariImg from "../assets/angajari.png";
+import { LOCATII } from "../constants/localitati";
 
 const fundal = "/fundal.jpg";
 
@@ -116,47 +117,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort]);
 
-  const LOCATII = [
-    "Localitate",
-    "Oltenița",
-    "Chirnogi",
-    "Ulmeni",
-    "Mitreni",
-    "Clătești",
-    "Spanțov",
-    "Căscioarele",
-    "Șoldanu",
-    "Negoești",
-    "Valea Roșie",
-    "Radovanu",
-    "Crivat",
-    "Curcani",
-    "Luica",
-    "Nana",
-    "Chiselet",
-    "Mănăstirea",
-    "Budești",
-    "Gruiu",
-    "Aprozi",
-    "Buciumeni",
-    "Frumusani",
-    "Vasilati",
-    "Galbinasi",
-    "Cucuieti",
-    "Podul Pitarului",
-    "Sohatu",
-    "Fundeni",
-    "Dorobantu",
-    "Varasti",
-    "Ciocanesti",
-    "Cunesti",
-    "Bogata",
-    "Gradistea",
-    "Rasa",
-    "Cuza voda",
-    "Modelu",
-  ];
-
   const ghidArticole = [
     {
       id: 1,
@@ -218,8 +178,7 @@ export default function Home() {
 
             <p className="text-sm text-white/80 mt-2">
               Oltenița • Chirnogi • Ulmeni • Mitreni • Spanțov • Budești • Chiselet •
-              Spantov • Valea rosie • Negoiesti • Manastirea • Curcani • Soldanu •
-              Radovanu • Cascioarele
+              Călărași și toate localitățile din județ
             </p>
           </div>
         </div>
@@ -230,8 +189,9 @@ export default function Home() {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
+            <option value="">Toate localitățile</option>
             {LOCATII.map((loc) => (
-              <option key={loc} value={loc === "Localitate" ? "" : loc}>
+              <option key={loc} value={loc}>
                 {loc}
               </option>
             ))}
