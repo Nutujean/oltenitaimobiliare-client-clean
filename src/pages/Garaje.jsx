@@ -1,55 +1,16 @@
-import { useEffect, useState } from "react";
-import API_URL from "../api";
-import ListingCard from "../components/ListingCard";
-import { Helmet } from "react-helmet-async";
+import SeoCategoryPage from "../components/SeoCategoryPage";
 
 export default function Garaje() {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API_URL}/listings?category=Garaje`);
-        const data = await res.json();
-        setListings(data);
-      } catch (err) {
-        console.error("Eroare la preluarea anunțurilor:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
-
   return (
-    <>
-      <Helmet>
-        <title>Garaje disponibile în Oltenița și împrejurimi | Oltenița Imobiliare</title>
-        <meta
-          name="description"
-          content="Vezi garaje disponibile în Oltenița și împrejurimi. Anunțuri actualizate pentru vânzare și închiriere, direct pe Oltenița Imobiliare."
-        />
-      </Helmet>
-
-      <div className="max-w-6xl mx-auto px-4 pt-24 pb-10">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Garaje disponibile în Oltenița și împrejurimi
-        </h1>
-
-        {listings.length === 0 ? (
-          <p className="text-center text-gray-500">
-            Momentan nu există anunțuri pentru garaje.
-          </p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {listings.map((listing) => (
-              <ListingCard key={listing._id} listing={listing} />
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+    <SeoCategoryPage
+      slug="garaje"
+      label="Garaje"
+      aliases={["garaj"]}
+      title="Garaje de vânzare și de închiriat în județul Călărași | OltenitaImobiliare.ro"
+      description="Descoperă garaje de vânzare și de închiriat în Oltenița, Călărași și în celelalte localități ale județului."
+      heading="Garaje în județul Călărași"
+      intro="Găsește garaje de vânzare și de închiriat în localitățile județului Călărași sau publică rapid un anunț nou."
+      emptyMessage="Momentan nu există garaje active în această categorie."
+    />
   );
 }
