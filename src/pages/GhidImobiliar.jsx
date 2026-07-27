@@ -2,6 +2,11 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 export default function GhidImobiliar() {
+  const canonical = "https://oltenitaimobiliare.ro/ghid-imobiliar";
+  const title = "Ghid imobiliar pentru vânzare, cumpărare și închiriere | OltenitaImobiliare.ro";
+  const description =
+    "Sfaturi practice despre anunțuri, fotografii, acte, cumpărarea și închirierea proprietăților în județul Călărași.";
+
   const categorii = [
     "Pentru vânzători",
     "Pentru cumpărători",
@@ -60,14 +65,35 @@ export default function GhidImobiliar() {
     },
   ];
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    description,
+    url: canonical,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: articole.map((articol, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: articol.titlu,
+        url: `https://oltenitaimobiliare.ro${articol.link}`,
+      })),
+    },
+  };
+
   return (
     <>
       <Helmet>
-        <title>Ghid imobiliar Oltenița | Sfaturi utile pentru vânzare, cumpărare și închiriere</title>
-        <meta
-          name="description"
-          content="Ghid imobiliar cu sfaturi utile pentru vânzători, cumpărători și chiriași din Oltenița și împrejurimi. Informații practice despre anunțuri, acte și închirieri."
-        />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -82,7 +108,7 @@ export default function GhidImobiliar() {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            Ghid imobiliar
+            Ghid imobiliar pentru județul Călărași
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
             Sfaturi utile pentru vânzare, cumpărare și închiriere, explicate
@@ -103,7 +129,7 @@ export default function GhidImobiliar() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {articole.map((articol) => (
-            <div
+            <article
               key={articol.id}
               className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition"
             >
@@ -125,7 +151,7 @@ export default function GhidImobiliar() {
               >
                 Citește articolul →
               </Link>
-            </div>
+            </article>
           ))}
         </div>
       </div>
