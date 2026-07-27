@@ -2,26 +2,46 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { calarasiLocalitati } from "../data/calarasiLocalitati";
 
+const typeOrder = { municipiu: 0, "oraș": 1, "comună": 2, sat: 3 };
+const sortedLocalities = [...calarasiLocalitati].sort((a, b) => {
+  const typeDifference = (typeOrder[a.type] ?? 9) - (typeOrder[b.type] ?? 9);
+  if (typeDifference !== 0) return typeDifference;
+  return a.name.localeCompare(b.name, "ro");
+});
+
 export default function ObservatorImobiliar() {
-  const orase = calarasiLocalitati.filter((item) => item.type !== "comună");
-  const comune = calarasiLocalitati.filter((item) => item.type === "comună");
+  const municipiiOrase = sortedLocalities.filter(
+    (item) => item.type === "municipiu" || item.type === "oraș"
+  );
+  const comune = sortedLocalities.filter((item) => item.type === "comună");
+  const sate = sortedLocalities.filter((item) => item.type === "sat");
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Observatorul Pieței Imobiliare din județul Călărași",
+    name: "Imobiliare în toate localitățile județului Călărași",
     description:
-      "Statistici bazate pe anunțurile publicate pe OltenitaImobiliare.ro pentru localitățile din județul Călărași.",
+      "Pagini imobiliare locale pentru municipiile, orașele, comunele și satele disponibile pe OltenitaImobiliare.ro.",
     url: "https://oltenitaimobiliare.ro/observator-imobiliar",
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: sortedLocalities.length,
+      itemListElement: sortedLocalities.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        url: `https://oltenitaimobiliare.ro/observator-imobiliar/${item.slug}`,
+      })),
+    },
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <Helmet>
-        <title>Observatorul Pieței Imobiliare Călărași</title>
+        <title>Imobiliare în toate localitățile din județul Călărași</title>
         <meta
           name="description"
-          content="Vezi statistici imobiliare pentru Călărași, Oltenița, Budești, Fundulea, Lehliu-Gară și toate comunele județului Călărași."
+          content={`Explorează pagini imobiliare pentru ${sortedLocalities.length} de localități din județul Călărași: case, apartamente, terenuri, garsoniere, spații comerciale și garaje.`}
         />
         <link
           rel="canonical"
@@ -32,49 +52,70 @@ export default function ObservatorImobiliar() {
 
       <section className="rounded-2xl bg-slate-900 text-white p-6 md:p-10 mb-10">
         <p className="text-sm uppercase tracking-widest text-amber-300 mb-2">
-          Date locale, actualizate automat
+          Toate localitățile județului Călărași
         </p>
         <h1 className="text-3xl md:text-5xl font-bold mb-4">
-          Observatorul Pieței Imobiliare Călărași
+          Imobiliare locale în județul Călărași
         </h1>
         <p className="text-slate-200 max-w-3xl leading-relaxed">
-          Urmărește oferta imobiliară din întreg județul Călărași. Statisticile
-          sunt calculate exclusiv din anunțurile publicate pe platformă și devin
-          mai precise pe măsură ce numărul proprietăților crește.
+          Alege localitatea pentru a vedea anunțurile active și paginile dedicate
+          pentru case, apartamente, terenuri, garsoniere, spații comerciale și garaje.
+        </p>
+        <p className="mt-4 text-slate-300">
+          Sunt incluse {municipiiOrase.length} municipii și orașe, {comune.length} comune
+          și {sate.length} sate sau localități componente.
         </p>
       </section>
 
-      <section className="mb-10">
-        <h2 className="text-2xl font-bold mb-4">Municipii și orașe</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orase.map((item) => (
-            <Link
-              key={item.slug}
-              to={`/observator-imobiliar/${item.slug}`}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-blue-400 transition"
-            >
-              <p className="text-xs uppercase text-slate-500 mb-1">{item.type}</p>
-              <h3 className="text-xl font-bold text-slate-900">{item.name}</h3>
-              <p className="text-sm text-blue-700 mt-3">Vezi statistici →</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <LocalitySection
+        title="Municipii și orașe"
+        items={municipiiOrase}
+        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        prominent
+      />
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Comunele județului Călărași</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {comune.map((item) => (
-            <Link
-              key={item.slug}
-              to={`/observator-imobiliar/${item.slug}`}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 hover:border-blue-400 hover:text-blue-700 transition"
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <LocalitySection
+        title="Comunele județului Călărași"
+        items={comune}
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
+      />
+
+      <LocalitySection
+        title="Sate și localități componente"
+        items={sate}
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
+      />
     </div>
+  );
+}
+
+function LocalitySection({ title, items, className, prominent = false }) {
+  return (
+    <section className="mb-10">
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <div className={className}>
+        {items.map((item) => (
+          <Link
+            key={item.slug}
+            to={`/observator-imobiliar/${item.slug}`}
+            className={
+              prominent
+                ? "rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-blue-400 transition"
+                : "rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-800 hover:border-blue-400 hover:text-blue-700 transition"
+            }
+          >
+            {prominent ? (
+              <>
+                <p className="text-xs uppercase text-slate-500 mb-1">{item.type}</p>
+                <h3 className="text-xl font-bold text-slate-900">{item.name}</h3>
+                <p className="text-sm text-blue-700 mt-3">Vezi toate categoriile →</p>
+              </>
+            ) : (
+              item.name
+            )}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

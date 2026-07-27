@@ -6,7 +6,8 @@ const categories = ["case", "apartamente", "terenuri", "garsoniere", "spatii-com
 const staticPaths = [
   "/",
   "/anunturi",
-  "/adauga-anunt",
+  "/despre-noi",
+  "/contact",
   "/ghid-imobiliar",
   "/observator-imobiliar",
   "/case",
@@ -14,10 +15,11 @@ const staticPaths = [
   "/terenuri",
   "/spatii-comerciale",
   "/garsoniere",
-  "/garaje"
+  "/garaje",
+  ...categories.map((category) => `/categorie/${category}`),
 ];
 
-const urls = new Set(staticPaths.map((path) => `${baseUrl}${path}`));
+const urls = new Set(staticPaths.map((route) => `${baseUrl}${route}`));
 
 for (const locality of calarasiLocalitati) {
   urls.add(`${baseUrl}/observator-imobiliar/${locality.slug}`);
@@ -27,13 +29,20 @@ for (const locality of calarasiLocalitati) {
 }
 
 const today = new Date().toISOString().slice(0, 10);
+const escapeXml = (value) =>
+  String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${[...urls]
-  .map((url) => `  <url>\n    <loc>${url}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${url.includes("observator") ? "weekly" : "daily"}</changefreq>\n    <priority>${url === baseUrl + "/" ? "1.0" : url.includes("/imobiliare/") ? "0.8" : "0.7"}</priority>\n  </url>`)
+  .map((url) => {
+    const isSeoCombination = url.includes("/imobiliare/");
+    const isLocalityHub = url.includes("/observator-imobiliar/");
+    return `  <url>\n    <loc>${escapeXml(url)}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${isSeoCombination ? "weekly" : isLocalityHub ? "weekly" : "daily"}</changefreq>\n    <priority>${url === `${baseUrl}/` ? "1.0" : isSeoCombination ? "0.8" : isLocalityHub ? "0.7" : "0.6"}</priority>\n  </url>`;
+  })
   .join("\n")}
 </urlset>\n`;
 
 await mkdir("public", { recursive: true });
 await writeFile("public/sitemap.xml", xml, "utf8");
-console.log(`Sitemap generat cu ${urls.size} URL-uri.`);
+console.log(`Sitemap generat cu ${urls.size} URL-uri pentru ${calarasiLocalitati.length} localități.`);
