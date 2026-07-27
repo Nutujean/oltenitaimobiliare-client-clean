@@ -1,15 +1,21 @@
-# 1️⃣ Forțează Netlify să servească fix fișierul preview.jpg, nu pagina React
+# Fișiere statice servite direct
 /preview.jpg  /preview.jpg  200!
-
-# 2️⃣ Redirect HTTP → HTTPS
-http://*  https://oltenitaimobiliare.ro/:splat  301
-
-# 3️⃣ Proxy Open Graph pentru Facebook pe domeniul principal
-# Facebook vede: https://oltenitaimobiliare.ro/share/ID
-# Backend generează meta tag-urile reale din MongoDB.
-/share/:id  https://api.oltenitaimobiliare.ro/share/:id  200!
-
 /angajari.png  /angajari.png  200!
 
-# 4️⃣ SPA fallback — React doar pentru restul
+# Redirect HTTP către HTTPS
+http://*  https://oltenitaimobiliare.ro/:splat  301
+
+# Consolidare pagini duplicate de categorie
+/categorie/apartamente       /apartamente         301
+/categorie/case              /case                301
+/categorie/terenuri          /terenuri            301
+/categorie/garsoniere        /garsoniere          301
+/categorie/garaje            /garaje              301
+/categorie/spatiu-comercial  /spatii-comerciale   301
+/categorie/spatii-comerciale /spatii-comerciale   301
+
+# Proxy Open Graph pentru distribuirea anunțurilor
+/share/:id  https://api.oltenitaimobiliare.ro/share/:id  200!
+
+# SPA fallback
 /*  /index.html  200
