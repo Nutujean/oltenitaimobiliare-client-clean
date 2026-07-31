@@ -104,6 +104,120 @@ export default function PromoBanner() {
           border: 0 !important;
         }
 
+        section:has([data-villo-banner]) > div > a {
+          background: linear-gradient(110deg, #ffffff 0%, #f0f7ff 58%, #e0f2fe 100%) !important;
+          border: 1px solid rgba(37, 99, 235, 0.18) !important;
+          box-shadow: 0 16px 38px rgba(30, 64, 175, 0.12) !important;
+          isolation: isolate;
+          transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        }
+
+        section:has([data-villo-banner]) > div > a:hover {
+          transform: translateY(-2px);
+          border-color: rgba(37, 99, 235, 0.34) !important;
+          box-shadow: 0 20px 46px rgba(30, 64, 175, 0.18) !important;
+        }
+
+        section:has([data-villo-banner]) > div > a::before {
+          content: "";
+          position: absolute;
+          inset: 0 0 auto 0;
+          height: 5px;
+          background: linear-gradient(90deg, #2563eb, #06b6d4, #22c55e);
+          z-index: 3;
+        }
+
+        section:has([data-villo-banner]) > div > a::after {
+          content: "";
+          position: absolute;
+          left: -42px;
+          bottom: -66px;
+          width: 150px;
+          height: 150px;
+          border-radius: 999px;
+          background: rgba(59, 130, 246, 0.10);
+          z-index: -1;
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > span {
+          display: grid !important;
+          place-items: center;
+          width: 58px;
+          height: 58px;
+          padding: 0 !important;
+          border-radius: 18px !important;
+          background: linear-gradient(145deg, #1d4ed8, #0ea5e9) !important;
+          color: white !important;
+          font-size: 24px !important;
+          box-shadow: 0 12px 25px rgba(37, 99, 235, 0.26);
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > h3 {
+          color: #172554 !important;
+          font-size: clamp(20px, 2vw, 27px) !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.02em;
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > p {
+          color: #475569 !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > p::after {
+          content: "Cauți un job?  •  Angajezi?  •  Publică rapid";
+          display: block;
+          margin-top: 7px;
+          color: #2563eb;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.01em;
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > div {
+          border-radius: 14px !important;
+          background: linear-gradient(135deg, #1d4ed8, #0284c7) !important;
+          box-shadow: 0 10px 22px rgba(30, 64, 175, 0.24);
+          transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        section:has([data-villo-banner]) > div > a:hover > div:first-child > div:first-child > div {
+          transform: translateX(3px);
+          box-shadow: 0 13px 28px rgba(30, 64, 175, 0.30);
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:last-child {
+          background: linear-gradient(145deg, #dbeafe, #e0f2fe);
+          overflow: hidden;
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:last-child img {
+          filter: saturate(1.08) contrast(1.02);
+          transition: transform 300ms ease;
+        }
+
+        section:has([data-villo-banner]) > div > a:hover > div:first-child > div:last-child img {
+          transform: scale(1.04);
+        }
+
+        section:has([data-villo-banner]) > div > a > div:first-child > div:last-child::after {
+          content: "Oportunități locale";
+          position: absolute;
+          right: 12px;
+          bottom: 12px;
+          z-index: 3;
+          border-radius: 999px;
+          background: rgba(15, 23, 42, 0.82);
+          color: white;
+          padding: 6px 10px;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          backdrop-filter: blur(8px);
+        }
+
         @media (min-width: 768px) {
           section:has([data-villo-banner]) > div {
             display: grid !important;
@@ -126,8 +240,8 @@ export default function PromoBanner() {
             grid-template-columns: auto minmax(0, 1fr) auto;
             grid-template-rows: auto auto;
             align-items: center;
-            column-gap: 18px;
-            row-gap: 2px;
+            column-gap: 20px;
+            row-gap: 3px;
             width: 100%;
             padding: 20px 28px !important;
           }
@@ -158,9 +272,20 @@ export default function PromoBanner() {
           }
 
           section:has([data-villo-banner]) > div > a > div:first-child > div:last-child {
-            width: 190px !important;
-            min-width: 190px;
+            width: 210px !important;
+            min-width: 210px;
             max-height: 158px;
+          }
+        }
+
+        @media (max-width: 767px) {
+          section:has([data-villo-banner]) > div > a > div:first-child > div:first-child > p::after {
+            line-height: 1.55;
+          }
+
+          section:has([data-villo-banner]) > div > a > div:first-child > div:last-child::after {
+            right: 8px;
+            bottom: 8px;
           }
         }
       `}</style>
