@@ -44,14 +44,19 @@ export default function EditareAnunt() {
   const [error, setError] = useState("");
 
   const [draggedExistingIndex, setDraggedExistingIndex] = useState(null);
+  const [dragOverExistingIndex, setDragOverExistingIndex] = useState(null);
+
   const [draggedNewIndex, setDraggedNewIndex] = useState(null);
+  const [dragOverNewIndex, setDragOverNewIndex] = useState(null);
 
   const maxTotalImages = formData.isFree ? 10 : 15;
 
-  const totalImagesCount = useMemo(
-    () => (formData.images?.length || 0) + (newImageFiles?.length || 0),
-    [formData.images, newImageFiles]
-  );
+  const totalImagesCount = useMemo(() => {
+    return (
+      (formData.images ? formData.images.length : 0) +
+      (newImageFiles ? newImageFiles.length : 0)
+    );
+  }, [formData.images, newImageFiles]);
 
   function normalizePhone(value) {
     if (!value) return "";
@@ -67,8 +72,9 @@ export default function EditareAnunt() {
 
     if (!title) return "Titlul este obligatoriu.";
     if (!category) return "Categoria este obligatorie.";
-    if (!type)
+    if (!type) {
       return "Tipul (Vând/Cumpăr/Închiriez/Schimb) este obligatoriu.";
+    }
     if (!location) return "Localitatea este obligatorie.";
     if (!phone) return "Numărul de telefon este obligatoriu.";
     if (phone.length < 9) return "Numărul de telefon pare invalid.";
@@ -82,25 +88,25 @@ export default function EditareAnunt() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${API_URL}/listings/${id}`);
+        const res = await fetch(API_URL + "/listings/" + id);
         const data = await res.json();
 
         if (!res.ok) {
           throw new Error(data.error || "Eroare la încărcare");
         }
 
-        const payload = data?.listing ? data.listing : data;
+        const payload = data && data.listing ? data.listing : data;
 
         setFormData({
           title: payload.title || "",
           description: payload.description || "",
-          price: payload.price ?? "",
+          price: payload.price !== undefined ? payload.price : "",
           category: payload.category || "",
           type: payload.intent || payload.type || "",
           location: payload.location || "",
           phone: payload.phone || "",
           images: Array.isArray(payload.images) ? payload.images : [],
-          isFree: payload.isFree ?? true,
+          isFree: payload.isFree !== undefined ? payload.isFree : true,
         });
 
         setNewImages([]);
@@ -124,31 +130,50 @@ export default function EditareAnunt() {
     }));
   };
 
+  // =========================================================
+  // ADĂUGARE IMAGINI NOI
+  // =========================================================
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
 
     if (!files.length) return;
 
+    const imageFiles = files.filter((file) => {
+      return file.type && file.type.startsWith("image/");
+    });
+
+    if (!imageFiles.length) {
+      alert("Selectează doar fișiere imagine.");
+      e.target.value = "";
+      return;
+    }
+
     const freeSlots = maxTotalImages - totalImagesCount;
 
     if (freeSlots <= 0) {
       alert(
-        `Ai atins limita de ${maxTotalImages} imagini (${
-          formData.isFree ? "FREE" : "PROMOVAT"
-        }).`
+        "Ai atins limita de " +
+          maxTotalImages +
+          " imagini (" +
+          (formData.isFree ? "FREE" : "PROMOVAT") +
+          ")."
       );
 
       e.target.value = "";
       return;
     }
 
-    const accepted = files.slice(0, freeSlots);
+    const accepted = imageFiles.slice(0, freeSlots);
 
-    if (files.length > freeSlots) {
+    if (imageFiles.length > freeSlots) {
       alert(
-        `Poți adăuga doar ${freeSlots} ${
-          freeSlots === 1 ? "imagine" : "imagini"
-        }.`
+        "Poți adăuga doar " +
+          freeSlots +
+          (freeSlots === 1 ? " imagine." : " imagini.") +
+          " Limita totală este " +
+          maxTotalImages +
+          "."
       );
     }
 
@@ -167,8 +192,17 @@ export default function EditareAnunt() {
     e.target.value = "";
   };
 
+  // =========================================================
+  // ÎNLOCUIRE IMAGINE EXISTENTĂ
+  // =========================================================
+
   const replaceImage = (index, file) => {
     if (!file) return;
+
+    if (!file.type || !file.type.startsWith("image/")) {
+      alert("Selectează un fișier imagine.");
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -186,6 +220,10 @@ export default function EditareAnunt() {
     reader.readAsDataURL(file);
   };
 
+  // =========================================================
+  // ȘTERGERE
+  // =========================================================
+
   const removeExistingImage = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -198,14 +236,22 @@ export default function EditareAnunt() {
     setNewImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // =========================================================
+  // MUTARE POZE EXISTENTE PRIN DRAG & DROP
+  // =========================================================
+
   const moveExistingImage = (fromIndex, toIndex) => {
+    if (fromIndex === null) return;
+    if (toIndex === null) return;
     if (fromIndex === toIndex) return;
 
     setFormData((prev) => {
       const arr = [...prev.images];
+      const movedItems = arr.splice(fromIndex, 1);
 
-      const [moved] = arr.splice(fromIndex, 1);
-      arr.splice(toIndex, 0, moved);
+      if (!movedItems.length) return prev;
+
+      arr.splice(toIndex, 0, movedItems[0]);
 
       return {
         ...prev,
@@ -214,27 +260,39 @@ export default function EditareAnunt() {
     });
   };
 
+  // =========================================================
+  // MUTARE POZE NOI PRIN DRAG & DROP
+  // =========================================================
+
   const moveNewImage = (fromIndex, toIndex) => {
+    if (fromIndex === null) return;
+    if (toIndex === null) return;
     if (fromIndex === toIndex) return;
 
     setNewImages((prev) => {
       const arr = [...prev];
+      const movedItems = arr.splice(fromIndex, 1);
 
-      const [moved] = arr.splice(fromIndex, 1);
-      arr.splice(toIndex, 0, moved);
+      if (!movedItems.length) return prev;
 
+      arr.splice(toIndex, 0, movedItems[0]);
       return arr;
     });
 
     setNewImageFiles((prev) => {
       const arr = [...prev];
+      const movedItems = arr.splice(fromIndex, 1);
 
-      const [moved] = arr.splice(fromIndex, 1);
-      arr.splice(toIndex, 0, moved);
+      if (!movedItems.length) return prev;
 
+      arr.splice(toIndex, 0, movedItems[0]);
       return arr;
     });
   };
+
+  // =========================================================
+  // SALVARE
+  // =========================================================
 
   const handleSave = async () => {
     try {
@@ -252,7 +310,11 @@ export default function EditareAnunt() {
       }
 
       if (totalImagesCount > maxTotalImages) {
-        alert(`Maxim ${maxTotalImages} imagini pentru acest tip de anunț.`);
+        alert(
+          "Maxim " +
+            maxTotalImages +
+            " imagini pentru acest tip de anunț."
+        );
         return;
       }
 
@@ -265,7 +327,7 @@ export default function EditareAnunt() {
         "description",
         String(formData.description || "").trim()
       );
-      fd.append("price", String(formData.price ?? ""));
+      fd.append("price", String(formData.price || ""));
       fd.append("category", String(formData.category || "").trim());
       fd.append("type", String(formData.type || "").trim());
       fd.append("location", String(formData.location || "").trim());
@@ -279,10 +341,10 @@ export default function EditareAnunt() {
         fd.append("images", file);
       });
 
-      const res = await fetch(${API_URL}/listings/${id}, {
+      const res = await fetch(API_URL + "/listings/" + id, {
         method: "PUT",
         headers: {
-          Authorization: Bearer ${token},
+          Authorization: "Bearer " + token,
         },
         body: fd,
       });
@@ -425,64 +487,79 @@ export default function EditareAnunt() {
           required
         />
 
-        {formData.images?.length > 0 && (
+        {/* =====================================================
+            IMAGINI EXISTENTE
+        ====================================================== */}
+
+        {formData.images && formData.images.length > 0 && (
           <div>
             <label className="block font-semibold mb-1">
-              📸 Imagini existente
+              📸 Imagini
             </label>
 
-            <p className="text-xs text-gray-500 mb-3">
-              Prinde fotografia și trage-o direct în poziția dorită.
+            <p className="text-sm text-gray-600 mb-3">
+              Prinde fotografia cu mouse-ul și trage-o în poziția dorită.
+              Prima fotografie este poza principală.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {formData.images.map((img, i) => (
                 <div
-                  key={${img}-${i}}
-                  draggable
+                  key={String(img) + "-" + String(i)}
+                  draggable={true}
                   onDragStart={(e) => {
                     setDraggedExistingIndex(i);
                     e.dataTransfer.effectAllowed = "move";
                   }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setDragOverExistingIndex(i);
+                  }}
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = "move";
+                    setDragOverExistingIndex(i);
                   }}
                   onDrop={(e) => {
                     e.preventDefault();
 
-                    if (
-                      draggedExistingIndex !== null &&
-                      draggedExistingIndex !== i
-                    ) {
-                      moveExistingImage(draggedExistingIndex, i);
-                    }
+                    moveExistingImage(
+                      draggedExistingIndex,
+                      i
+                    );
 
                     setDraggedExistingIndex(null);
+                    setDragOverExistingIndex(null);
                   }}
                   onDragEnd={() => {
                     setDraggedExistingIndex(null);
+                    setDragOverExistingIndex(null);
                   }}
-                  className={`relative group cursor-grab active:cursor-grabbing rounded-lg transition-all duration-150 ${
-                    draggedExistingIndex === i
-                      ? "opacity-40 scale-95"
-                      : ""
-                  }`}
+                  className={
+                    "relative group rounded-lg cursor-grab active:cursor-grabbing transition-all duration-150 " +
+                    (draggedExistingIndex === i
+                      ? "opacity-40 scale-95 "
+                      : "") +
+                    (dragOverExistingIndex === i &&
+                    draggedExistingIndex !== i
+                      ? "ring-4 ring-blue-400 scale-[1.03] "
+                      : "")
+                  }
                 >
                   <img
                     src={img}
-                    alt={img-${i}}
+                    alt={"img-" + i}
                     draggable={false}
                     className="w-full h-32 object-cover rounded-lg border shadow-sm select-none"
                   />
 
-                  <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
+                  <div className="absolute top-2 left-2 bg-black/75 text-white text-xs font-bold px-2 py-1 rounded-full pointer-events-none">
                     {i + 1}
                   </div>
 
                   {i === 0 && (
-                    <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded pointer-events-none">
-                      Poză principală
+                    <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs font-medium px-2 py-1 rounded pointer-events-none">
+                      ⭐ Principală
                     </div>
                   )}
 
@@ -504,9 +581,14 @@ export default function EditareAnunt() {
                     draggable={false}
                     onClick={(e) => {
                       e.stopPropagation();
-                      document
-                        .getElementById(replace-${i})
-                        ?.click();
+
+                      const input = document.getElementById(
+                        "replace-" + i
+                      );
+
+                      if (input) {
+                        input.click();
+                      }
                     }}
                     className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg shadow z-20"
                     title="Înlocuiește fotografia"
@@ -515,12 +597,18 @@ export default function EditareAnunt() {
                   </button>
 
                   <input
-                    id={replace-${i}}
+                    id={"replace-" + i}
                     type="file"
                     accept="image/*"
                     className="hidden"
                     onChange={(e) => {
-                      replaceImage(i, e.target.files?.[0]);
+                      const file =
+                        e.target.files &&
+                        e.target.files.length > 0
+                          ? e.target.files[0]
+                          : null;
+
+                      replaceImage(i, file);
                       e.target.value = "";
                     }}
                   />
@@ -529,6 +617,10 @@ export default function EditareAnunt() {
             </div>
           </div>
         )}
+
+        {/* =====================================================
+            IMAGINI NOI
+        ====================================================== */}
 
         <div className="mt-5">
           <label className="block font-semibold mb-2">
@@ -540,81 +632,98 @@ export default function EditareAnunt() {
             multiple
             accept="image/*"
             onChange={handleImageChange}
+            className="block w-full text-sm"
           />
 
           {newImages.length > 0 && (
-            <>
-              <p className="text-xs text-gray-500 mt-4 mb-3">
-                Și pozele noi pot fi prinse și mutate în poziția dorită.
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-3">
+                Și fotografiile noi pot fi prinse și mutate.
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {newImages.map((img, i) => (
                   <div
-                    key={new-${i}}
-                    draggable
+                    key={"new-" + String(i)}
+                    draggable={true}
                     onDragStart={(e) => {
                       setDraggedNewIndex(i);
                       e.dataTransfer.effectAllowed = "move";
                     }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setDragOverNewIndex(i);
+                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
+                      setDragOverNewIndex(i);
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
 
-                      if (
-                        draggedNewIndex !== null &&
-                        draggedNewIndex !== i
-                      ) {
-                        moveNewImage(draggedNewIndex, i);
-                      }
+                      moveNewImage(
+                        draggedNewIndex,
+                        i
+                      );
 
                       setDraggedNewIndex(null);
+                      setDragOverNewIndex(null);
                     }}
                     onDragEnd={() => {
                       setDraggedNewIndex(null);
+                      setDragOverNewIndex(null);
                     }}
-                    className={`relative group cursor-grab active:cursor-grabbing rounded-lg transition-all duration-150 ${
-                      draggedNewIndex === i
-                        ? "opacity-40 scale-95"
-                        : ""
-                    }`}
+                    className={
+                      "relative group rounded-lg cursor-grab active:cursor-grabbing transition-all duration-150 " +
+                      (draggedNewIndex === i
+                        ? "opacity-40 scale-95 "
+                        : "") +
+                      (dragOverNewIndex === i &&
+                      draggedNewIndex !== i
+                        ? "ring-4 ring-blue-400 scale-[1.03] "
+                        : "")
+                    }
                   >
                     <img
                       src={img}
-                      alt={new-${i}}
+                      alt={"new-" + i}
                       draggable={false}
                       className="w-full h-32 object-cover rounded-lg border shadow-sm select-none"
                     />
 
-                    <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
-                      {i + 1}
-                    </div>
-
-                    <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded pointer-events-none">
-                      Nouă
+                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full pointer-events-none">
+                      NOUĂ {i + 1}
                     </div>
 
                     <button
                       type="button"
                       draggable={false}
-                      onClick={() => removeNewImage(i)}
-                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-2 rounded-lg shadow"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeNewImage(i);
+                      }}
+                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded-lg shadow z-20"
+                      title="Șterge fotografia"
                     >
                       🗑️
                     </button>
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
-          <div className="text-xs text-gray-500 mt-3">
-            Total imagini: <b>{totalImagesCount}</b> / {maxTotalImages}
+          <div className="text-sm text-gray-600 mt-3">
+            Total imagini:{" "}
+            <b>{totalImagesCount}</b> /{" "}
+            <b>{maxTotalImages}</b>
           </div>
         </div>
+
+        {/* =====================================================
+            BUTOANE
+        ====================================================== */}
 
         <div className="flex flex-col sm:flex-row justify-between gap-3 mt-8">
           <button
