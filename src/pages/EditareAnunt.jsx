@@ -252,7 +252,7 @@ export default function EditareAnunt() {
       }
 
       if (totalImagesCount > maxTotalImages) {
-        alert(Maxim ${maxTotalImages} imagini pentru acest tip de anunț.);
+        alert(`Maxim ${maxTotalImages} imagini pentru acest tip de anunț.`);
         return;
       }
 
