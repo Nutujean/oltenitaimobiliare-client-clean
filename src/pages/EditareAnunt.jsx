@@ -82,7 +82,7 @@ export default function EditareAnunt() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(${API_URL}/listings/${id});
+        const res = await fetch(`${API_URL}/listings/${id}`);
         const data = await res.json();
 
         if (!res.ok) {
