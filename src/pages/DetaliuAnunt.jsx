@@ -1,4 +1,5 @@
 // src/pages/DetaliuAnunt.jsx
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -6,6 +7,7 @@ import API_URL from "../api";
 
 function normalizePhone(value) {
   if (!value) return "";
+
   const digits = String(value).replace(/\D/g, "");
   return digits.replace(/^4/, "");
 }
@@ -13,7 +15,14 @@ function normalizePhone(value) {
 function getUserIdFromToken(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload?.id || payload?._id || payload?.userId || payload?.sub || null;
+
+    return (
+      payload?.id ||
+      payload?._id ||
+      payload?.userId ||
+      payload?.sub ||
+      null
+    );
   } catch {
     return null;
   }
@@ -23,25 +32,51 @@ function getDateMs(x) {
   if (!x) return null;
 
   const d1 = new Date(x);
-  if (!Number.isNaN(d1.getTime())) return d1.getTime();
+
+  if (!Number.isNaN(d1.getTime())) {
+    return d1.getTime();
+  }
 
   const maybe =
     x?.$date ||
     x?.date ||
     x?.value ||
     x?.iso ||
-    (typeof x?.toString === "function" ? x.toString() : null);
+    (typeof x?.toString === "function"
+      ? x.toString()
+      : null);
 
   const d2 = new Date(maybe);
-  if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+  if (
+    maybe &&
+    !Number.isNaN(d2.getTime())
+  ) {
+    return d2.getTime();
+  }
 
   return null;
 }
 
 const PROMO_OPTIONS = [
-  { id: "featured7", label: "Promovat 7 zile", priceRON: 30, days: 7 },
-  { id: "featured14", label: "Promovat 14 zile", priceRON: 50, days: 14 },
-  { id: "featured30", label: "Promovat 30 zile", priceRON: 80, days: 30 },
+  {
+    id: "featured7",
+    label: "Promovat 7 zile",
+    priceRON: 30,
+    days: 7,
+  },
+  {
+    id: "featured14",
+    label: "Promovat 14 zile",
+    priceRON: 50,
+    days: 14,
+  },
+  {
+    id: "featured30",
+    label: "Promovat 30 zile",
+    priceRON: 80,
+    days: 30,
+  },
 ];
 
 export default function DetaliuAnunt() {
@@ -51,74 +86,168 @@ export default function DetaliuAnunt() {
   const [listing, setListing] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
   const [viewCount, setViewCount] = useState(0);
-  const [isFacebookAppWebView, setIsFacebookAppWebView] = useState(false);
+
+  const [
+    isFacebookAppWebView,
+    setIsFacebookAppWebView,
+  ] = useState(false);
 
   const [showPromo, setShowPromo] = useState(false);
-  const [selectedPromo, setSelectedPromo] = useState(PROMO_OPTIONS[0]);
-  const [promoLoading, setPromoLoading] = useState(false);
-  const [promoError, setPromoError] = useState("");
-  const [canPromote, setCanPromote] = useState(false);
+  const [selectedPromo, setSelectedPromo] = useState(
+    PROMO_OPTIONS[0]
+  );
 
-  useEffect(() => window.scrollTo(0, 0), [id]);
+  const [promoLoading, setPromoLoading] =
+    useState(false);
+
+  const [promoError, setPromoError] =
+    useState("");
+
+  const [canPromote, setCanPromote] =
+    useState(false);
 
   useEffect(() => {
-    const ua = navigator.userAgent || navigator.vendor || window.opera || "";
-    const isFacebookApp = /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
-    setIsFacebookAppWebView(Boolean(isFacebookApp));
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  useEffect(() => {
+    const ua =
+      navigator.userAgent ||
+      navigator.vendor ||
+      window.opera ||
+      "";
+
+    const isFacebookApp =
+      /FBAN|FBAV|FBIOS|FB_IAB/.test(ua);
+
+    setIsFacebookAppWebView(
+      Boolean(isFacebookApp)
+    );
   }, []);
 
+  // =====================================================
+  // ÎNCĂRCARE ANUNȚ
+  // =====================================================
+
   useEffect(() => {
-    (async () => {
+    const fetchListing = async () => {
       try {
-        const res = await fetch(`${API_URL}/listings/${id}`);
+        const res = await fetch(
+          API_URL + "/listings/" + id
+        );
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțului");
+
+        if (!res.ok) {
+          throw new Error(
+            data.error ||
+              "Eroare la încărcarea anunțului"
+          );
+        }
+
         setListing(data);
-        setViewCount(Number(data?.views || 0));
+        setViewCount(
+          Number(data?.views || 0)
+        );
       } catch (e) {
-        setErr(e.message);
+        setErr(
+          e.message ||
+            "Eroare la încărcarea anunțului"
+        );
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    fetchListing();
   }, [id]);
+
+  // =====================================================
+  // NUMĂRARE VIZUALIZARE
+  // =====================================================
 
   useEffect(() => {
     if (!id) return;
 
-    const sessionKey = `oltenita-view-counted-${id}`;
-    if (sessionStorage.getItem(sessionKey)) return;
+    const sessionKey =
+      "oltenita-view-counted-" + id;
+
+    if (
+      sessionStorage.getItem(sessionKey)
+    ) {
+      return;
+    }
 
     let cancelled = false;
 
-    (async () => {
+    const countView = async () => {
       try {
-        const res = await fetch(`${API_URL}/listings/${id}/view`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(
+          API_URL +
+            "/listings/" +
+            id +
+            "/view",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+          }
+        );
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || cancelled) return;
+        const data = await res
+          .json()
+          .catch(() => ({}));
 
-        if (typeof data?.views === "number") {
-          setViewCount(data.views);
-          setListing((prev) => (prev ? { ...prev, views: data.views } : prev));
+        if (
+          !res.ok ||
+          cancelled
+        ) {
+          return;
         }
 
-        sessionStorage.setItem(sessionKey, "1");
+        if (
+          typeof data?.views ===
+          "number"
+        ) {
+          setViewCount(data.views);
+
+          setListing((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  views: data.views,
+                }
+              : prev
+          );
+        }
+
+        sessionStorage.setItem(
+          sessionKey,
+          "1"
+        );
       } catch {
-        // Nu blocăm pagina dacă numărătoarea nu răspunde.
+        // Nu blocăm pagina dacă
+        // numărătoarea nu răspunde.
       }
-    })();
+    };
+
+    countView();
 
     return () => {
       cancelled = true;
     };
   }, [id]);
+
+  // =====================================================
+  // VERIFICARE PROPRIETAR
+  // =====================================================
 
   useEffect(() => {
     if (!listing) {
@@ -127,30 +256,63 @@ export default function DetaliuAnunt() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const rawPhone = localStorage.getItem("userPhone");
+      const token =
+        localStorage.getItem("token");
 
-      if (!token || token === "undefined" || token === "null") {
+      const rawPhone =
+        localStorage.getItem(
+          "userPhone"
+        );
+
+      if (
+        !token ||
+        token === "undefined" ||
+        token === "null"
+      ) {
         setCanPromote(false);
         return;
       }
 
-      const myUserId = getUserIdFromToken(token);
+      const myUserId =
+        getUserIdFromToken(token);
+
       const listingUserId =
-        (typeof listing?.user === "string" ? listing.user : listing?.user?._id) ||
+        (typeof listing?.user ===
+        "string"
+          ? listing.user
+          : listing?.user?._id) ||
         listing?.userId ||
         null;
 
-      if (myUserId && listingUserId && String(myUserId) === String(listingUserId)) {
+      if (
+        myUserId &&
+        listingUserId &&
+        String(myUserId) ===
+          String(listingUserId)
+      ) {
         setCanPromote(true);
         return;
       }
 
-      if (rawPhone && rawPhone !== "undefined" && rawPhone !== "null" && listing?.phone) {
-        const userPhone = normalizePhone(rawPhone);
-        const listingPhone = normalizePhone(listing.phone);
+      if (
+        rawPhone &&
+        rawPhone !== "undefined" &&
+        rawPhone !== "null" &&
+        listing?.phone
+      ) {
+        const userPhone =
+          normalizePhone(rawPhone);
 
-        if (userPhone && listingPhone && userPhone === listingPhone) {
+        const listingPhone =
+          normalizePhone(
+            listing.phone
+          );
+
+        if (
+          userPhone &&
+          listingPhone &&
+          userPhone === listingPhone
+        ) {
           setCanPromote(true);
           return;
         }
@@ -162,87 +324,241 @@ export default function DetaliuAnunt() {
     }
   }, [listing]);
 
-  if (loading) return <p className="text-center py-10">Se încarcă...</p>;
-  if (err) return <p className="text-center py-10 text-red-600">{err}</p>;
-  if (!listing) return <p className="text-center py-10">Anunțul nu există.</p>;
+  // =====================================================
+  // LOADING / ERROR
+  // =====================================================
 
-  const images = Array.isArray(listing.images) ? listing.images : [];
-  const prevImage = () => setCurrentImage((p) => (p === 0 ? images.length - 1 : p - 1));
-  const nextImage = () => setCurrentImage((p) => (p === images.length - 1 ? 0 : p + 1));
+  if (loading) {
+    return (
+      <p className="text-center py-10">
+        Se încarcă...
+      </p>
+    );
+  }
 
-  const listingId = listing?._id || listing?.id;
-  const shareVersion = listing?.updatedAt ? new Date(listing.updatedAt).getTime() : Date.now();
-  const shareSlug = `${listingId}-v${shareVersion}`;
+  if (err) {
+    return (
+      <p className="text-center py-10 text-red-600">
+        {err}
+      </p>
+    );
+  }
 
-  const backendShareUrl = `https://oltenitaimobiliare.ro/share/${shareSlug}`;
-  const publicUrl = `https://oltenitaimobiliare.ro/anunt/${listingId}`;
-  const backendFbDirect = backendShareUrl;
+  if (!listing) {
+    return (
+      <p className="text-center py-10">
+        Anunțul nu există.
+      </p>
+    );
+  }
 
-  const expiresAtMs = getDateMs(listing?.expiresAt);
+  // =====================================================
+  // DATE ANUNȚ
+  // =====================================================
+
+  const images = Array.isArray(
+    listing.images
+  )
+    ? listing.images
+    : [];
+
+  const prevImage = () => {
+    setCurrentImage((p) =>
+      p === 0
+        ? images.length - 1
+        : p - 1
+    );
+  };
+
+  const nextImage = () => {
+    setCurrentImage((p) =>
+      p === images.length - 1
+        ? 0
+        : p + 1
+    );
+  };
+
+  const listingId =
+    listing?._id ||
+    listing?.id;
+
+  const shareVersion =
+    listing?.updatedAt
+      ? new Date(
+          listing.updatedAt
+        ).getTime()
+      : Date.now();
+
+  const shareSlug =
+    String(listingId) +
+    "-v" +
+    String(shareVersion);
+
+  const backendShareUrl =
+    "https://oltenitaimobiliare.ro/share/" +
+    shareSlug;
+
+  const publicUrl =
+    "https://oltenitaimobiliare.ro/anunt/" +
+    listingId;
+
+  const backendFbDirect =
+    backendShareUrl;
+
+  const expiresAtMs =
+    getDateMs(
+      listing?.expiresAt
+    );
+
   const isExpired =
-    String(listing?.status || "").toLowerCase() === "expirat" ||
-    (expiresAtMs !== null && expiresAtMs < Date.now());
+    String(
+      listing?.status || ""
+    ).toLowerCase() === "expirat" ||
+    (expiresAtMs !== null &&
+      expiresAtMs < Date.now());
 
-  const handleShare = async (platform) => {
-    const ua = navigator.userAgent || navigator.vendor || window.opera || "";
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isSold =
+    listing?.vandut === true;
+
+  const isReserved =
+    listing?.rezervat === true &&
+    !isSold;
+
+  const isFeatured =
+    !isExpired &&
+    listing.featuredUntil &&
+    new Date(
+      listing.featuredUntil
+    ) > new Date();
+
+  // =====================================================
+  // SHARE
+  // =====================================================
+
+  const handleShare = async (
+    platform
+  ) => {
+    const ua =
+      navigator.userAgent ||
+      navigator.vendor ||
+      window.opera ||
+      "";
+
+    const isMobile =
+      /iPhone|iPad|iPod|Android/i.test(
+        ua
+      );
+
+    const isIOS =
+      /iPhone|iPad|iPod/i.test(
+        ua
+      );
 
     switch (platform) {
       case "facebook": {
-        const shareUrl = backendShareUrl;
-        const quote = `${listing.title || "Anunț imobiliar"} - vezi detalii pe OltenitaImobiliare.ro`;
-        const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          shareUrl
-        )}&quote=${encodeURIComponent(quote)}`;
+        const shareUrl =
+          backendShareUrl;
+
+        const quote =
+          (listing.title ||
+            "Anunț imobiliar") +
+          " - vezi detalii pe OltenitaImobiliare.ro";
+
+        const fbSharer =
+          "https://www.facebook.com/sharer/sharer.php?u=" +
+          encodeURIComponent(
+            shareUrl
+          ) +
+          "&quote=" +
+          encodeURIComponent(
+            quote
+          );
 
         try {
-          await navigator.clipboard.writeText(shareUrl);
+          await navigator.clipboard.writeText(
+            shareUrl
+          );
         } catch {
-          // Dacă browserul nu permite clipboard, continuăm normal.
+          // continuăm normal
         }
 
-        if (isIOS && navigator.share) {
+        if (
+          isIOS &&
+          navigator.share
+        ) {
           try {
             await navigator.share({
-              title: listing.title || "Anunț Oltenița Imobiliare",
+              title:
+                listing.title ||
+                "Anunț Oltenița Imobiliare",
               text: quote,
               url: shareUrl,
             });
+
             return;
           } catch {
-            // Dacă utilizatorul închide share sheet-ul, revenim la Facebook sharer.
+            // revenim la Facebook
           }
         }
 
-        const popup = window.open(
-          fbSharer,
-          "_blank",
-          isMobile ? undefined : "width=650,height=520"
-        );
+        const popup =
+          window.open(
+            fbSharer,
+            "_blank",
+            isMobile
+              ? undefined
+              : "width=650,height=520"
+          );
 
         if (!popup) {
-          window.location.href = fbSharer;
+          window.location.href =
+            fbSharer;
         }
 
         break;
       }
 
       case "whatsapp": {
+        const text =
+          "🏡 " +
+          listing.title +
+          " – vezi detalii: " +
+          publicUrl;
+
         window.open(
-          `https://wa.me/?text=${encodeURIComponent(`🏡 ${listing.title} – vezi detalii: ${publicUrl}`)}`,
+          "https://wa.me/?text=" +
+            encodeURIComponent(
+              text
+            ),
           "_blank"
         );
+
         break;
       }
 
       case "tiktok": {
         if (isMobile) {
-          navigator.clipboard.writeText(publicUrl);
-          alert("🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo.");
+          try {
+            await navigator.clipboard.writeText(
+              publicUrl
+            );
+          } catch {
+            // continuăm
+          }
+
+          alert(
+            "🔗 Linkul anunțului a fost copiat! Deschide aplicația TikTok și inserează-l acolo."
+          );
         } else {
-          window.open(`https://www.tiktok.com/upload?url=${encodeURIComponent(publicUrl)}`, "_blank");
+          window.open(
+            "https://www.tiktok.com/upload?url=" +
+              encodeURIComponent(
+                publicUrl
+              ),
+            "_blank"
+          );
         }
+
         break;
       }
 
@@ -252,22 +568,39 @@ export default function DetaliuAnunt() {
   };
 
   const openInSafari = () => {
-    window.open(backendFbDirect, "_blank");
+    window.open(
+      backendFbDirect,
+      "_blank"
+    );
   };
 
-  const isFeatured =
-    !isExpired &&
-    listing.featuredUntil &&
-    new Date(listing.featuredUntil) > new Date();
+  // păstrăm funcția disponibilă
+  // pentru compatibilitate cu logica Facebook
+  void openInSafari;
+
+  // =====================================================
+  // PROMOVARE
+  // =====================================================
 
   const startPromotion = async () => {
     if (isExpired) {
-      setPromoError("Anunțul este expirat și nu poate fi promovat.");
+      setPromoError(
+        "Anunțul este expirat și nu poate fi promovat."
+      );
+      return;
+    }
+
+    if (isSold) {
+      setPromoError(
+        "Un anunț marcat VÂNDUT nu poate fi promovat."
+      );
       return;
     }
 
     if (!selectedPromo) {
-      setPromoError("Selectează un pachet de promovare.");
+      setPromoError(
+        "Selectează un pachet de promovare."
+      );
       return;
     }
 
@@ -275,25 +608,55 @@ export default function DetaliuAnunt() {
       setPromoLoading(true);
       setPromoError("");
 
-      const res = await fetch(`${API_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: listingId, plan: selectedPromo.id }),
-      });
+      const res = await fetch(
+        API_URL +
+          "/stripe/create-checkout-session",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            listingId: listingId,
+            plan: selectedPromo.id,
+          }),
+        }
+      );
 
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || "Nu am putut porni plata pentru promovare.");
-      window.location.href = data.url;
+      const data =
+        await res.json();
+
+      if (
+        !res.ok ||
+        !data.url
+      ) {
+        throw new Error(
+          data.error ||
+            "Nu am putut porni plata pentru promovare."
+        );
+      }
+
+      window.location.href =
+        data.url;
     } catch (e) {
-      setPromoError(e.message || "Eroare la inițierea plății.");
+      setPromoError(
+        e.message ||
+          "Eroare la inițierea plății."
+      );
     } finally {
       setPromoLoading(false);
     }
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/");
+    if (
+      window.history.length > 1
+    ) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -305,8 +668,14 @@ export default function DetaliuAnunt() {
             <br />
             👉 Apasă butonul Facebook și alege Facebook din meniul telefonului.
           </div>
+
           <button
-            onClick={() => setIsFacebookAppWebView(false)}
+            type="button"
+            onClick={() =>
+              setIsFacebookAppWebView(
+                false
+              )
+            }
             className="text-sm px-2 py-1 rounded-md hover:underline"
           >
             ✕
@@ -314,129 +683,622 @@ export default function DetaliuAnunt() {
         </div>
       )}
 
-      <div className={`max-w-5xl mx-auto px-4 pt-24 pb-10 ${isFacebookAppWebView ? "pt-28" : ""}`}>
+      <div
+        className={
+          "max-w-5xl mx-auto px-4 pt-24 pb-10 " +
+          (isFacebookAppWebView
+            ? "pt-28"
+            : "")
+        }
+      >
         <Helmet>
-          <title>{listing.title} - Oltenița Imobiliare</title>
-          <meta name="description" content={`${listing.title} – ${listing.location}. ${listing.description?.substring(0, 150)}...`} />
-          <meta name="keywords" content={`Oltenița, imobiliare, ${listing.location}, apartamente, case, terenuri`} />
-          <meta property="og:title" content={listing.title} />
-          <meta property="og:description" content={listing.description?.substring(0, 150) || "Vezi detalii despre acest anunț imobiliar din Oltenița."} />
-          <meta property="og:image" content={listing.images?.[0] || listing.imageUrl || "https://oltenitaimobiliare.ro/preview.jpg"} />
-          <meta property="og:url" content={publicUrl} />
-          <meta property="og:type" content="article" />
+          <title>
+            {listing.title}
+            {" - Oltenița Imobiliare"}
+          </title>
+
+          <meta
+            name="description"
+            content={
+              listing.title +
+              " – " +
+              listing.location +
+              ". " +
+              String(
+                listing.description ||
+                  ""
+              ).substring(0, 150) +
+              "..."
+            }
+          />
+
+          <meta
+            name="keywords"
+            content={
+              "Oltenița, imobiliare, " +
+              listing.location +
+              ", apartamente, case, terenuri"
+            }
+          />
+
+          <meta
+            property="og:title"
+            content={listing.title}
+          />
+
+          <meta
+            property="og:description"
+            content={
+              String(
+                listing.description ||
+                  ""
+              ).substring(
+                0,
+                150
+              ) ||
+              "Vezi detalii despre acest anunț imobiliar din Oltenița."
+            }
+          />
+
+          <meta
+            property="og:image"
+            content={
+              listing.images?.[0] ||
+              listing.imageUrl ||
+              "https://oltenitaimobiliare.ro/preview.jpg"
+            }
+          />
+
+          <meta
+            property="og:url"
+            content={publicUrl}
+          />
+
+          <meta
+            property="og:type"
+            content="article"
+          />
         </Helmet>
 
+        {/* ÎNAPOI */}
+
         <div className="mb-4">
-          <button type="button" onClick={handleBack} className="inline-flex items-center gap-2 bg-white border rounded-lg px-3 py-2 shadow-sm text-blue-700 hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 bg-white border rounded-lg px-3 py-2 shadow-sm text-blue-700 hover:bg-gray-50"
+          >
             ← Înapoi la anunțuri
           </button>
         </div>
 
+        {/* =================================================
+            STARE ANUNȚ
+        ================================================== */}
+
         {isExpired && (
           <div className="mb-5 rounded-xl border border-gray-300 bg-gray-100 px-4 py-4 text-gray-800">
-            <div className="font-bold text-sm uppercase tracking-wide mb-1">EXPIRAT</div>
-            <p className="text-sm">Acest anunț nu mai este valabil. A rămas afișat doar ca anunț expirat.</p>
+            <div className="font-bold text-sm uppercase tracking-wide mb-1">
+              EXPIRAT
+            </div>
+
+            <p className="text-sm">
+              Acest anunț nu mai este valabil. A rămas afișat doar ca anunț expirat.
+            </p>
           </div>
         )}
 
-        <div className={`relative w-full aspect-[16/9] overflow-hidden rounded-xl shadow ${isExpired ? "bg-gray-100" : "bg-gray-100 cursor-pointer"}`} onClick={() => !isExpired && images.length > 0 && setIsZoomed(true)}>
+        {!isExpired &&
+          isReserved && (
+            <div className="mb-5 rounded-xl border-2 border-orange-300 bg-orange-50 px-5 py-4 text-orange-900 shadow-sm">
+              <div className="font-black text-lg uppercase tracking-wide mb-1">
+                🟠 REZERVAT
+              </div>
+
+              <p className="text-sm">
+                Proprietatea este rezervată momentan. Poți contacta proprietarul pentru informații suplimentare.
+              </p>
+            </div>
+          )}
+
+        {!isExpired &&
+          isSold && (
+            <div className="mb-5 rounded-xl border-2 border-red-500 bg-red-50 px-5 py-4 text-red-900 shadow-sm">
+              <div className="font-black text-xl uppercase tracking-wide mb-1">
+                🔴 VÂNDUT
+              </div>
+
+              <p className="text-sm font-medium">
+                Această proprietate a fost marcată ca vândută de proprietarul anunțului.
+              </p>
+            </div>
+          )}
+
+        {/* =================================================
+            GALERIE
+        ================================================== */}
+
+        <div
+          className={
+            "relative w-full aspect-[16/9] overflow-hidden rounded-xl shadow bg-gray-100 " +
+            (!isExpired &&
+            images.length > 0
+              ? "cursor-pointer"
+              : "")
+          }
+          onClick={() => {
+            if (
+              !isExpired &&
+              images.length > 0
+            ) {
+              setIsZoomed(true);
+            }
+          }}
+        >
           {images.length ? (
             <>
-              <img src={images[currentImage]} alt={listing.title} className="w-full h-full object-contain" />
+              <img
+                src={
+                  images[currentImage]
+                }
+                alt={listing.title}
+                className={
+                  "w-full h-full object-contain " +
+                  (isSold
+                    ? "opacity-75"
+                    : "")
+                }
+              />
+
               {images.length > 1 && (
                 <>
-                  <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full">❮</button>
-                  <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full">❯</button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full"
+                  >
+                    ❮
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-2 rounded-full"
+                  >
+                    ❯
+                  </button>
                 </>
               )}
-              {isExpired && <span className="absolute top-3 left-3 bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded">EXPIRAT</span>}
+
+              {isExpired && (
+                <span className="absolute top-3 left-3 bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded">
+                  EXPIRAT
+                </span>
+              )}
+
+              {!isExpired &&
+                isReserved && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <span className="bg-orange-500 text-white text-2xl md:text-4xl font-black px-7 py-4 rounded-xl shadow-2xl">
+                      REZERVAT
+                    </span>
+                  </div>
+                )}
+
+              {!isExpired &&
+                isSold && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-black/15">
+                    <span className="bg-red-600 text-white text-3xl md:text-5xl font-black px-8 py-5 rounded-xl shadow-2xl">
+                      VÂNDUT
+                    </span>
+                  </div>
+                )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">Fără imagine</div>
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              Fără imagine
+            </div>
           )}
         </div>
 
-        {isZoomed && !isExpired && (
-          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50" onClick={() => setIsZoomed(false)}>
-            <img src={images[currentImage]} alt={listing.title} className="max-w-[90%] max-h-[80%] object-contain" />
-            {images.length > 1 && (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full">❮</button>
-                <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full">❯</button>
-              </>
-            )}
-          </div>
-        )}
+        {/* =================================================
+            ZOOM
+        ================================================== */}
+
+        {isZoomed &&
+          !isExpired &&
+          images.length > 0 && (
+            <div
+              className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+              onClick={() =>
+                setIsZoomed(false)
+              }
+            >
+              <img
+                src={
+                  images[
+                    currentImage
+                  ]
+                }
+                alt={listing.title}
+                className="max-w-[90%] max-h-[80%] object-contain"
+              />
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full"
+                  >
+                    ❮
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/20 text-white text-3xl px-3 py-2 rounded-full"
+                  >
+                    ❯
+                  </button>
+                </>
+              )}
+
+              {isReserved && (
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-orange-500 text-white font-black px-6 py-3 rounded-xl">
+                  REZERVAT
+                </div>
+              )}
+
+              {isSold && (
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white font-black px-6 py-3 rounded-xl">
+                  VÂNDUT
+                </div>
+              )}
+            </div>
+          )}
+
+        {/* =================================================
+            TITLU / PREȚ
+        ================================================== */}
 
         <div className="mt-5 text-center sm:text-left">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{listing.title}</h1>
-          <p className={`inline-block px-4 py-2 rounded-lg text-lg font-semibold mt-1 ${isExpired ? "bg-gray-200 text-gray-700" : "bg-blue-100 text-blue-800"}`}>💰 {listing.price} €</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+            {listing.title}
+          </h1>
 
-          {isFeatured && (
-            <div className="mt-3">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400 bg-yellow-50 text-yellow-800 text-sm font-semibold">⭐ Anunț PROMOVAT</span>
-              {listing.featuredUntil && <div className="text-xs text-gray-600 mt-1">Activ până la {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}</div>}
-            </div>
-          )}
+          <p
+            className={
+              "inline-block px-4 py-2 rounded-lg text-lg font-semibold mt-1 " +
+              (isExpired
+                ? "bg-gray-200 text-gray-700"
+                : isSold
+                ? "bg-red-100 text-red-800"
+                : "bg-blue-100 text-blue-800")
+            }
+          >
+            💰 {listing.price} €
+          </p>
+
+          {isFeatured &&
+            !isSold && (
+              <div className="mt-3">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400 bg-yellow-50 text-yellow-800 text-sm font-semibold">
+                  ⭐ Anunț PROMOVAT
+                </span>
+
+                {listing.featuredUntil && (
+                  <div className="text-xs text-gray-600 mt-1">
+                    Activ până la{" "}
+                    {new Date(
+                      listing.featuredUntil
+                    ).toLocaleDateString(
+                      "ro-RO"
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
         </div>
 
+        {/* =================================================
+            TIP TRANZACȚIE
+        ================================================== */}
+
         {listing.intent && (
-          <div className={`inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 ${listing.intent === "vand" ? "bg-green-600" : listing.intent === "cumpar" ? "bg-blue-600" : listing.intent === "inchiriez" ? "bg-yellow-500 text-gray-900" : "bg-purple-600"}`}>
-            {listing.intent === "vand" ? "🏠 Vând" : listing.intent === "cumpar" ? "🛒 Cumpăr" : listing.intent === "inchiriez" ? "🔑 Închiriez" : "♻️ Schimb"}
+          <div
+            className={
+              "inline-block text-white text-sm font-semibold px-3 py-1 rounded-full mb-2 " +
+              (listing.intent ===
+              "vand"
+                ? "bg-green-600"
+                : listing.intent ===
+                  "cumpar"
+                ? "bg-blue-600"
+                : listing.intent ===
+                  "inchiriez"
+                ? "bg-yellow-500 text-gray-900"
+                : "bg-purple-600")
+            }
+          >
+            {listing.intent ===
+            "vand"
+              ? "🏠 Vând"
+              : listing.intent ===
+                "cumpar"
+              ? "🛒 Cumpăr"
+              : listing.intent ===
+                "inchiriez"
+              ? "🔑 Închiriez"
+              : "♻️ Schimb"}
           </div>
         )}
 
-        <p className="text-gray-600 mt-3 text-sm md:text-base">📍 {listing.location}</p>
-        {listing.createdAt && <p className="text-xs text-gray-500 mt-2">🕒 Publicat: {new Date(listing.createdAt).toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit", year: "numeric" })}</p>}
-        <p className="text-xs text-gray-500 mt-1">👁️ {Number(viewCount || listing.views || 0).toLocaleString("ro-RO")} vizualizări</p>
-        {listing.contactName && <p className="mt-2 text-gray-800 font-medium">👤 {listing.contactName}</p>}
+        <p className="text-gray-600 mt-3 text-sm md:text-base">
+          📍 {listing.location}
+        </p>
 
-        {listing.phone && !isExpired && <p className="mt-1">📞 <a href={`tel:${listing.phone}`} className="text-blue-600 font-semibold hover:underline">{listing.phone}</a></p>}
-        {listing.phone && isExpired && <p className="mt-1 text-gray-500">📞 Contact indisponibil pentru anunț expirat</p>}
-
-        <div className={`mt-4 leading-relaxed whitespace-pre-line ${isExpired ? "text-gray-600" : "text-gray-700"}`}>{listing.description}</div>
-
-        {canPromote && !isExpired && (
-          <div className="mt-8 border-t pt-6">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="text-lg font-semibold text-gray-800">Promovează anunțul</h3>
-              {isFeatured && listing.featuredUntil && <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">Deja promovat până la {new Date(listing.featuredUntil).toLocaleDateString("ro-RO")}</span>}
-            </div>
-
-            <button onClick={() => setShowPromo((p) => !p)} className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition">
-              {showPromo ? "Ascunde opțiunile de promovare" : "Alege un pachet de promovare"}
-            </button>
-
-            {showPromo && (
-              <>
-                <div className="mt-4 grid sm:grid-cols-3 gap-4">
-                  {PROMO_OPTIONS.map((opt) => {
-                    const isSelected = selectedPromo?.id === opt.id;
-                    return (
-                      <button key={opt.id} type="button" onClick={() => setSelectedPromo(opt)} className={`border rounded-xl p-4 text-left text-sm flex flex-col gap-1 transition ${isSelected ? "border-yellow-500 bg-yellow-50 shadow" : "border-gray-200 hover:border-yellow-400 hover:bg-yellow-50/60"}`}>
-                        <span className="font-semibold">{opt.label}</span>
-                        <span className="text-gray-700">💳 {opt.priceRON} lei (plată unică)</span>
-                        <span className="text-xs text-gray-500">Anunțul tău va fi evidențiat timp de {opt.days} zile.</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {promoError && <p className="mt-3 text-sm text-red-600">{promoError}</p>}
-                <button onClick={startPromotion} disabled={promoLoading || !selectedPromo} className="mt-5 w-full sm:w-auto bg-black text-white font-semibold px-6 py-2.5 rounded-lg shadow hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed">
-                  {promoLoading ? "Se pregătește plata..." : `Continuă către plată securizată (${selectedPromo.priceRON} lei)`}
-                </button>
-              </>
+        {listing.createdAt && (
+          <p className="text-xs text-gray-500 mt-2">
+            🕒 Publicat:{" "}
+            {new Date(
+              listing.createdAt
+            ).toLocaleDateString(
+              "ro-RO",
+              {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }
             )}
-          </div>
+          </p>
         )}
+
+        <p className="text-xs text-gray-500 mt-1">
+          👁️{" "}
+          {Number(
+            viewCount ||
+              listing.views ||
+              0
+          ).toLocaleString(
+            "ro-RO"
+          )}{" "}
+          vizualizări
+        </p>
+
+        {listing.contactName && (
+          <p className="mt-2 text-gray-800 font-medium">
+            👤 {listing.contactName}
+          </p>
+        )}
+
+        {/* =================================================
+            CONTACT
+        ================================================== */}
+
+        {listing.phone &&
+          !isExpired &&
+          !isSold && (
+            <p className="mt-2">
+              📞{" "}
+              <a
+                href={
+                  "tel:" +
+                  listing.phone
+                }
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                {listing.phone}
+              </a>
+            </p>
+          )}
+
+        {listing.phone &&
+          isExpired && (
+            <p className="mt-2 text-gray-500">
+              📞 Contact indisponibil pentru anunț expirat
+            </p>
+          )}
+
+        {listing.phone &&
+          !isExpired &&
+          isSold && (
+            <div className="mt-3 inline-flex items-center rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-2 text-sm font-semibold">
+              📞 Contact indisponibil — proprietatea a fost vândută
+            </div>
+          )}
+
+        {/* =================================================
+            DESCRIERE
+        ================================================== */}
+
+        <div
+          className={
+            "mt-4 leading-relaxed whitespace-pre-line " +
+            (isExpired ||
+            isSold
+              ? "text-gray-600"
+              : "text-gray-700")
+          }
+        >
+          {listing.description}
+        </div>
+
+        {/* =================================================
+            PROMOVARE
+        ================================================== */}
+
+        {canPromote &&
+          !isExpired &&
+          !isSold && (
+            <div className="mt-8 border-t pt-6">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Promovează anunțul
+                </h3>
+
+                {isFeatured &&
+                  listing.featuredUntil && (
+                    <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                      Deja promovat până la{" "}
+                      {new Date(
+                        listing.featuredUntil
+                      ).toLocaleDateString(
+                        "ro-RO"
+                      )}
+                    </span>
+                  )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPromo(
+                    (p) => !p
+                  )
+                }
+                className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-sm transition"
+              >
+                {showPromo
+                  ? "Ascunde opțiunile de promovare"
+                  : "Alege un pachet de promovare"}
+              </button>
+
+              {showPromo && (
+                <>
+                  <div className="mt-4 grid sm:grid-cols-3 gap-4">
+                    {PROMO_OPTIONS.map(
+                      (opt) => {
+                        const isSelected =
+                          selectedPromo?.id ===
+                          opt.id;
+
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() =>
+                              setSelectedPromo(
+                                opt
+                              )
+                            }
+                            className={
+                              "border rounded-xl p-4 text-left text-sm flex flex-col gap-1 transition " +
+                              (isSelected
+                                ? "border-yellow-500 bg-yellow-50 shadow"
+                                : "border-gray-200 hover:border-yellow-400 hover:bg-yellow-50/60")
+                            }
+                          >
+                            <span className="font-semibold">
+                              {opt.label}
+                            </span>
+
+                            <span className="text-gray-700">
+                              💳{" "}
+                              {
+                                opt.priceRON
+                              }{" "}
+                              lei (plată unică)
+                            </span>
+
+                            <span className="text-xs text-gray-500">
+                              Anunțul tău va fi evidențiat timp de{" "}
+                              {
+                                opt.days
+                              }{" "}
+                              zile.
+                            </span>
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  {promoError && (
+                    <p className="mt-3 text-sm text-red-600">
+                      {promoError}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={
+                      startPromotion
+                    }
+                    disabled={
+                      promoLoading ||
+                      !selectedPromo
+                    }
+                    className="mt-5 w-full sm:w-auto bg-black text-white font-semibold px-6 py-2.5 rounded-lg shadow hover:bg-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {promoLoading
+                      ? "Se pregătește plata..."
+                      : "Continuă către plată securizată (" +
+                        selectedPromo.priceRON +
+                        " lei)"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+        {/* =================================================
+            DISTRIBUIRE
+        ================================================== */}
 
         <div className="mt-8 border-t pt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Distribuie anunțul</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            Distribuie anunțul
+          </h3>
+
           <div className="flex gap-3 flex-wrap">
-            <button onClick={() => handleShare("facebook")} className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]">📘 Facebook</button>
-            <button onClick={() => handleShare("whatsapp")} className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]">💬 WhatsApp</button>
-            <button onClick={() => handleShare("tiktok")} className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800">TikTok</button>
+            <button
+              type="button"
+              onClick={() =>
+                handleShare(
+                  "facebook"
+                )
+              }
+              className="flex-1 bg-[#1877F2] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#145DBF]"
+            >
+              📘 Facebook
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                handleShare(
+                  "whatsapp"
+                )
+              }
+              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1DA851]"
+            >
+              💬 WhatsApp
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                handleShare(
+                  "tiktok"
+                )
+              }
+              className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-800"
+            >
+              TikTok
+            </button>
           </div>
         </div>
       </div>

@@ -23,8 +23,8 @@ function formatLastViewed(dateValue) {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
   if (diffMinutes < 1) return "acum";
-  if (diffMinutes < 60) return `acum ${diffMinutes} min`;
-  if (diffHours < 24) return `acum ${diffHours} ore`;
+  if (diffMinutes < 60) return "acum " + diffMinutes + " min";
+  if (diffHours < 24) return "acum " + diffHours + " ore";
 
   return d.toLocaleDateString("ro-RO", {
     day: "2-digit",
@@ -57,10 +57,17 @@ function getInterestBadge(level) {
   };
 }
 
+function getPropertyStatus(listing) {
+  if (listing?.vandut === true) return "vandut";
+  if (listing?.rezervat === true) return "rezervat";
+  return "disponibil";
+}
+
 export default function AnunturileMele() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [statusLoadingId, setStatusLoadingId] = useState("");
   const navigate = useNavigate();
 
   const getId = (listing) => String(listing?._id || listing?.id || "");
@@ -69,7 +76,12 @@ export default function AnunturileMele() {
     const token = localStorage.getItem("token");
     const userPhoneRaw = localStorage.getItem("userPhone");
 
-    if (!token || !userPhoneRaw || userPhoneRaw === "undefined" || userPhoneRaw === "null") {
+    if (
+      !token ||
+      !userPhoneRaw ||
+      userPhoneRaw === "undefined" ||
+      userPhoneRaw === "null"
+    ) {
       setMessage("Trebuie să fii autentificat pentru a vedea anunțurile tale.");
       navigate("/login");
       return;
@@ -81,17 +93,27 @@ export default function AnunturileMele() {
         setMessage("⏳ Se încarcă anunțurile tale...");
 
         const res = await fetch(API_URL + "/listings/mine-stats", {
-          headers: { Authorization: "Bearer " + token },
+          headers: {
+            Authorization: "Bearer " + token,
+          },
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
+
+        if (!res.ok) {
+          throw new Error(data.error || "Eroare la încărcarea anunțurilor.");
+        }
 
         const arr = Array.isArray(data) ? data : [];
         setListings(arr);
-        setMessage(arr.length === 0 ? "Momentan nu ai niciun anunț." : "");
+
+        setMessage(
+          arr.length === 0 ? "Momentan nu ai niciun anunț." : ""
+        );
       } catch (err) {
-        setMessage(err.message || "A apărut o eroare la încărcarea anunțurilor.");
+        setMessage(
+          err.message || "A apărut o eroare la încărcarea anunțurilor."
+        );
       } finally {
         setLoading(false);
       }
@@ -120,7 +142,9 @@ export default function AnunturileMele() {
 
   const getDetailsPath = (listing) => {
     const id = getId(listing);
+
     if (!id) return "/";
+
     return isJobListing(listing)
       ? "/angajari?edit=" + encodeURIComponent(id)
       : "/anunt/" + id;
@@ -128,7 +152,9 @@ export default function AnunturileMele() {
 
   const getEditPath = (listing) => {
     const id = getId(listing);
+
     if (!id) return "/";
+
     return isJobListing(listing)
       ? "/angajari?edit=" + encodeURIComponent(id)
       : "/editeaza-anunt/" + id;
@@ -136,6 +162,7 @@ export default function AnunturileMele() {
 
   const handlePayOrPromote = (listing) => {
     const id = getId(listing);
+
     if (!id) return;
 
     if (isJobListing(listing)) {
@@ -148,18 +175,27 @@ export default function AnunturileMele() {
 
   const handleReactivateFree = async (listing) => {
     const id = getId(listing);
+
     if (!id) return;
 
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(API_URL + "/listings/" + id + "/reactivate", {
-        method: "PUT",
-        headers: { Authorization: "Bearer " + token },
-      });
+      const res = await fetch(
+        API_URL + "/listings/" + id + "/reactivate",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la reactivare.");
+
+      if (!res.ok) {
+        throw new Error(data.error || "Eroare la reactivare.");
+      }
 
       setListings((prev) =>
         prev.map((l) => (getId(l) === id ? data.listing : l))
@@ -171,24 +207,119 @@ export default function AnunturileMele() {
     }
   };
 
+  const handlePropertyStatus = async (listing, propertyStatus) => {
+    const id = getId(listing);
+
+    if (!id) return;
+
+    const currentStatus = getPropertyStatus(listing);
+
+    if (currentStatus === propertyStatus) {
+      return;
+    }
+
+    const labels = {
+      disponibil: "Disponibil",
+      rezervat: "Rezervat",
+      vandut: "Vândut",
+    };
+
+    if (propertyStatus === "vandut") {
+      const ok = window.confirm(
+        "Marchezi acest anunț ca VÂNDUT?\n\nAnunțul va rămâne vizibil pe site cu eticheta VÂNDUT."
+      );
+
+      if (!ok) return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token || token === "undefined" || token === "null") {
+        setMessage("Trebuie să fii autentificat.");
+        navigate("/login");
+        return;
+      }
+
+      setStatusLoadingId(id);
+      setMessage("");
+
+      const res = await fetch(
+        API_URL + "/listings/" + id + "/property-status",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            propertyStatus,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.error || "Eroare la schimbarea stării anunțului."
+        );
+      }
+
+      const updatedListing = data.listing || {
+        ...listing,
+        rezervat: data.rezervat,
+        vandut: data.vandut,
+      };
+
+      setListings((prev) =>
+        prev.map((l) => (getId(l) === id ? updatedListing : l))
+      );
+
+      setMessage(
+        "✅ Starea anunțului a fost schimbată în " +
+          labels[propertyStatus] +
+          "."
+      );
+    } catch (err) {
+      setMessage(
+        err.message || "Eroare la schimbarea stării anunțului."
+      );
+    } finally {
+      setStatusLoadingId("");
+    }
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) return;
+    if (!window.confirm("Ești sigur că vrei să ștergi acest anunț?")) {
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
 
       const res = await fetch(API_URL + "/listings/" + id, {
         method: "DELETE",
-        headers: { Authorization: "Bearer " + token },
+        headers: {
+          Authorization: "Bearer " + token,
+        },
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la ștergerea anunțului.");
 
-      setListings((prev) => prev.filter((l) => getId(l) !== id));
+      if (!res.ok) {
+        throw new Error(data.error || "Eroare la ștergerea anunțului.");
+      }
+
+      setListings((prev) =>
+        prev.filter((l) => getId(l) !== id)
+      );
+
       setMessage("✅ Anunțul a fost șters cu succes.");
     } catch (err) {
-      setMessage(err.message || "A apărut o eroare la ștergerea anunțului.");
+      setMessage(
+        err.message || "A apărut o eroare la ștergerea anunțului."
+      );
     }
   };
 
@@ -197,11 +328,17 @@ export default function AnunturileMele() {
     const p = [];
 
     for (const l of listings) {
-      if (l?.visibility === "draft") d.push(l);
-      else p.push(l);
+      if (l?.visibility === "draft") {
+        d.push(l);
+      } else {
+        p.push(l);
+      }
     }
 
-    return { drafts: d, published: p };
+    return {
+      drafts: d,
+      published: p,
+    };
   }, [listings]);
 
   const Card = ({ listing, isDraft }) => {
@@ -216,10 +353,13 @@ export default function AnunturileMele() {
 
     const expiredMoreThan30Days =
       listing.expiresAt &&
-      new Date() - new Date(listing.expiresAt) > 30 * 24 * 60 * 60 * 1000;
+      new Date() - new Date(listing.expiresAt) >
+        30 * 24 * 60 * 60 * 1000;
 
     const daysUntilExpire =
-      typeof listing?.daysUntilExpire === "number" ? listing.daysUntilExpire : null;
+      typeof listing?.daysUntilExpire === "number"
+        ? listing.daysUntilExpire
+        : null;
 
     const expiryText = isDraft
       ? "Draft nepublicat"
@@ -228,7 +368,7 @@ export default function AnunturileMele() {
       : daysUntilExpire !== null
       ? daysUntilExpire <= 0
         ? "Expiră azi"
-        : `Expiră în ${daysUntilExpire} zile`
+        : "Expiră în " + daysUntilExpire + " zile"
       : "Valabil";
 
     const buttonLabel = isDraft
@@ -244,11 +384,16 @@ export default function AnunturileMele() {
         ? "bg-green-600 hover:bg-green-700"
         : "bg-yellow-500 hover:bg-yellow-600";
 
+    const propertyStatus = getPropertyStatus(listing);
+    const isStatusLoading = statusLoadingId === id;
+
     return (
       <div className="border rounded-xl p-4 shadow-sm bg-white flex flex-col justify-between">
         <div>
           <div className="flex items-start justify-between gap-3">
-            <h2 className="text-lg font-semibold text-blue-700 mb-1">{listing.title}</h2>
+            <h2 className="text-lg font-semibold text-blue-700 mb-1">
+              {listing.title}
+            </h2>
 
             <div className="flex gap-2 flex-wrap justify-end">
               {isDraft && (
@@ -262,6 +407,18 @@ export default function AnunturileMele() {
                   EXPIRAT
                 </span>
               )}
+
+              {!isDraft && !isExpired && propertyStatus === "rezervat" && (
+                <span className="text-xs px-2 py-1 rounded-full bg-orange-100 border border-orange-300 text-orange-800 font-bold">
+                  REZERVAT
+                </span>
+              )}
+
+              {!isDraft && !isExpired && propertyStatus === "vandut" && (
+                <span className="text-xs px-2 py-1 rounded-full bg-red-600 border border-red-700 text-white font-bold">
+                  VÂNDUT
+                </span>
+              )}
             </div>
           </div>
 
@@ -270,23 +427,107 @@ export default function AnunturileMele() {
           </p>
 
           <p className="font-bold text-green-700 mb-2">
-            {listing.price ? String(listing.price) + " €" : "Preț la cerere"}
+            {listing.price
+              ? String(listing.price) + " €"
+              : "Preț la cerere"}
           </p>
 
           {!isDraft && (
             <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-700 space-y-1">
-              <p>👁️ {views.toLocaleString("ro-RO")} vizualizări totale</p>
-              <p>📈 +{weeklyViews.toLocaleString("ro-RO")} în ultimele 7 zile</p>
-              <p>🕒 Ultima vizualizare: {formatLastViewed(listing.lastViewedAt)}</p>
+              <p>
+                👁️ {views.toLocaleString("ro-RO")} vizualizări totale
+              </p>
+
+              <p>
+                📈 +{weeklyViews.toLocaleString("ro-RO")} în ultimele 7 zile
+              </p>
+
+              <p>
+                🕒 Ultima vizualizare:{" "}
+                {formatLastViewed(listing.lastViewedAt)}
+              </p>
+
               <p>⏳ {expiryText}</p>
-              <div className={`mt-2 rounded-lg border px-3 py-2 ${interest.className}`}>
+
+              <div
+                className={
+                  "mt-2 rounded-lg border px-3 py-2 " +
+                  interest.className
+                }
+              >
                 <p className="font-semibold">{interest.text}</p>
                 <p className="mt-1">{interest.hint}</p>
               </div>
             </div>
           )}
 
-          <p className="text-sm text-gray-700 line-clamp-3">{listing.description}</p>
+          <p className="text-sm text-gray-700 line-clamp-3">
+            {listing.description}
+          </p>
+
+          {!isDraft && !isExpired && !isJobListing(listing) && (
+            <div className="mt-4 border rounded-xl p-3 bg-gray-50">
+              <p className="text-sm font-semibold text-gray-800 mb-2">
+                Starea proprietății
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  disabled={isStatusLoading}
+                  onClick={() =>
+                    handlePropertyStatus(listing, "disponibil")
+                  }
+                  className={
+                    "text-sm px-3 py-2 rounded-lg border font-semibold transition disabled:opacity-50 " +
+                    (propertyStatus === "disponibil"
+                      ? "bg-green-600 border-green-600 text-white"
+                      : "bg-white border-green-300 text-green-700 hover:bg-green-50")
+                  }
+                >
+                  🟢 Disponibil
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isStatusLoading}
+                  onClick={() =>
+                    handlePropertyStatus(listing, "rezervat")
+                  }
+                  className={
+                    "text-sm px-3 py-2 rounded-lg border font-semibold transition disabled:opacity-50 " +
+                    (propertyStatus === "rezervat"
+                      ? "bg-orange-500 border-orange-500 text-white"
+                      : "bg-white border-orange-300 text-orange-700 hover:bg-orange-50")
+                  }
+                >
+                  🟠 Rezervat
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isStatusLoading}
+                  onClick={() =>
+                    handlePropertyStatus(listing, "vandut")
+                  }
+                  className={
+                    "text-sm px-3 py-2 rounded-lg border font-semibold transition disabled:opacity-50 " +
+                    (propertyStatus === "vandut"
+                      ? "bg-red-600 border-red-600 text-white"
+                      : "bg-white border-red-300 text-red-700 hover:bg-red-50")
+                  }
+                >
+                  🔴 Vândut
+                </button>
+              </div>
+
+              {isStatusLoading && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Se actualizează starea...
+                </p>
+              )}
+            </div>
+          )}
 
           {!isDraft && isExpired && (
             <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-900 text-sm">
@@ -319,7 +560,10 @@ export default function AnunturileMele() {
                 ? handleReactivateFree(listing)
                 : handlePayOrPromote(listing)
             }
-            className={"text-sm px-3 py-2 rounded-lg text-white " + buttonClass}
+            className={
+              "text-sm px-3 py-2 rounded-lg text-white " +
+              buttonClass
+            }
           >
             {buttonLabel}
           </button>
@@ -339,7 +583,10 @@ export default function AnunturileMele() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Anunțurile mele</h1>
+        <h1 className="text-2xl font-bold mb-4">
+          Anunțurile mele
+        </h1>
+
         <p>{message || "Se încarcă..."}</p>
       </div>
     );
@@ -348,7 +595,10 @@ export default function AnunturileMele() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <h1 className="text-2xl font-bold">Anunțurile mele</h1>
+        <h1 className="text-2xl font-bold">
+          Anunțurile mele
+        </h1>
+
         <button
           onClick={() => navigate("/adauga-anunt")}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
@@ -365,24 +615,39 @@ export default function AnunturileMele() {
 
       {drafts.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-bold mb-3">Drafturi</h2>
+          <h2 className="text-lg font-bold mb-3">
+            Drafturi
+          </h2>
+
           <div className="grid gap-4 md:grid-cols-2">
             {drafts.map((l) => (
-              <Card key={getId(l)} listing={l} isDraft />
+              <Card
+                key={getId(l)}
+                listing={l}
+                isDraft
+              />
             ))}
           </div>
         </div>
       )}
 
       <div>
-        <h2 className="text-lg font-bold mb-3">Anunțuri publicate</h2>
+        <h2 className="text-lg font-bold mb-3">
+          Anunțuri publicate
+        </h2>
 
         {published.length === 0 ? (
-          <p className="text-gray-600">Momentan nu ai anunțuri publicate.</p>
+          <p className="text-gray-600">
+            Momentan nu ai anunțuri publicate.
+          </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {published.map((l) => (
-              <Card key={getId(l)} listing={l} isDraft={false} />
+              <Card
+                key={getId(l)}
+                listing={l}
+                isDraft={false}
+              />
             ))}
           </div>
         )}

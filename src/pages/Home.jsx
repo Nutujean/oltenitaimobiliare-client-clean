@@ -19,7 +19,7 @@ export default function Home() {
   const [view, setView] = useState("grid");
 
   useEffect(() => {
-    fetch(`${API_URL}/health`).catch(() => {});
+    fetch(API_URL + "/health").catch(() => {});
     fetchListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -27,9 +27,15 @@ export default function Home() {
   const fetchListings = async (overrideSort) => {
     try {
       setLoading(true);
+
       const sortParam = overrideSort || sort || "newest";
-      const res = await fetch(`${API_URL}/listings?sort=${sortParam}&limit=200`);
+
+      const res = await fetch(
+        API_URL + "/listings?sort=" + sortParam + "&limit=200"
+      );
+
       const data = await res.json();
+
       setListings(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Eroare la preluarea anunțurilor:", e);
@@ -50,30 +56,47 @@ export default function Home() {
 
     if (location) {
       const locFilter = normalize(location);
-      results = results.filter((l) => normalize(l.location).includes(locFilter));
+
+      results = results.filter((l) =>
+        normalize(l.location).includes(locFilter)
+      );
     }
 
     if (intent) {
       results = results.filter(
-        (l) => l.intent && l.intent.toLowerCase() === intent.toLowerCase()
+        (l) =>
+          l.intent &&
+          l.intent.toLowerCase() === intent.toLowerCase()
       );
     }
 
     results.sort((a, b) => {
       const getMs = (x) => {
         if (!x) return null;
+
         const d1 = new Date(x);
-        if (!Number.isNaN(d1.getTime())) return d1.getTime();
+
+        if (!Number.isNaN(d1.getTime())) {
+          return d1.getTime();
+        }
 
         const maybe =
           x?.$date ||
           x?.date ||
           x?.value ||
           x?.iso ||
-          (typeof x?.toString === "function" ? x.toString() : null);
+          (typeof x?.toString === "function"
+            ? x.toString()
+            : null);
 
         const d2 = new Date(maybe);
-        if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+        if (
+          maybe &&
+          !Number.isNaN(d2.getTime())
+        ) {
+          return d2.getTime();
+        }
 
         return null;
       };
@@ -92,20 +115,39 @@ export default function Home() {
       const aFeaturedActive =
         !aExpired &&
         (a.featured === true ||
-          (a.featuredUntil && new Date(a.featuredUntil).getTime() > Date.now()));
+          (a.featuredUntil &&
+            new Date(a.featuredUntil).getTime() > Date.now()));
 
       const bFeaturedActive =
         !bExpired &&
         (b.featured === true ||
-          (b.featuredUntil && new Date(b.featuredUntil).getTime() > Date.now()));
+          (b.featuredUntil &&
+            new Date(b.featuredUntil).getTime() > Date.now()));
 
-      const aGroup = aFeaturedActive ? 0 : aExpired ? 2 : 1;
-      const bGroup = bFeaturedActive ? 0 : bExpired ? 2 : 1;
+      const aGroup = aFeaturedActive
+        ? 0
+        : aExpired
+        ? 2
+        : 1;
 
-      if (aGroup !== bGroup) return aGroup - bGroup;
+      const bGroup = bFeaturedActive
+        ? 0
+        : bExpired
+        ? 2
+        : 1;
 
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (aGroup !== bGroup) {
+        return aGroup - bGroup;
+      }
+
+      const aTime = a.createdAt
+        ? new Date(a.createdAt).getTime()
+        : 0;
+
+      const bTime = b.createdAt
+        ? new Date(b.createdAt).getTime()
+        : 0;
+
       return bTime - aTime;
     });
 
@@ -120,7 +162,8 @@ export default function Home() {
   const ghidArticole = [
     {
       id: 1,
-      titlu: "Cum scrii un anunț imobiliar care atrage mai multe vizualizări",
+      titlu:
+        "Cum scrii un anunț imobiliar care atrage mai multe vizualizări",
       descriere:
         "Află ce informații contează cel mai mult într-un anunț și cum îl faci mai convingător pentru potențialii cumpărători sau chiriași.",
       categorie: "Pentru vânzători",
@@ -128,7 +171,8 @@ export default function Home() {
     },
     {
       id: 2,
-      titlu: "Cum faci poze bune pentru apartamentul sau casa ta",
+      titlu:
+        "Cum faci poze bune pentru apartamentul sau casa ta",
       descriere:
         "Pozele bune pot face diferența dintre un anunț ignorat și unul care primește rapid mesaje și apeluri.",
       categorie: "Pentru vânzători",
@@ -136,18 +180,23 @@ export default function Home() {
     },
     {
       id: 3,
-      titlu: "La ce să fii atent când cumperi un apartament",
+      titlu:
+        "La ce să fii atent când cumperi un apartament",
       descriere:
         "Vezi ce detalii trebuie să verifici înainte de vizionare și ce întrebări merită puse înainte de a lua o decizie.",
       categorie: "Pentru cumpărători",
-      link: "/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament",
+      link:
+        "/ghid-imobiliar/la-ce-sa-fii-atent-cand-cumperi-un-apartament",
     },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Oltenița Imobiliare | Anunțuri imobiliare din Oltenița și împrejurimi</title>
+        <title>
+          Oltenița Imobiliare | Anunțuri imobiliare din Oltenița și împrejurimi
+        </title>
+
         <meta
           name="description"
           content="Platformă locală de anunțuri imobiliare pentru Oltenița și împrejurimi. Vezi apartamente, case, terenuri și sfaturi utile pentru vânzare, cumpărare și închiriere."
@@ -158,12 +207,13 @@ export default function Home() {
         <div
           className="relative h-[60vh] flex items-center justify-center text-center text-white"
           style={{
-            backgroundImage: `url(${fundal})`,
+            backgroundImage: "url(" + fundal + ")",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
           <div className="absolute inset-0 bg-black/30" />
+
           <div className="relative z-10 max-w-2xl px-4">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Găsește casa potrivită în Oltenița
@@ -172,6 +222,7 @@ export default function Home() {
             <p className="text-lg mb-2">
               Platformă imobiliară locală dedicată Olteniței și localităților din jur.
             </p>
+
             <p className="text-sm text-white/90">
               Anunțuri reale, publicate de proprietari și agenți locali.
             </p>
@@ -189,9 +240,15 @@ export default function Home() {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
-            <option value="">Toate localitățile</option>
+            <option value="">
+              Toate localitățile
+            </option>
+
             {LOCATII.map((loc) => (
-              <option key={loc} value={loc}>
+              <option
+                key={loc}
+                value={loc}
+              >
                 {loc}
               </option>
             ))}
@@ -202,7 +259,9 @@ export default function Home() {
             value={intent}
             onChange={(e) => setIntent(e.target.value)}
           >
-            <option value="">Toate tipurile</option>
+            <option value="">
+              Toate tipurile
+            </option>
             <option value="vand">Vând</option>
             <option value="cumpar">Cumpăr</option>
             <option value="inchiriez">Închiriez</option>
@@ -214,9 +273,15 @@ export default function Home() {
             value={sort}
             onChange={(e) => setSort(e.target.value)}
           >
-            <option value="newest">Cele mai noi</option>
-            <option value="cheapest">Preț crescător</option>
-            <option value="expensive">Preț descrescător</option>
+            <option value="newest">
+              Cele mai noi
+            </option>
+            <option value="cheapest">
+              Preț crescător
+            </option>
+            <option value="expensive">
+              Preț descrescător
+            </option>
           </select>
 
           <Link
@@ -229,10 +294,18 @@ export default function Home() {
 
         <div className="max-w-6xl mx-auto mt-6 px-4">
           <div className="bg-white rounded-xl shadow-sm border flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 text-sm text-gray-700">
-            <span>✔ Platformă imobiliară locală</span>
-            <span>✔ Anunțuri reale și verificate</span>
-            <span>✔ Fără spam sau duplicate</span>
-            <span>✔ Focus pe Oltenița și împrejurimi</span>
+            <span>
+              ✔ Platformă imobiliară locală
+            </span>
+            <span>
+              ✔ Anunțuri reale și verificate
+            </span>
+            <span>
+              ✔ Fără spam sau duplicate
+            </span>
+            <span>
+              ✔ Focus pe Oltenița și împrejurimi
+            </span>
           </div>
         </div>
 
@@ -243,11 +316,31 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {[
-              { name: "Apartamente", path: "/categorie/apartamente", img: "/apartamente.jpg" },
-              { name: "Case", path: "/categorie/case", img: "/case.jpg" },
-              { name: "Terenuri", path: "/categorie/terenuri", img: "/terenuri.jpg" },
-              { name: "Garsoniere", path: "/categorie/garsoniere", img: "/garsoniere.jpg" },
-              { name: "Garaje", path: "/categorie/garaje", img: "/garaje.jpg" },
+              {
+                name: "Apartamente",
+                path: "/categorie/apartamente",
+                img: "/apartamente.jpg",
+              },
+              {
+                name: "Case",
+                path: "/categorie/case",
+                img: "/case.jpg",
+              },
+              {
+                name: "Terenuri",
+                path: "/categorie/terenuri",
+                img: "/terenuri.jpg",
+              },
+              {
+                name: "Garsoniere",
+                path: "/categorie/garsoniere",
+                img: "/garsoniere.jpg",
+              },
+              {
+                name: "Garaje",
+                path: "/categorie/garaje",
+                img: "/garaje.jpg",
+              },
               {
                 name: "Spațiu comercial",
                 path: "/categorie/spatiu-comercial",
@@ -259,8 +352,14 @@ export default function Home() {
                 to={cat.path}
                 className="relative rounded-xl overflow-hidden shadow-lg"
               >
-                <img src={cat.img} alt={cat.name} className="w-full h-48 object-cover" />
+                <img
+                  src={cat.img}
+                  alt={cat.name}
+                  className="w-full h-48 object-cover"
+                />
+
                 <div className="absolute inset-0 bg-black/40" />
+
                 <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
                   {cat.name}
                 </h3>
@@ -272,7 +371,10 @@ export default function Home() {
         <section className="max-w-6xl mx-auto pb-12 px-4">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-blue-800">Ghid imobiliar</h2>
+              <h2 className="text-3xl font-bold text-blue-800">
+                Ghid imobiliar
+              </h2>
+
               <p className="text-gray-600 mt-2 max-w-2xl">
                 Sfaturi utile pentru vânzare, cumpărare și închiriere, explicate
                 simplu și clar.
@@ -349,6 +451,7 @@ export default function Home() {
                     alt="Angajări"
                     className="h-full w-full object-contain sm:object-cover object-right"
                   />
+
                   <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/90" />
                 </div>
               </div>
@@ -363,9 +466,12 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setView("grid")}
-              className={`px-3 py-2 rounded-lg border text-sm ${
-                view === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
-              }`}
+              className={
+                "px-3 py-2 rounded-lg border text-sm " +
+                (view === "grid"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700")
+              }
             >
               Carduri
             </button>
@@ -373,9 +479,12 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setView("list")}
-              className={`px-3 py-2 rounded-lg border text-sm ${
-                view === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-700"
-              }`}
+              className={
+                "px-3 py-2 rounded-lg border text-sm " +
+                (view === "list"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700")
+              }
             >
               Listă
             </button>
@@ -386,11 +495,16 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-gray-800 mb-1">
             Ultimele anunțuri imobiliare din Oltenița
           </h2>
+
           <p className="text-sm text-gray-500 mb-6">
             Proprietăți publicate recent de proprietari și agenți locali
           </p>
 
-          {loading && <div className="text-gray-600 mb-6">Se încarcă anunțurile...</div>}
+          {loading && (
+            <div className="text-gray-600 mb-6">
+              Se încarcă anunțurile...
+            </div>
+          )}
 
           <div className="border-t border-gray-200 pt-6 mb-4">
             <p className="text-sm text-gray-600">
@@ -408,35 +522,62 @@ export default function Home() {
             {filtered.map((l) => {
               const isFeatured =
                 l.featured === true ||
-                (l.featuredUntil && new Date(l.featuredUntil).getTime() > Date.now());
+                (l.featuredUntil &&
+                  new Date(l.featuredUntil).getTime() > Date.now());
 
               const isNew =
                 l.createdAt &&
-                (Date.now() - new Date(l.createdAt)) / (1000 * 60 * 60 * 24) <= 5;
+                (Date.now() - new Date(l.createdAt)) /
+                  (1000 * 60 * 60 * 24) <=
+                  5;
+
+              const isReserved =
+                l.rezervat === true &&
+                l.vandut !== true;
+
+              const isSold =
+                l.vandut === true;
 
               const expiresAtMs = (() => {
                 const x = l.expiresAt;
+
                 const d1 = new Date(x);
-                if (x && !Number.isNaN(d1.getTime())) return d1.getTime();
+
+                if (
+                  x &&
+                  !Number.isNaN(d1.getTime())
+                ) {
+                  return d1.getTime();
+                }
 
                 const maybe =
                   x?.$date ||
                   x?.date ||
                   x?.value ||
                   x?.iso ||
-                  (typeof x?.toString === "function" ? x.toString() : null);
+                  (typeof x?.toString === "function"
+                    ? x.toString()
+                    : null);
 
                 const d2 = new Date(maybe);
-                if (maybe && !Number.isNaN(d2.getTime())) return d2.getTime();
+
+                if (
+                  maybe &&
+                  !Number.isNaN(d2.getTime())
+                ) {
+                  return d2.getTime();
+                }
 
                 return null;
               })();
 
               const isExpired =
                 String(l.status || "").toLowerCase() === "expirat" ||
-                (expiresAtMs !== null && expiresAtMs < Date.now());
+                (expiresAtMs !== null &&
+                  expiresAtMs < Date.now());
 
-              const listingHref = `/anunt/${l._id}`;
+              const listingHref =
+                "/anunt/" + l._id;
 
               const renderInfo = () => (
                 <div className="space-y-1">
@@ -444,29 +585,54 @@ export default function Home() {
                     {l.title}
                   </h3>
 
-                  <p className="text-blue-700 font-bold text-lg">{l.price} €</p>
+                  <p className="text-blue-700 font-bold text-lg">
+                    {l.price} €
+                  </p>
 
-                  <p className="text-sm text-gray-500">{l.location}</p>
+                  <p className="text-sm text-gray-500">
+                    {l.location}
+                  </p>
+
+                  {isReserved && !isExpired && (
+                    <p className="text-sm font-bold text-orange-600">
+                      🟠 Proprietate rezervată
+                    </p>
+                  )}
+
+                  {isSold && !isExpired && (
+                    <p className="text-sm font-bold text-red-600">
+                      🔴 Proprietate vândută
+                    </p>
+                  )}
 
                   {l.createdAt && (
                     <p className="text-xs text-gray-400">
                       🕒 Publicat:{" "}
-                      {new Date(l.createdAt).toLocaleDateString("ro-RO", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}{" "}
+                      {new Date(l.createdAt).toLocaleDateString(
+                        "ro-RO",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )}{" "}
                       •{" "}
-                      {new Date(l.createdAt).toLocaleTimeString("ro-RO", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(l.createdAt).toLocaleTimeString(
+                        "ro-RO",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </p>
                   )}
 
                   {l._id ? (
                     <p className="text-[11px] text-gray-400">
-                      ID anunț: {String(l._id).slice(-6).toUpperCase()}
+                      ID anunț:{" "}
+                      {String(l._id)
+                        .slice(-6)
+                        .toUpperCase()}
                     </p>
                   ) : null}
                 </div>
@@ -476,28 +642,45 @@ export default function Home() {
                 "relative rounded-xl shadow-md overflow-hidden " +
                 (isExpired
                   ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                  : isSold
+                  ? "bg-white hover:shadow-lg transition"
+                  : isReserved
+                  ? "bg-white hover:shadow-lg transition"
                   : "bg-white hover:shadow-lg transition");
 
               const CardInner = ({ children }) =>
                 isExpired ? (
-                  <div className="block">{children}</div>
+                  <div className="block">
+                    {children}
+                  </div>
                 ) : (
-                  <Link to={listingHref} className="block">
+                  <Link
+                    to={listingHref}
+                    className="block"
+                  >
                     {children}
                   </Link>
                 );
 
               if (view === "list") {
                 return (
-                  <div key={l._id} className={cardBase}>
+                  <div
+                    key={l._id}
+                    className={cardBase}
+                  >
                     <CardInner>
                       <div className="flex gap-4 p-4">
-                        <div className="w-36 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                        <div className="relative w-36 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
                           {l.images?.length > 0 ? (
                             <img
                               src={l.images[0]}
                               alt={l.title}
-                              className="w-full h-full object-cover"
+                              className={
+                                "w-full h-full object-cover " +
+                                (isSold
+                                  ? "opacity-70 grayscale-[25%]"
+                                  : "")
+                              }
                             />
                           ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
@@ -506,26 +689,66 @@ export default function Home() {
                                 alt="Oltenița Imobiliare"
                                 className="w-12 h-12 opacity-80"
                               />
+
                               <span className="mt-2 text-[11px] text-gray-500">
                                 Fără poză încă
                               </span>
                             </div>
                           )}
+
+                          {!isExpired && isSold && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <span className="bg-red-600 text-white font-black text-sm px-4 py-2 rounded-lg shadow-lg">
+                                VÂNDUT
+                              </span>
+                            </div>
+                          )}
+
+                          {!isExpired &&
+                            !isSold &&
+                            isReserved && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                <span className="bg-orange-500 text-white font-black text-sm px-4 py-2 rounded-lg shadow-lg">
+                                  REZERVAT
+                                </span>
+                              </div>
+                            )}
                         </div>
 
-                        <div className="flex-1 min-w-0">{renderInfo()}</div>
+                        <div className="flex-1 min-w-0">
+                          {renderInfo()}
+                        </div>
                       </div>
                     </CardInner>
 
-                    {!isExpired && isFeatured && (
-                      <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                        ⭐ PROMOVAT
+                    {!isExpired &&
+                      !isSold &&
+                      !isReserved &&
+                      isFeatured && (
+                        <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                          ⭐ PROMOVAT
+                        </span>
+                      )}
+
+                    {!isExpired &&
+                      !isSold &&
+                      !isReserved &&
+                      !isFeatured &&
+                      isNew && (
+                        <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
+                          NOU
+                        </span>
+                      )}
+
+                    {!isExpired && isReserved && (
+                      <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded">
+                        REZERVAT
                       </span>
                     )}
 
-                    {!isExpired && !isFeatured && isNew && (
-                      <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
-                        NOU
+                    {!isExpired && isSold && (
+                      <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded">
+                        VÂNDUT
                       </span>
                     )}
 
@@ -539,37 +762,89 @@ export default function Home() {
               }
 
               return (
-                <div key={l._id} className={cardBase}>
+                <div
+                  key={l._id}
+                  className={cardBase}
+                >
                   <CardInner>
-                    {l.images?.length > 0 ? (
-                      <img
-                        src={l.images[0]}
-                        alt={l.title}
-                        className="w-full h-56 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-56 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+                    <div className="relative">
+                      {l.images?.length > 0 ? (
                         <img
-                          src={logo}
-                          alt="Oltenița Imobiliare"
-                          className="w-16 h-16 opacity-80"
+                          src={l.images[0]}
+                          alt={l.title}
+                          className={
+                            "w-full h-56 object-cover " +
+                            (isSold
+                              ? "opacity-70 grayscale-[25%]"
+                              : "")
+                          }
                         />
-                        <span className="mt-2 text-xs text-gray-500">Fără poză încă</span>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full h-56 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+                          <img
+                            src={logo}
+                            alt="Oltenița Imobiliare"
+                            className="w-16 h-16 opacity-80"
+                          />
 
-                    <div className="p-4">{renderInfo()}</div>
+                          <span className="mt-2 text-xs text-gray-500">
+                            Fără poză încă
+                          </span>
+                        </div>
+                      )}
+
+                      {!isExpired && isSold && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <span className="bg-red-600 text-white text-xl font-black px-6 py-3 rounded-xl shadow-xl">
+                            VÂNDUT
+                          </span>
+                        </div>
+                      )}
+
+                      {!isExpired &&
+                        !isSold &&
+                        isReserved && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                            <span className="bg-orange-500 text-white text-xl font-black px-6 py-3 rounded-xl shadow-xl">
+                              REZERVAT
+                            </span>
+                          </div>
+                        )}
+                    </div>
+
+                    <div className="p-4">
+                      {renderInfo()}
+                    </div>
                   </CardInner>
 
-                  {!isExpired && isFeatured && (
-                    <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
-                      ⭐ PROMOVAT
+                  {!isExpired &&
+                    !isSold &&
+                    !isReserved &&
+                    isFeatured && (
+                      <span className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-yellow-900 text-xs font-bold px-2 py-1 rounded">
+                        ⭐ PROMOVAT
+                      </span>
+                    )}
+
+                  {!isExpired &&
+                    !isSold &&
+                    !isReserved &&
+                    !isFeatured &&
+                    isNew && (
+                      <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
+                        NOU
+                      </span>
+                    )}
+
+                  {!isExpired && isReserved && (
+                    <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded">
+                      REZERVAT
                     </span>
                   )}
 
-                  {!isExpired && !isFeatured && isNew && (
-                    <span className="absolute top-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
-                      NOU
+                  {!isExpired && isSold && (
+                    <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded">
+                      VÂNDUT
                     </span>
                   )}
 
@@ -594,7 +869,10 @@ export default function Home() {
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2842.6318092784483!2d26.6382815!3d44.0835869!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1974a2fa07a5d%3A0x92ad81d23c90249f!2sOlteni%C8%9Ba!5e0!3m2!1sro!2sro!4v1699999999999"
             width="100%"
             height="320"
-            style={{ border: 0, borderRadius: "12px" }}
+            style={{
+              border: 0,
+              borderRadius: "12px",
+            }}
             loading="lazy"
           />
         </div>
