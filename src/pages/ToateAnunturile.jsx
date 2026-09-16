@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../api";
+import { cloudinaryCardImage } from "../utils/cloudinary";
 
 export default function ToateAnunturile() {
   const [listings, setListings] = useState([]);
@@ -99,10 +100,14 @@ export default function ToateAnunturile() {
                 : "bg-white hover:shadow-lg transition"
             }`;
 
+            const rawImage =
+              l.images?.[0] ||
+              "https://via.placeholder.com/400x250?text=Fără+imagine";
+
             const cardContent = (
               <>
                 <img
-                  src={l.images?.[0] || "https://via.placeholder.com/400x250?text=Fără+imagine"}
+                  src={cloudinaryCardImage(rawImage)}
                   alt={l.title}
                   loading="lazy"
                   decoding="async"
