@@ -6,9 +6,25 @@ function safePositiveInt(value, fallback) {
   return Math.round(numeric);
 }
 
+function buildCloudinaryUrl(url, transformation) {
+  const markerIndex = url.indexOf(CLOUDINARY_UPLOAD_MARKER);
+  if (markerIndex === -1) return url;
+
+  const prefix = url.slice(0, markerIndex + CLOUDINARY_UPLOAD_MARKER.length);
+  const rest = url.slice(markerIndex + CLOUDINARY_UPLOAD_MARKER.length);
+
+  // Uploaded URLs in this project include a Cloudinary version segment (v123...).
+  // If the stored URL already contains transformations, replace that chain instead
+  // of stacking another transformation on top of it.
+  const versionIndex = rest.search(/v\d+\//);
+  const assetPath = versionIndex >= 0 ? rest.slice(versionIndex) : rest;
+
+  return `${prefix}${transformation}/${assetPath}`;
+}
+
 /**
  * Adds Cloudinary delivery transformations without changing non-Cloudinary URLs.
- * This keeps the original upload untouched and only changes the delivered variant.
+ * The original upload stays untouched; only the delivered variant is optimized.
  */
 export function optimizeCloudinaryImage(
   url,
@@ -36,10 +52,7 @@ export function optimizeCloudinaryImage(
   if (finalWidth) transforms.push(`w_${finalWidth}`);
   if (finalHeight) transforms.push(`h_${finalHeight}`);
 
-  return url.replace(
-    CLOUDINARY_UPLOAD_MARKER,
-    `${CLOUDINARY_UPLOAD_MARKER}${transforms.join(",")}/`
-  );
+  return buildCloudinaryUrl(url, transforms.join(","));
 }
 
 export function cloudinaryCardImage(url) {
