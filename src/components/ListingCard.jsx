@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toggleFav, getFavIds } from "../utils/favorites";
+import { cloudinaryCardImage } from "../utils/cloudinary";
 
 export default function ListingCard({ listing }) {
   const [favorites, setFavorites] = useState([]);
@@ -57,6 +58,11 @@ export default function ListingCard({ listing }) {
   };
 
   const adUrl = `https://oltenitaimobiliare.ro/anunt/${listing._id}`;
+  const rawImage =
+    listing.images?.[0] ||
+    listing.imageUrl ||
+    "https://via.placeholder.com/400x250?text=Fără+imagine";
+  const cardImage = cloudinaryCardImage(rawImage);
 
   return (
     <div
@@ -99,27 +105,21 @@ export default function ListingCard({ listing }) {
       {isExpired ? (
         <div>
           <img
-            src={
-              listing.images?.[0] ||
-              listing.imageUrl ||
-              "https://via.placeholder.com/400x250?text=Fără+imagine"
-            }
+            src={cardImage}
             alt={listing.title}
             className="w-full h-48 object-cover opacity-70 grayscale"
             loading="lazy"
+            decoding="async"
           />
         </div>
       ) : (
         <Link to={`/anunt/${listing._id}`}>
           <img
-            src={
-              listing.images?.[0] ||
-              listing.imageUrl ||
-              "https://via.placeholder.com/400x250?text=Fără+imagine"
-            }
+            src={cardImage}
             alt={listing.title}
             className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
             loading="lazy"
+            decoding="async"
           />
         </Link>
       )}
