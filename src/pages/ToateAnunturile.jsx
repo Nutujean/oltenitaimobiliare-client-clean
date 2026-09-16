@@ -104,6 +104,8 @@ export default function ToateAnunturile() {
                 <img
                   src={l.images?.[0] || "https://via.placeholder.com/400x250?text=Fără+imagine"}
                   alt={l.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-56 object-cover"
                 />
 
