@@ -6,6 +6,7 @@ import API_URL from "../api";
 import logo from "../assets/OltenitaImobiliare.png";
 import angajariImg from "../assets/angajari.png";
 import { LOCATII } from "../constants/localitati";
+import { cloudinaryCardImage, cloudinaryListImage } from "../utils/cloudinary";
 
 const fundal = "/fundal.jpg";
 
@@ -20,8 +21,6 @@ export default function Home() {
 
   useEffect(() => {
     fetch(API_URL + "/health").catch(() => {});
-    fetchListings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchListings = async (overrideSort) => {
@@ -355,6 +354,8 @@ export default function Home() {
                 <img
                   src={cat.img}
                   alt={cat.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-48 object-cover"
                 />
 
@@ -449,6 +450,8 @@ export default function Home() {
                   <img
                     src={angajariImg}
                     alt="Angajări"
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-contain sm:object-cover object-right"
                   />
 
@@ -673,7 +676,7 @@ export default function Home() {
                         <div className="relative w-36 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
                           {l.images?.length > 0 ? (
                             <img
-                              src={l.images[0]}
+                              src={cloudinaryListImage(l.images[0])}
                               alt={l.title}
                               loading="lazy"
                               decoding="async"
@@ -772,7 +775,7 @@ export default function Home() {
                     <div className="relative">
                       {l.images?.length > 0 ? (
                         <img
-                          src={l.images[0]}
+                          src={cloudinaryCardImage(l.images[0])}
                           alt={l.title}
                           loading="lazy"
                           decoding="async"
