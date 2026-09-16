@@ -139,6 +139,8 @@ export default function Categories() {
                   <img
                     src={l.images[0]}
                     alt={l.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-56 object-cover"
                   />
                 ) : (
