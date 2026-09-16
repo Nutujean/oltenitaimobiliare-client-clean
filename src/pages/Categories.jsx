@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import API_URL from "../api";
+import { cloudinaryCardImage } from "../utils/cloudinary";
 
 export default function Categories() {
   const { slug } = useParams();
@@ -137,7 +138,7 @@ export default function Categories() {
               <>
                 {l.images?.length > 0 ? (
                   <img
-                    src={l.images[0]}
+                    src={cloudinaryCardImage(l.images[0])}
                     alt={l.title}
                     loading="lazy"
                     decoding="async"
