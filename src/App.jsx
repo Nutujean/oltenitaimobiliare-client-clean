@@ -6,6 +6,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import CookiesConsent from "./components/CookiesConsent";
 import SeoCountyLinks from "./components/SeoCountyLinks";
 import HomeCountyPortal from "./components/HomeCountyPortal";
+import { Helmet } from "react-helmet-async";
+import { organizationSchema, websiteSchema } from "./data/platform.js";
+import Contact from "./pages/Contact";
 
 /* Pagini publice */
 import Home from "./pages/Home";
@@ -63,6 +66,9 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <script type="application/ld+json" id="platform-identity">{JSON.stringify({ "@context": "https://schema.org", "@graph": [organizationSchema, websiteSchema] }).replace(/</g, "\\u003c")}</script>
+      </Helmet>
       <Navbar />
       <ScrollToTop />
 
@@ -78,6 +84,7 @@ function App() {
             }
           />
           <Route path="/despre-noi" element={<DespreNoi />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<CookiesPage />} />

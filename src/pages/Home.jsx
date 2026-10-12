@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import PromoBanner from "../components/PromoBanner";
 import API_URL from "../api";
 import logo from "../assets/OltenitaImobiliare.png";
@@ -191,16 +190,7 @@ export default function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          Oltenița Imobiliare | Anunțuri imobiliare din Oltenița și împrejurimi
-        </title>
 
-        <meta
-          name="description"
-          content="Platformă locală de anunțuri imobiliare pentru Oltenița și împrejurimi. Vezi apartamente, case, terenuri și sfaturi utile pentru vânzare, cumpărare și închiriere."
-        />
-      </Helmet>
 
       <div className="min-h-screen bg-[#f4f6fb]">
         <div
@@ -215,11 +205,11 @@ export default function Home() {
 
           <div className="relative z-10 max-w-2xl px-4">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Găsește casa potrivită în Oltenița
+              Anunțuri imobiliare în Oltenița și județul Călărași
             </h1>
 
             <p className="text-lg mb-2">
-              Platformă imobiliară locală dedicată Olteniței și localităților din jur.
+              Platformă imobiliară pentru Oltenița și toate localitățile din județul Călărași.
             </p>
 
             <p className="text-sm text-white/90">

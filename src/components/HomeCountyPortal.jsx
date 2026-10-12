@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import PageMetadata from "./PageMetadata";
+import PlatformFacts from "./PlatformFacts";
+import { platform, platformPageSchema } from "../data/platform.js";
 
 const localitatiPrincipale = [
   { name: "Călărași", slug: "calarasi" },
@@ -28,19 +30,7 @@ const categorii = [
 export default function HomeCountyPortal() {
   return (
     <section className="bg-gradient-to-b from-blue-50 to-white border-t border-blue-100">
-      <Helmet>
-        <title>Oltenița Imobiliare | Anunțuri imobiliare în tot județul Călărași</title>
-        <meta
-          name="description"
-          content="Anunțuri imobiliare din întreg județul Călărași: Oltenița, Călărași, Fundulea, Budești, Lehliu-Gară și toate comunele. Publică gratuit case, apartamente, terenuri și spații comerciale."
-        />
-        <link rel="canonical" href="https://oltenitaimobiliare.ro/" />
-        <meta property="og:title" content="Anunțuri imobiliare în județul Călărași | Oltenița Imobiliare" />
-        <meta
-          property="og:description"
-          content="Caută sau publică proprietăți în toate localitățile județului Călărași."
-        />
-      </Helmet>
+      <PageMetadata title={platform.title} description={platform.description} route="/" structuredData={platformPageSchema("WebPage", "/", platform.title, platform.description)} />
 
       <div className="max-w-7xl mx-auto px-4 py-14">
         <div className="rounded-3xl bg-gradient-to-r from-blue-800 via-blue-700 to-cyan-600 text-white p-7 md:p-10 shadow-xl">
@@ -125,6 +115,9 @@ export default function HomeCountyPortal() {
             </div>
           </div>
         </div>
+        <section className="mt-10 bg-white rounded-2xl border border-gray-100 p-6 md:p-8" aria-label="Despre platforma imobiliară">
+          <PlatformFacts />
+        </section>
       </div>
     </section>
   );

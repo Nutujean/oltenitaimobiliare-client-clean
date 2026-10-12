@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { calarasiLocalitati } from "../src/data/calarasiLocalitati.js";
+import { platform, platformCategories, platformLocalities, platformFaqs, organizationSchema, websiteSchema, aboutPage, contactPage, platformPageSchema } from "../src/data/platform.js";
 
 const baseUrl = "https://oltenitaimobiliare.ro";
 const distDir = path.resolve("dist");
@@ -69,44 +70,44 @@ function buildDocument({ title, description, canonical, structuredData, content 
   let html = template;
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = html.replace(
-    /<meta\s+name=["']description["'][^>]*>/i,
-    `<meta name="description" content="${escapeHtml(description)}" />`
+    /<meta\b(?=[^>]*\bname=["']description["'])[^>]*>/i,
+    `<meta data-rh="true" name="description" content="${escapeHtml(description)}" />`
   );
   html = html.replace(
-    /<meta\s+name=["']robots["'][^>]*>/i,
-    '<meta name="robots" content="index, follow" />'
+    /<meta\b(?=[^>]*\bname=["']robots["'])[^>]*>/i,
+    '<meta data-rh="true" name="robots" content="index, follow" />'
   );
   html = html.replace(
-    /<meta\s+property=["']og:type["'][^>]*>/i,
-    '<meta property="og:type" content="website" />'
+    /<meta\b(?=[^>]*\bproperty=["']og:type["'])[^>]*>/i,
+    '<meta data-rh="true" property="og:type" content="website" />'
   );
   html = html.replace(
-    /<link\s+rel=["']canonical["'][^>]*>/i,
-    `<link rel="canonical" href="${escapeHtml(canonical)}" />`
+    /<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/i,
+    `<link data-rh="true" rel="canonical" href="${escapeHtml(canonical)}" />`
   );
   html = html.replace(
-    /<meta\s+property=["']og:url["'][^>]*>/i,
-    `<meta property="og:url" content="${escapeHtml(canonical)}" />`
+    /<meta\b(?=[^>]*\bproperty=["']og:url["'])[^>]*>/i,
+    `<meta data-rh="true" property="og:url" content="${escapeHtml(canonical)}" />`
   );
   html = html.replace(
-    /<meta\s+property=["']og:title["'][^>]*>/i,
-    `<meta property="og:title" content="${escapeHtml(title)}" />`
+    /<meta\b(?=[^>]*\bproperty=["']og:title["'])[^>]*>/i,
+    `<meta data-rh="true" property="og:title" content="${escapeHtml(title)}" />`
   );
   html = html.replace(
-    /<meta\s+property=["']og:description["'][^>]*>/i,
-    `<meta property="og:description" content="${escapeHtml(description)}" />`
+    /<meta\b(?=[^>]*\bproperty=["']og:description["'])[^>]*>/i,
+    `<meta data-rh="true" property="og:description" content="${escapeHtml(description)}" />`
   );
   html = html.replace(
-    /<meta\s+name=["']twitter:title["'][^>]*>/i,
-    `<meta name="twitter:title" content="${escapeHtml(title)}" />`
+    /<meta\b(?=[^>]*\bname=["']twitter:title["'])[^>]*>/i,
+    `<meta data-rh="true" name="twitter:title" content="${escapeHtml(title)}" />`
   );
   html = html.replace(
-    /<meta\s+name=["']twitter:description["'][^>]*>/i,
-    `<meta name="twitter:description" content="${escapeHtml(description)}" />`
+    /<meta\b(?=[^>]*\bname=["']twitter:description["'])[^>]*>/i,
+    `<meta data-rh="true" name="twitter:description" content="${escapeHtml(description)}" />`
   );
   html = html.replace(
     "</head>",
-    `  <script type="application/ld+json" data-static-seo>${safeJson(structuredData)}</script>\n  </head>`
+    `  <script type="application/ld+json" data-static-seo>${safeJson({ "@context": "https://schema.org", "@graph": [organizationSchema, websiteSchema, structuredData] })}</script>\n  </head>`
   );
   html = html.replace('<div id="root"></div>', `<div id="root">${content}</div>`);
   return html;
@@ -145,6 +146,35 @@ function localityKind(locality) {
 }
 
 let generated = 0;
+
+function platformFactsHtml() {
+  return `<p>${escapeHtml(platform.summary)}</p><p>${escapeHtml(platform.role)}</p>
+    <h2>Proprietăți de vânzare și de închiriat</h2>
+    <ul>${platformCategories.map(({ label, slug }) => `<li><a href="/${slug}">${escapeHtml(label)}</a></li>`).join("")}</ul>
+    <h2>Imobiliare după localitate</h2>
+    <ul>${platformLocalities.map(({ name, slug }) => `<li><a href="/observator-imobiliar/${slug}">${escapeHtml(name)}</a></li>`).join("")}</ul>
+    <p><a href="/observator-imobiliar">Vezi toate localitățile din județul Călărași</a></p>
+    <h2>Întrebări frecvente</h2>
+    ${platformFaqs.map(({ question, answer }) => `<section><h3>${escapeHtml(question)}</h3><p>${escapeHtml(answer)}</p></section>`).join("")}
+    <nav aria-label="Informații despre platformă"><a href="/anunturi">Toate anunțurile</a> · <a href="/adauga-anunt">Publică un anunț</a> · <a href="/despre-noi">Despre noi</a> · <a href="/contact">Contact</a></nav>`;
+}
+
+for (const [route, page, type] of [["/", platform, "WebPage"], ["/despre-noi", aboutPage, "AboutPage"], ["/contact", contactPage, "ContactPage"]]) {
+  const content = route === "/contact"
+    ? `<p>${escapeHtml(contactPage.description)}</p><p>Email: <a href="mailto:${platform.email}">${platform.email}</a></p>
+       <p>Pentru o proprietate, contactează direct autorul folosind datele afișate în anunț. Pentru întrebări despre platformă, scrie-ne prin email sau prin formularul disponibil după încărcarea paginii.</p>
+       <nav>${platform.socialLinks.map(({ label, url }) => `<a href="${escapeHtml(url)}">${label}</a>`).join(" · ")}</nav>
+       <p><a href="/despre-noi">Despre platformă și întrebări frecvente</a></p>`
+    : `${platformFactsHtml()}<p>Email: <a href="mailto:${platform.email}">${platform.email}</a></p>`;
+  await writeRoute(route, buildDocument({
+    title: page.title,
+    description: page.description,
+    canonical: `${baseUrl}${route}`,
+    structuredData: platformPageSchema(type, route, page.title, page.description),
+    content: `<main style="max-width:1100px;margin:40px auto;padding:0 20px;font-family:Arial,sans-serif;line-height:1.6"><h1>${escapeHtml(page.heading)}</h1>${content}</main>`,
+  }));
+  generated += 1;
+}
 
 for (const [categorySlug, category] of Object.entries(categories)) {
   const canonical = `${baseUrl}/${categorySlug}`;

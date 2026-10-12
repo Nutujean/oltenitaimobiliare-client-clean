@@ -692,6 +692,7 @@ export default function DetaliuAnunt() {
         }
       >
         <Helmet>
+          <link rel="canonical" href={publicUrl} />
           <title>
             {listing.title}
             {" - Oltenița Imobiliare"}

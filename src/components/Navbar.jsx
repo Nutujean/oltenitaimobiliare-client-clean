@@ -67,12 +67,12 @@ export default function Navbar() {
               alt="Oltenița Imobiliare"
               className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform"
             />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-cyan-300 via-white to-blue-200 bg-clip-text text-transparent">
                 Oltenița
               </span>
               <span className="text-gray-100 font-semibold">Imobiliare</span>
-            </h1>
+            </div>
           </Link>
 
           <button

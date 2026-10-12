@@ -175,7 +175,7 @@ const Footer = () => {
           <div>
             <h4 className="text-white text-lg font-semibold mb-4">Trimite-ne un mesaj</h4>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form id="contact-form" onSubmit={handleSubmit} className="space-y-3 scroll-mt-28">
               <input
                 type="text"
                 name="name"
