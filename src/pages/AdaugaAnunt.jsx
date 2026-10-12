@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
 import { LOCATII } from "../constants/localitati";
@@ -19,6 +19,11 @@ export default function AdaugaAnunt() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [error, setError] = useState("");
   const [mustPromote, setMustPromote] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const submissionKeyRef = useRef(
+    globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
 
   // ✅ NOU: alegere Gratuit / Promovat
   const [plan, setPlan] = useState("free"); // "free" | "paid"
@@ -75,6 +80,7 @@ export default function AdaugaAnunt() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     setError("");
     setMustPromote(false);
 
@@ -108,6 +114,9 @@ export default function AdaugaAnunt() {
       return;
     }
 
+    submittingRef.current = true;
+    setIsSubmitting(true);
+
     try {
       const formData = new FormData();
       formData.append("title", title);
@@ -118,6 +127,7 @@ export default function AdaugaAnunt() {
       formData.append("phone", phone);
       formData.append("email", email);
       formData.append("intent", intent);
+      formData.append("submissionKey", submissionKeyRef.current);
 
       // ✅ CHEIA PROBLEMEI:
       // Gratuit => isFree=true (aplică regula)
@@ -149,6 +159,7 @@ export default function AdaugaAnunt() {
       draftForm.append("phone", phone);
       draftForm.append("email", email);
       draftForm.append("intent", intent);
+      draftForm.append("submissionKey", submissionKeyRef.current);
 
       images.forEach((file) => draftForm.append("images", file));
 
@@ -192,6 +203,9 @@ navigate("/anunturile-mele");
     } catch (err) {
       console.error("Eroare:", err);
       setError(err.message || "A apărut o eroare la publicarea anunțului.");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -397,13 +411,15 @@ navigate("/anunturile-mele");
 
         <button
           type="submit"
+          disabled={isSubmitting}
+          aria-busy={isSubmitting}
           className={`text-white font-semibold px-4 py-2 rounded-lg w-full ${
             plan === "paid"
               ? "bg-yellow-500 hover:bg-yellow-600"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
-          {plan === "paid" ? "Publică Promovat" : "Publică anunțul"}
+          {isSubmitting ? "Se procesează..." : plan === "paid" ? "Publică Promovat" : "Publică anunțul"}
         </button>
       </form>
     </div>
