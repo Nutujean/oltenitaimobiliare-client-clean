@@ -17,5 +17,9 @@ http://*  https://oltenitaimobiliare.ro/:splat  301
 # Proxy Open Graph pentru distribuirea anunțurilor
 /share/:id  https://api.oltenitaimobiliare.ro/share/:id  200!
 
+# HTML actual al anunțului și sitemapul ofertei active, generate din MongoDB
+/anunt/:id  https://api.oltenitaimobiliare.ro/seo/anunt/:id  200!
+/sitemap-anunturi.xml  https://api.oltenitaimobiliare.ro/sitemap-listings.xml  200!
+
 # SPA fallback
 /*  /index.html  200

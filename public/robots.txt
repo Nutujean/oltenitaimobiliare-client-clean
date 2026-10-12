@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
 Sitemap: https://oltenitaimobiliare.ro/sitemap.xml
-Sitemap: https://share.oltenitaimobiliare.ro/sitemap.xml

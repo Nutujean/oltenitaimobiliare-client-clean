@@ -35,7 +35,6 @@ for (const locality of seoLocalitati) {
   }
 }
 
-const today = new Date().toISOString().slice(0, 10);
 const escapeXml = (value) =>
   String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -46,11 +45,16 @@ ${[...urls]
     const isSeoCombination = url.includes("/imobiliare/");
     const isLocalityHub = url.includes("/observator-imobiliar/");
     const isGuide = url.includes("/ghid-imobiliar/");
-    return `  <url>\n    <loc>${escapeXml(url)}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${isSeoCombination || isLocalityHub ? "weekly" : isGuide ? "monthly" : "daily"}</changefreq>\n    <priority>${url === `${baseUrl}/` ? "1.0" : isSeoCombination ? "0.75" : isLocalityHub ? "0.7" : isGuide ? "0.7" : "0.8"}</priority>\n  </url>`;
+    return `  <url>\n    <loc>${escapeXml(url)}</loc>\n    <changefreq>${isSeoCombination || isLocalityHub ? "weekly" : isGuide ? "monthly" : "daily"}</changefreq>\n    <priority>${url === `${baseUrl}/` ? "1.0" : isSeoCombination ? "0.75" : isLocalityHub ? "0.7" : isGuide ? "0.7" : "0.8"}</priority>\n  </url>`;
   })
   .join("\n")}
 </urlset>\n`;
 
 await mkdir("public", { recursive: true });
-await writeFile("public/sitemap.xml", xml, "utf8");
+await writeFile("public/sitemap-pages.xml", xml, "utf8");
+await writeFile("public/sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap><loc>${baseUrl}/sitemap-pages.xml</loc></sitemap>
+  <sitemap><loc>${baseUrl}/sitemap-anunturi.xml</loc></sitemap>
+</sitemapindex>\n`, "utf8");
 console.log(`Sitemap generat cu ${urls.size} URL-uri prioritare pentru ${seoLocalitati.length} UAT-uri.`);

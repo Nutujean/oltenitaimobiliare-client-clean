@@ -6,6 +6,12 @@ import { platform, platformCategories, platformLocalities, platformFaqs, organiz
 const baseUrl = "https://oltenitaimobiliare.ro";
 const distDir = path.resolve("dist");
 const template = await readFile(path.join(distDir, "index.html"), "utf8");
+// The backend inserts current listing content into this build's application shell.
+// Keep it separate from the homepage so it never contains homepage metadata/body.
+const listingShell = template
+  .replace('<html lang="ro">', '<html lang="ro" data-seo-shell="true">')
+  .replace(/<meta\b(?=[^>]*\bname=["']robots["'])[^>]*>/i, '<meta data-rh="true" name="robots" content="noindex, follow" />');
+await writeFile(path.join(distDir, "seo-shell.html"), listingShell, "utf8");
 const seoLocalitati = calarasiLocalitati.filter((locality) => locality.isUat);
 
 const categories = {

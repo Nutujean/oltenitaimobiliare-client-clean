@@ -12,7 +12,7 @@ startKeepAlive();
 
 // The client renders the same page and identity schemas through Helmet.
 // Remove the build-time graph so it cannot survive navigation to another route.
-document.querySelectorAll("script[data-static-seo]").forEach((node) => node.remove());
+document.querySelectorAll("script[data-static-seo], script[data-listing-seo]").forEach((node) => node.remove());
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

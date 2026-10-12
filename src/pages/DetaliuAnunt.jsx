@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API_URL from "../api";
+import PageMetadata from "../components/PageMetadata";
+import { listingSeoData } from "../utils/listingSeo.js";
 
 function normalizePhone(value) {
   if (!value) return "";
@@ -338,9 +340,12 @@ export default function DetaliuAnunt() {
 
   if (err) {
     return (
-      <p className="text-center py-10 text-red-600">
-        {err}
-      </p>
+      <>
+        <Helmet><title>Anunț indisponibil | Oltenița Imobiliare</title><meta name="robots" content="noindex, follow" /></Helmet>
+        <p className="text-center py-10 text-red-600">
+          {err}
+        </p>
+      </>
     );
   }
 
@@ -649,6 +654,8 @@ export default function DetaliuAnunt() {
     }
   };
 
+  const listingSeo = listingSeoData(listing);
+
   const handleBack = () => {
     if (
       window.history.length > 1
@@ -691,75 +698,15 @@ export default function DetaliuAnunt() {
             : "")
         }
       >
-        <Helmet>
-          <link rel="canonical" href={publicUrl} />
-          <title>
-            {listing.title}
-            {" - Oltenița Imobiliare"}
-          </title>
-
-          <meta
-            name="description"
-            content={
-              listing.title +
-              " – " +
-              listing.location +
-              ". " +
-              String(
-                listing.description ||
-                  ""
-              ).substring(0, 150) +
-              "..."
-            }
-          />
-
-          <meta
-            name="keywords"
-            content={
-              "Oltenița, imobiliare, " +
-              listing.location +
-              ", apartamente, case, terenuri"
-            }
-          />
-
-          <meta
-            property="og:title"
-            content={listing.title}
-          />
-
-          <meta
-            property="og:description"
-            content={
-              String(
-                listing.description ||
-                  ""
-              ).substring(
-                0,
-                150
-              ) ||
-              "Vezi detalii despre acest anunț imobiliar din Oltenița."
-            }
-          />
-
-          <meta
-            property="og:image"
-            content={
-              listing.images?.[0] ||
-              listing.imageUrl ||
-              "https://oltenitaimobiliare.ro/preview.jpg"
-            }
-          />
-
-          <meta
-            property="og:url"
-            content={publicUrl}
-          />
-
-          <meta
-            property="og:type"
-            content="article"
-          />
-        </Helmet>
+        <PageMetadata
+          title={listingSeo.title}
+          description={listingSeo.description}
+          route={`/anunt/${listingId}`}
+          robots={listingSeo.active ? "index, follow" : "noindex, follow"}
+          ogType="article"
+          image={listingSeo.images[0]}
+          structuredData={listingSeo.schema}
+        />
 
         {/* ÎNAPOI */}
 
