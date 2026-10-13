@@ -56,7 +56,7 @@ export default function ExternalOffers({ full = false }) {
               </p>
               <p className="text-gray-600 text-sm leading-6 mb-3">{offer.summary}</p>
               {offer.sourcePublishedAt && (
-                <p className="text-xs text-gray-500 mb-4">Publicat la sursă: {dateRo(offer.sourcePublishedAt)}</p>
+                <p className="text-xs text-gray-500 mb-4">Identificată la sursă: {dateRo(offer.sourcePublishedAt)}</p>
               )}
               <a
                 href={offer.sourceUrl}
