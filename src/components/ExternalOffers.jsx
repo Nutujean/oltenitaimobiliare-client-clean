@@ -55,6 +55,7 @@ export default function ExternalOffers({ full = false }) {
 
   // Paginile de referințe către alte site-uri nu sunt destinate indexării.
   // Nu afectăm metadatele indexabile ale paginii de pornire sau anunțurile originale.
+  const Heading = full ? "h1" : "h2";
   return (
     <>
       {full && (
@@ -76,12 +77,9 @@ export default function ExternalOffers({ full = false }) {
         <section aria-labelledby="oferte-externe" className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
             <div>
-              <h1 id="oferte-externe" className={
-                full ? "text-2xl sm:text-3xl font-bold text-blue-900" :
-                       "text-2xl sm:text-3xl font-bold text-blue-900"
-              }>
+              <Heading id="oferte-externe" className="text-2xl sm:text-3xl font-bold text-blue-900">
                 Oferte imobiliare din alte surse — județul Călărași
-              </h1>
+              </Heading>
               <p className="text-gray-600 mt-2 max-w-4xl">
                 Acestea sunt referințe la anunțuri publicate pe alte site-uri, nu anunțuri
                 verificate direct de Oltenița Imobiliare. Imaginile sunt ilustrative.
@@ -104,9 +102,9 @@ export default function ExternalOffers({ full = false }) {
                     <div className="text-xs font-semibold text-gray-600 mb-2">
                       Ofertă externă · {offer.sourceName}
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-2 leading-snug">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 leading-snug">
                       {offer.title}
-                    </h2>
+                    </h3>
                     <p className="text-blue-900 font-semibold mb-2">
                       {offer.locality}, jud. Călărași
                       {Number.isFinite(offer.priceEUR) && offer.priceEUR > 0
