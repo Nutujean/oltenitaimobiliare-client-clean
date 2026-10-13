@@ -4,6 +4,9 @@ on:
     paths:
       - 'src/components/ExternalOffers.jsx'
       - 'src/App.jsx'
+      - 'src/utils/externalOfferImages.js'
+      - 'scripts/generate-seo-pages.mjs'
+      - 'test/external-offer-seo.test.mjs'
       - '.github/workflows/verify-external-offers.yml'
 jobs:
   build:
@@ -16,3 +19,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Verify noindex, indexable pages and illustration assets
+        run: node --test test/external-offer-seo.test.mjs
