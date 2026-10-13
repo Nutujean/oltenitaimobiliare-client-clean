@@ -6,6 +6,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import CookiesConsent from "./components/CookiesConsent";
 import SeoCountyLinks from "./components/SeoCountyLinks";
 import HomeCountyPortal from "./components/HomeCountyPortal";
+import ExternalOffers from "./components/ExternalOffers";
 import { Helmet } from "react-helmet-async";
 import { organizationSchema, websiteSchema } from "./data/platform.js";
 import Contact from "./pages/Contact";
@@ -79,12 +80,14 @@ function App() {
             element={
               <>
                 <Home />
+                <ExternalOffers />
                 <HomeCountyPortal />
               </>
             }
           />
           <Route path="/despre-noi" element={<DespreNoi />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/oferte-externe" element={<ExternalOffers full />} />
           <Route path="/termeni" element={<Termeni />} />
           <Route path="/confidentialitate" element={<Confidentialitate />} />
           <Route path="/cookies" element={<CookiesPage />} />
