@@ -72,7 +72,7 @@ const escapeHtml = (value = "") =>
 
 const safeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
 
-function buildDocument({ title, description, canonical, structuredData, content }) {
+function buildDocument({ title, description, canonical, structuredData, content, robots = "index, follow" }) {
   let html = template;
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = html.replace(
@@ -81,7 +81,7 @@ function buildDocument({ title, description, canonical, structuredData, content 
   );
   html = html.replace(
     /<meta\b(?=[^>]*\bname=["']robots["'])[^>]*>/i,
-    '<meta data-rh="true" name="robots" content="index, follow" />'
+    `<meta data-rh="true" name="robots" content="${escapeHtml(robots)}" />`
   );
   html = html.replace(
     /<meta\b(?=[^>]*\bproperty=["']og:type["'])[^>]*>/i,
@@ -124,6 +124,32 @@ async function writeRoute(route, html) {
   await mkdir(directory, { recursive: true });
   await writeFile(path.join(directory, "index.html"), html, "utf8");
 }
+
+// Ofertele externe sunt utile pentru navigare, dar nu trebuie prezentate drept
+// conținut original în indexul Google. Înscriem noindex în HTML-ul inițial,
+// nu doar după încărcarea React, iar sitemap-ul continuă să nu includă ruta.
+const externalTitle = "Oferte externe în județul Călărași | Oltenița Imobiliare";
+const externalDescription = "Referințe către anunțuri publicate pe alte site-uri, cu imagini ilustrative, informații minimale și link către sursa originală.";
+await writeRoute(
+  "/oferte-externe",
+  buildDocument({
+    title: externalTitle,
+    description: externalDescription,
+    canonical: baseUrl + "/oferte-externe",
+    robots: "noindex, follow",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: externalTitle,
+      description: externalDescription,
+      url: baseUrl + "/oferte-externe",
+    },
+    content: '<main style="max-width:1100px;margin:40px auto;padding:0 20px;font-family:Arial,sans-serif;line-height:1.6">' +
+      '<h1>Oferte externe din județul Călărași</h1>' +
+      '<p>Referințe la proprietăți de pe alte site-uri. Fotografiile afișate sunt ilustrative, iar prețul și disponibilitatea trebuie confirmate la sursa inițială.</p>' +
+      '<p><a href="/">Vezi anunțurile publicate direct pe Oltenița Imobiliare</a></p></main>',
+  })
+);
 
 function categoryLinks(locality) {
   return Object.entries(categories)
