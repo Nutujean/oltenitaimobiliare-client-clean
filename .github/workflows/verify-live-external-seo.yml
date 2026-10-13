@@ -1,0 +1,38 @@
+name: Verify live external offers SEO and images
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/verify-live-external-seo.yml'
+  schedule:
+    - cron: '30 9 * * *'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check live SEO, images and homepage
+        run: |
+          python3 - <<'PY'
+          import urllib.request,re
+          root="https://oltenitaimobiliare.ro"
+          def retrieve(path):
+            req=urllib.request.Request(root+path,headers={"User-Agent":"Mozilla/5.0 (compatible; OltenitaImobiliare-SEOAudit/1.0)"})
+            with urllib.request.urlopen(req,timeout=25) as response:
+              body=response.read(250000)
+              print("GET",path,"HTTP",response.status,"bytes",len(body),"content-type",response.headers.get("content-type"))
+              return body.decode("utf-8","replace")
+          external=retrieve("/oferte-externe")
+          home=retrieve("/")
+          print("EXTERNAL NOINDEX",bool(re.search(r'<meta[^>]+name="robots"[^>]+content="noindex, follow"',external)))
+          print("HOME INDEX",bool(re.search(r'<meta[^>]+name="robots"[^>]+content="index, follow"',home)))
+          if not re.search(r'<meta[^>]+name="robots"[^>]+content="noindex, follow"',external):
+            raise SystemExit("External offer page must be noindex in initial HTML")
+          if not re.search(r'<meta[^>]+name="robots"[^>]+content="index, follow"',home):
+            raise SystemExit("Homepage must remain indexable")
+          for image in ["/terenuri.jpg","/case.jpg","/apartamente.jpg","/garsoniere.jpg","/garaje.jpg","/spatiu-comercial.jpg"]:
+            req=urllib.request.Request(root+image,headers={"User-Agent":"Mozilla/5.0"})
+            with urllib.request.urlopen(req,timeout=25) as response:
+              header=response.read(12)
+              print("IMAGE",image,response.status,response.headers.get("content-type"),header[:4].hex())
+              if response.status != 200 or not response.headers.get("content-type","").lower().startswith("image/"):
+                raise SystemExit("Missing valid category illustration: "+image)
+          PY
